@@ -7,8 +7,8 @@ raw_read_prefix: /scratch/santang3/data
 temp_dir: /scratch/santang3/tmp 
 
 files:
-  reference_genome: /scratch/santang3/data/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna
-  gff: /scratch/santang3/data/gff/TrR.v5.renamed_reformated.gtf.gz
+  reference_genome: /home/santang3/projects/def-nessrobe/clover-ref/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna
+  gff: /home/santang3/projects/def-nessrobe/clover-ref/gff/TrR.v5.renamed_reformated.gtf.gz
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
 samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']
