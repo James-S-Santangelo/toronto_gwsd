@@ -1,3 +1,16 @@
+rule create_bam_list_forSpeciesID:
+    input:
+        expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
+    output:
+        '{0}/allSamples_bams_forSpeciesID.list'.format(PROGRAM_RESOURCE_DIR)
+    log: 'logs/create_bam_list/create_bam_list.log'
+    run:
+        import os
+        with open(output[0], 'w') as f:
+            for bam in input:
+                sample = os.path.basename(bam).split('_merged')[0]
+                f.write('{0}\n'.format(bam))
+
 rule bcftools_chloroplast_gene_variants:
     input:
         rules.create_bam_list.output
