@@ -95,7 +95,7 @@ rule create_bam_list_varCall:
     input:
         expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
-        '{0}/allSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/allSamples_bams_varCall.list'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/create_bam_list/create_bam_list.log'
     run:
         import os

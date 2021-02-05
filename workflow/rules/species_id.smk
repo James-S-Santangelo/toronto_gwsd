@@ -13,7 +13,7 @@ rule create_bam_list_forSpeciesID:
 
 rule bcftools_chloroplast_gene_variants:
     input:
-        rules.create_bam_list.output
+        rules.create_bam_list_forSpeciesID.output
     output:
         '{0}/{{gene}}/allSamples_{{gene}}.vcf.gz'.format(SPECIES_ID_DIR)
     log: 'logs/chloroplast_gene_variants/chloroplast_{gene}_variants.log'

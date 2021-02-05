@@ -1,6 +1,6 @@
 rule test_angsd_baq_GL:
     input:
-        bams = rules.create_bam_list.output
+        bams = rules.create_bam_list_varCall.output
     output:
         saf = '{0}/test_params/GL{{GL}}_baq{{baq}}/CM019112.1_allSamples_allSites_GL{{GL}}_baq{{baq}}.saf.gz'.format(ANGSD_DIR),
         saf_idx = '{0}/test_params/GL{{GL}}_baq{{baq}}/CM019112.1_allSamples_allSites_GL{{GL}}_baq{{baq}}.saf.idx'.format(ANGSD_DIR),
@@ -45,4 +45,14 @@ rule test_angsd_sfs_baq_GL:
     shell:
         """
         realSFS {input} -P {threads} -fold 1 > {output} 2> {log}
+        """
+
+rule param_tests_done:
+    input:
+        expand('{0}/test_params/GL{{GL}}_baq{{baq}}/CM019112.1_allSamples_allSites_GL{{GL}}_baq{{baq}}.sfs'.format(ANGSD_DIR), GL=['1','2'], baq=['0','1','2'])
+    output:
+        '{0}/test_params/param_tests.done'.format(ANGSD_DIR)
+    shell:
+        """
+        touch {output}
         """
