@@ -25,7 +25,6 @@ rule angsd_depth:
             -out {params.out} 2> {log}
         """
 
-
 rule angsd_saf_likelihood_allSites:
     input:
         bams = rules.create_bam_list_varCall.output,
