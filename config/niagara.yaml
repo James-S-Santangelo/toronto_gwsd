@@ -4,11 +4,11 @@ chromosomes: ../resources/chromosome_file.txt
 
 results_prefix: ../results
 raw_read_prefix: /scratch/santang3/data 
-temp_dir: /scratch/santang3/tmp 
+temp_dir: /scratch/n/nessrobe/santang3/toronto_gwsd/tmp 
 
 files:
-  reference_genome: /scratch/n/nessrobe/santang3/data/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna
-  gff: /scratch/n/nessrobe/santang3/data/gff/TrR.v5.renamed_reformated.gtf.gz
+  reference_genome: /scratch/n/nessrobe/santang3/clover-ref/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna
+  gff: /scratch/n/nessrobe/santang3/data/clover-ref/TrR.v5.renamed_reformated.gtf.gz
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
 samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']
