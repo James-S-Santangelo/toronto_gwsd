@@ -45,7 +45,7 @@ load_div_neut_df <- function(path){
 ##################
 
 inpath <- 'data/sfs/'
-num_samples <- 120
+num_samples <- 115
 sfs_df <- list.files(inpath, recursive = TRUE) %>% 
   map_dfr(., load_long_sfs)
 

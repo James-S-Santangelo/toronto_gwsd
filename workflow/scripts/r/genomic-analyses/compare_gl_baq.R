@@ -33,7 +33,7 @@ load_wide_sfs <- function(path){
 
 # Load in all data
 inpath <- 'data/test_params/'
-num_samples <- 120
+num_samples <- 115
 sfs_df <- list.files(inpath, recursive = TRUE) %>% 
   map_dfr(., load_wide_sfs) %>% 
   separate(id, into = c('gl', 'baq'), sep = '_')

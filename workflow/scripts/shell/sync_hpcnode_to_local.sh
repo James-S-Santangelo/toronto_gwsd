@@ -10,6 +10,16 @@ rsync -vuar -P \
     santang3@hpcnode1.utm.utoronto.ca:/scratch/research/projects/trifolium/toronto_gwsd/results/angsd/ \
     ../../../data
 
+# NGSRELATE
+rsync -vuar -P \
+    --prune-empty-dirs \
+    --include='*/' \
+    --include='*ngsRelate*' \
+    --exclude='*' \
+    santang3@hpcnode1.utm.utoronto.ca:/scratch/research/projects/trifolium/toronto_gwsd/results/ngsrelate \
+    ../../../data
+
+# POPULATION STRUCTURE
 rsync -vuar -P \
     --prune-empty-dirs \
     --include='*/' \
@@ -19,6 +29,7 @@ rsync -vuar -P \
     santang3@hpcnode1.utm.utoronto.ca:/scratch/research/projects/trifolium/toronto_gwsd/results/population_structure/ \
     ../../../data
 
+# PROGRAM RESOURCES
 rsync -vuar -P \
     --prune-empty-dirs \
     --include='*/' \
