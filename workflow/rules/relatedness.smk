@@ -54,3 +54,46 @@ rule angsd_gl_forNGSrelate:
             -bam {input.bams} 2> {log}
         """
 
+rule convert_freq_forNGSrelate:
+    input:
+        rules.angsd_gl_forNGSrelate.output.mafs
+    output:
+        '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelate_maf{{maf}}.freqs'.format(ANGSD_DIR)
+    log: 'logs/convert_freq_forNGSrelate/pop{popu}_maf{maf}_convert_freqs.log'
+    shell:
+        """
+        zcat {input} | cut -f6 | sed 1d > {output} 2> {log}
+        """
+
+rule ngsrelate:
+    input:
+        gls = rules.angsd_gl_forNGSrelate.output.gls,
+        freq = rules.convert_freq_forNGSrelate.output
+    output:
+        '{0}/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelate_maf{{maf}}.out'.format(NGSRELATE_DIR)
+    log: 'logs/ngsrelate/pop{popu}_ngsRelate_maf{maf}.log'
+    container: 'shub://James-S-Santangelo/singularity-recipes:ngsrelate_vlatest'
+    threads: 10
+    params:
+        n = lambda w: len(open('{0}/population_bam_lists/{1}_bams.list'.format(PROGRAM_RESOURCE_DIR, w.popu), 'r').readlines())
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        ngsRelate -f {input.freq} \
+            -O {output} \
+            -g {input.gls} \
+            -p {threads} \
+            -n {params.n} 2> {log}
+        """
+
+rule ngsrelate_done:
+    input:
+        expand(rules.ngsrelate.output, popu=POPS_MULTIPLE_INDS, maf=['0.05'])
+    output:
+        '{0}/ngsrelate.done'.format(NGSRELATE_DIR)
+    shell:
+        """
+        touch {output}
+        """
