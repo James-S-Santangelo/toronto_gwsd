@@ -2,13 +2,13 @@ rule pcangsd:
     input:
         rules.concat_angsd_gl.output
     output:
-        '{0}/pcangsd/allSamples_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
-        '{0}/pcangsd/allSamples_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
-    log: 'logs/pcangsd/{site}_maf{maf}_pcangsd.log'
+        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
+        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
+    log: 'logs/pcangsd/{sample_set}_{site}_maf{maf}_pcangsd.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:pcangsd_v0.99'
     threads: 10
     params:
-        out = '{0}/pcangsd/allSamples_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
+        out = '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
     wildcard_constraints:
         site='4fold'
     resources:
@@ -18,7 +18,6 @@ rule pcangsd:
         """
         python3 /opt/pcangsd/pcangsd.py \
             -beagle {input} \
-            -admix \
             -o {params.out} \
             -threads {threads} \
             &> {log}
@@ -28,15 +27,16 @@ rule ngsadmix:
     input:
         rules.concat_angsd_gl.output
     output:
-        '{0}/ngsadmix/K{{k}}/allSamples_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
-        '{0}/ngsadmix/K{{k}}/allSamples_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR)
-    log: 'logs/ngsadmix/{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
+        '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
+        '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR)
+    log: 'logs/ngsadmix/{sample_set}_{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
     threads: 10
     params:
-        out = '{0}/ngsadmix/K{{k}}/allSamples_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}'.format(POP_STRUC_DIR)
+        out = '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}'.format(POP_STRUC_DIR)
     wildcard_constraints:
-        site = '4fold'
+        site = '4fold',
+        sample_set = 'finalSamples_relatedRemoved'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '02:00:00'
@@ -51,8 +51,8 @@ rule ngsadmix:
 
 rule pop_structure_done:
     input:
-        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
-        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS)
+        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05'], sample_set=['highQualSamples','finalSamples_relatedRemoved']),
+        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS, sample_set=['finalSamples_relatedRemoved'])
     output:
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
     shell:
