@@ -2,7 +2,7 @@ rule bams_list_byPop_multiInd:
     input:
         rules.create_bam_list_highQualSamples.output
     output:
-        '{0}/population_bam_lists/{{popu}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/bam_lists/population_bam_lists/{{popu}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/bams_list_byPop_multiInd/{popu}_bam_list.log'
     run:
         import os
@@ -20,13 +20,13 @@ rule angsd_gl_forNGSrelate:
         bams = rules.bams_list_byPop_multiInd.output,
         ref = REFERENCE_GENOME
     output:
-        gls = '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
-        mafs = '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
-        pos = '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
+        gls = '{0}/gls/ngsrelate/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
+        mafs = '{0}/gls/ngsrelate/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
+        pos = '{0}/gls/ngsrelate/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
     log: 'logs/angsd_gl_forNGSrelate/CM019101.1_{popu}_ngsRelateSNPs_maf{maf}.log'
     conda: '../envs/angsd.yaml'
     params:
-        out = '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}'.format(ANGSD_DIR)
+        out = '{0}/gls/ngsrelate/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelateSNPs_maf{{maf}}'.format(ANGSD_DIR)
     resources:
         nodes = 1,
         ntasks = CORES_PER_NODE,
@@ -58,7 +58,7 @@ rule convert_freq_forNGSrelate:
     input:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
-        '{0}/ngsRelate_gl/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelate_maf{{maf}}.freqs'.format(ANGSD_DIR)
+        '{0}/gls/ngsrelate/pop{{popu}}/CM019101.1_pop{{popu}}_ngsRelate_maf{{maf}}.freqs'.format(ANGSD_DIR)
     log: 'logs/convert_freq_forNGSrelate/pop{popu}_maf{maf}_convert_freqs.log'
     shell:
         """
@@ -67,6 +67,7 @@ rule convert_freq_forNGSrelate:
 
 rule ngsrelate:
     input:
+        bam = rules.bams_list_byPop_multiInd.output,
         gls = rules.angsd_gl_forNGSrelate.output.gls,
         freq = rules.convert_freq_forNGSrelate.output
     output:
@@ -74,18 +75,17 @@ rule ngsrelate:
     log: 'logs/ngsrelate/pop{popu}_ngsRelate_maf{maf}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:ngsrelate_vlatest'
     threads: 10
-    params:
-        n = lambda w: len(open('{0}/population_bam_lists/{1}_bams.list'.format(PROGRAM_RESOURCE_DIR, w.popu), 'r').readlines())
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
     shell:
         """
+        N=$( wc -l < {input.bam} );
         ngsRelate -f {input.freq} \
             -O {output} \
             -g {input.gls} \
             -p {threads} \
-            -n {params.n} 2> {log}
+            -n $N 2> {log}
         """
 
 rule ngsrelate_done:
