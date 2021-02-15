@@ -1,3 +1,31 @@
+rule create_bam_list_highQualSamples:
+    input:
+        expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
+    output:
+        '{0}/bam_lists/highQualSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: 'logs/create_bam_list/highQualSamples_bam_list.log'
+    run:
+        import os
+        with open(output[0], 'w') as f:
+            for bam in input:
+                sample = os.path.basename(bam).split('_merged')[0]
+                if sample not in LOWQUAL_SAMPLES_TO_EXCLUDE:
+                    f.write('{0}\n'.format(bam))
+
+rule create_bam_list_allFinalSamples:
+    input:
+        expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
+    output:
+        '{0}/bam_lists/allFinalSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: 'logs/create_bam_list/allFinalSamples_bam_list.log'
+    run:
+        import os
+        with open(output[0], 'w') as f:
+            for bam in input:
+                sample = os.path.basename(bam).split('_merged')[0]
+                if sample not in ALL_SAMPLES_TO_EXCLUDE:
+                    f.write('{0}\n'.format(bam))
+
 rule angsd_depth:
     input:
         bams = rules.create_bam_list_varCall.output
