@@ -11,10 +11,8 @@ files:
   gff: /scratch/n/nessrobe/santang3/data/clover-ref/TrR.v5.renamed_reformated.gtf.gz
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
-samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']
-
-# Populations with multiple individuals
-pops_multi_ind: ['40', '41', '42', '43', '97', '7', '23', '37', '54', '83', '116']
+lowQual_samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']
+related_samples_to_exclude: ['s_97_9', 's_37_18', 's_37_11', 's_42_3', 's_42_1', 's_83_11']
 
 freebayes:
   sample: s_7_7
