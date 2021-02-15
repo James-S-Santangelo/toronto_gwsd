@@ -28,7 +28,7 @@ rule create_bam_list_allFinalSamples:
 
 rule angsd_depth:
     input:
-        bams = rules.create_bam_list_varCall.output
+        bams = rules.create_bam_list_allFinalSamples.output
     output:
         sam = '{0}/depth/{{chrom}}/{{chrom}}_allSamples_allSites.depthSample'.format(ANGSD_DIR),
         glo = '{0}/depth/{{chrom}}/{{chrom}}_allSamples_allSites.depthGlobal'.format(ANGSD_DIR)
@@ -49,18 +49,18 @@ rule angsd_depth:
             -r {wildcards.chrom} \
             -minMapQ 30 \
             -minQ 20 \
-            -maxDepth 4500 \
+            -maxDepth 10000 \
             -out {params.out} 2> {log}
         """
 
 rule angsd_saf_likelihood_allSites:
     input:
-        bams = rules.create_bam_list_varCall.output,
+        bams = rules.create_bam_list_allFinalSamples.output,
         ref = REFERENCE_GENOME
     output:
-        saf = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.gz'.format(ANGSD_DIR),
-        saf_idx = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.idx'.format(ANGSD_DIR),
-        saf_pos ='{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.pos.gz'.format(ANGSD_DIR),
+        saf = temp('{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.gz'.format(ANGSD_DIR)),
+        saf_idx = temp('{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.idx'.format(ANGSD_DIR)),
+        saf_pos = temp('{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.saf.pos.gz'.format(ANGSD_DIR)),
         pos = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.pos.gz'.format(ANGSD_DIR),
         counts = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites.counts.gz'.format(ANGSD_DIR)
     log: 'logs/angsd_saf_likelihood_allSites/{chrom}_allSites_angsd_saf.log'
@@ -81,29 +81,29 @@ rule angsd_saf_likelihood_allSites:
             -doCounts 1 \
             -dumpCounts 2 \
             -setMinDepthInd 1 \
-            -setMaxDepth 4500 \
+            -setMaxDepth 2500 \
             -baq 2 \
             -ref {input.ref} \
             -minInd 60 \
             -minQ 20 \
             -minMapQ 30 \
             -doSaf 1 \
-            -anc {1} \
+            -anc {input.ref} \
             -r {wildcards.chrom} \
             -bam {input.bams} 2> {log}
         """
 
 rule angsd_gl_allSites:
     input:
-        bams = rules.create_bam_list_varCall.output,
+        bams = get_bams_for_angsd_gls,
         ref = REFERENCE_GENOME
     output:
-        gls = '{0}/gl/allSites/{{chrom}}/{{chrom}}_allSamples_allSites_maf{{maf}}.beagle.gz'.format(ANGSD_DIR),
-        mafs = '{0}/gl/allSites/{{chrom}}/{{chrom}}_allSamples_allSites_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
-    log: 'logs/angsd_gl_allSites/{chrom}_allSites_maf{maf}_angsd_gl.log'
+        gls = temp('{0}/gls/{{sample_set}}/allSites/{{chrom}}/{{chrom}}_{{sample_set}}_allSites_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
+        mafs = temp('{0}/gls/{{sample_set}}/allSites/{{chrom}}/{{chrom}}_{{sample_set}}_allSites_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
+    log: 'logs/angsd_gl_allSites/{chrom}_{sample_set}_allSites_maf{maf}_angsd_gl.log'
     conda: '../envs/angsd.yaml'
     params:
-        out = '{0}/gl/allSites/{{chrom}}/{{chrom}}_allSamples_allSites_maf{{maf}}'.format(ANGSD_DIR)
+        out = '{0}/gls/{{sample_set}}/allSites/{{chrom}}/{{chrom}}_{{sample_set}}_allSites_maf{{maf}}'.format(ANGSD_DIR)
     resources:
         nodes = 1,
         ntasks = CORES_PER_NODE,
@@ -121,7 +121,7 @@ rule angsd_gl_allSites:
             -doMaf 1 \
             -doCounts 1 \
             -setMinDepthInd 3 \
-            -setMaxDepth 4500 \
+            -setMaxDepth 2500 \
             -baq 2 \
             -ref {input.ref} \
             -minInd 96 \
@@ -297,10 +297,10 @@ rule subset_angsd_gl:
         subset = rules.files_for_angsd_site_subset.output.gl,
         gl = rules.angsd_gl_allSites.output.gls
     output:
-        '{0}/gl/{{site}}/{{chrom}}/{{chrom}}_allSamples_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
-    log: 'logs/subset_angsd_gl/{chrom}_{site}_maf{maf}_subset_gl.log'
+        '{0}/gls/{{sample_set}}/{{site}}/{{chrom}}/{{chrom}}_{{sample_set}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
+    log: 'logs/subset_angsd_gl/{chrom}_{sample_set}_{site}_maf{maf}_subset_gl.log'
     params:
-        unzip_out='{0}/gl/{{site}}/{{chrom}}/{{chrom}}_allSamples_{{site}}_maf{{maf}}.beagle'.format(ANGSD_DIR)
+        unzip_out='{0}/gls/{{sample_set}}/{{site}}/{{chrom}}/{{chrom}}_{{sample_set}}_{{site}}_maf{{maf}}.beagle'.format(ANGSD_DIR)
     wildcard_constraints:
         site='0fold|4fold'
     shell:
@@ -316,10 +316,10 @@ rule subset_angsd_maf:
         subset = rules.files_for_angsd_site_subset.output.maf,
         mafs = rules.angsd_gl_allSites.output.mafs
     output:
-        '{0}/gl/{{site}}/{{chrom}}/{{chrom}}_allSamples_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: 'logs/subset_angsd_maf/{chrom}_{site}_maf{maf}_subset_maf.log'
+        '{0}/gls/{{sample_set}}/{{site}}/{{chrom}}/{{chrom}}_{{sample_set}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
+    log: 'logs/subset_angsd_maf/{chrom}_{sample_set}_{site}_maf{maf}_subset_maf.log'
     params:
-        unzip_out='{0}/gl/{{site}}/{{chrom}}/{{chrom}}_allSamples_{{site}}_maf{{maf}}.mafs'.format(ANGSD_DIR)
+        unzip_out='{0}/gls/{{sample_set}}/{{site}}/{{chrom}}/{{chrom}}_allSamples_{{site}}_maf{{maf}}.mafs'.format(ANGSD_DIR)
     wildcard_constraints:
         site='0fold|4fold'
     shell:
@@ -333,8 +333,8 @@ rule concat_angsd_gl:
     input:
         get_angsd_gl_toConcat
     output:
-        '{0}/gl/{{site}}/allSamples_allChroms_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
-    log: 'logs/concat_angsd_gl/concat_angsd_gl_{site}_maf{maf}.log'
+        '{0}/gls/{{sample_set}}/{{site}}/allChroms_{{sample_set}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
+    log: 'logs/concat_angsd_gl/concat_angsd_gl_{sample_set}_{site}_maf{maf}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
     wildcard_constraints:
         site='0fold|4fold'
@@ -355,8 +355,8 @@ rule concat_angsd_mafs:
     input:
         get_angsd_maf_toConcat
     output:
-        '{0}/gl/{{site}}/allSamples_allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: 'logs/concat_angsd_mafs/concat_angsd_mafs_{site}_maf{maf}.log'
+        '{0}/gls/{{sample_set}}/{{site}}/{{sample_set}}_allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
+    log: 'logs/concat_angsd_mafs/concat_angsd_mafs_{sample_set}_{site}_maf{maf}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
     wildcard_constraints:
         site='0fold|4fold'
@@ -375,9 +375,9 @@ rule concat_angsd_mafs:
 
 rule extract_sample_angsd:
     input:
-        rules.create_bam_list_varCall.output
+        get_bams_for_angsd_gls
     output:
-        '{0}/angsd_sample_order.txt'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/angsd_{{sample_set}}_order.txt'.format(PROGRAM_RESOURCE_DIR)
     run:
         with open(output[0], 'w') as fout:
             with open(input[0], 'r') as fin:
@@ -389,11 +389,12 @@ rule extract_sample_angsd:
 
 rule angsd_done:
     input:
-        expand('{0}/depth/{{chrom}}/{{chrom}}_allSamples_allSites.depth{{ext}}'.format(ANGSD_DIR), chrom=CHROMOSOMES, ext=['Sample', 'Global']),
-        expand('{0}/summary_stats/thetas/{{site}}/allSamples_{{site}}_diversityNeutrality.thetas.idx.pestPG'.format(ANGSD_DIR), site=['allSites','0fold','4fold']),
-        expand('{0}/sfs/{{site}}/allSamples_{{site}}_allChroms.sfs'.format(ANGSD_DIR), site=['allSites','0fold','4fold']),
-        expand('{0}/gl/{{site}}/allSamples_allChroms_{{site}}_maf{{maf}}.{{ext}}.gz'.format(ANGSD_DIR), maf=['0.05'], ext=['beagle', 'mafs'], site=['0fold', '4fold']),
-        rules.extract_sample_angsd.output
+        expand(rules.angsd_depth.output, chrom=CHROMOSOMES),
+        expand(rules.concat_angsd_stats.output, site=['allSites','0fold','4fold']),
+        expand(rules.sum_sfs.output, site=['allSites','0fold','4fold']),
+        expand(rules.concat_angsd_gl.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['0fold','4fold'], maf=['0.05']),
+        expand(rules.concat_angsd_mafs.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['0fold','4fold'], maf=['0.05']),
+        expand(rules.extract_sample_angsd.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'])
     output:
         '{0}/angsd.done'.format(ANGSD_DIR)
     shell:

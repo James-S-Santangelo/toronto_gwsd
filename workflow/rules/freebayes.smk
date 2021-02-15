@@ -35,7 +35,7 @@ rule region_files_forFreebayes:
 
 rule freebayes_call_variants:
     input:
-        bams = rules.create_bam_list_varCall.output,
+        bams = rules.create_bam_list_allFinalSamples.output,
         regions = rules.region_files_forFreebayes.output
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_{{node}}_allSamples.vcf'.format(FREEBAYES_DIR))

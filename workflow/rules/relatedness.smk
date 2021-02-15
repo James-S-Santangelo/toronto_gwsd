@@ -1,6 +1,6 @@
 rule bams_list_byPop_multiInd:
     input:
-        rules.create_bam_list_varCall.output
+        rules.create_bam_list_highQualSamples.output
     output:
         '{0}/population_bam_lists/{{popu}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/bams_list_byPop_multiInd/{popu}_bam_list.log'
