@@ -66,7 +66,9 @@ rule angsd_saf_likelihood_allSites:
     log: 'logs/angsd_saf_likelihood_allSites/{chrom}_allSites_angsd_saf.log'
     conda: '../envs/angsd.yaml'
     params:
-        out = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites'.format(ANGSD_DIR)
+        out = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allSamples_allSites'.format(ANGSD_DIR),
+        max_dp = ANGSD_MAX_DP,
+        min_dp_ind = ANGSD_MIN_DP_IND_SFS
     resources:
         nodes = 1,
         ntasks = CORES_PER_NODE,
@@ -75,16 +77,18 @@ rule angsd_saf_likelihood_allSites:
         site='allSites'
     shell:
         """
+        NUM_IND=$( wc -l < {input.bams} );
+        MIN_IND=$(( NUM_IND*50/100 ));
         angsd -GL 1 \
             -out {params.out} \
             -nThreads {resources.ntasks} \
             -doCounts 1 \
             -dumpCounts 2 \
-            -setMinDepthInd 1 \
-            -setMaxDepth 2500 \
+            -setMinDepthInd {params.min_dp_ind} \
+            -setMaxDepth {params.max_dp} \
             -baq 2 \
             -ref {input.ref} \
-            -minInd 60 \
+            -minInd $MIN_IND \
             -minQ 20 \
             -minMapQ 30 \
             -doSaf 1 \
@@ -103,7 +107,9 @@ rule angsd_gl_allSites:
     log: 'logs/angsd_gl_allSites/{chrom}_{sample_set}_allSites_maf{maf}_angsd_gl.log'
     conda: '../envs/angsd.yaml'
     params:
-        out = '{0}/gls/{{sample_set}}/allSites/{{chrom}}/{{chrom}}_{{sample_set}}_allSites_maf{{maf}}'.format(ANGSD_DIR)
+        out = '{0}/gls/{{sample_set}}/allSites/{{chrom}}/{{chrom}}_{{sample_set}}_allSites_maf{{maf}}'.format(ANGSD_DIR),
+        max_dp = ANGSD_MAX_DP,
+        min_dp_ind = ANGSD_MIN_DP_IND_GL
     resources:
         nodes = 1,
         ntasks = CORES_PER_NODE,
@@ -112,6 +118,8 @@ rule angsd_gl_allSites:
         site='allSites'
     shell:
         """
+        NUM_IND=$( wc -l < {input.bams} );
+        MIN_IND=$(( NUM_IND*80/100 ))
         angsd -GL 1 \
             -out {params.out} \
             -nThreads {resources.ntasks} \
@@ -120,11 +128,11 @@ rule angsd_gl_allSites:
             -SNP_pval 1e-6 \
             -doMaf 1 \
             -doCounts 1 \
-            -setMinDepthInd 3 \
-            -setMaxDepth 2500 \
+            -setMinDepthInd {params.min_dp_ind} \
+            -setMaxDepth {params.max_dp} \
             -baq 2 \
             -ref {input.ref} \
-            -minInd 96 \
+            -minInd $MIN_IND \
             -minQ 20 \
             -minMapQ 30 \
             -minMaf {wildcards.maf} \
