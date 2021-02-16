@@ -63,19 +63,19 @@ def angsd_estimate_thetas_input(wildcards):
 
 def get_angsd_stats_toConcat(wildcards):
     if wildcards.site == '0fold':
-        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='0fold')
+        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='0fold', sample_set='finalSamples_relatedRemoved')
     elif wildcards.site == '4fold':
-        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='4fold')
+        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='4fold', sample_set='finalSamples_relatedRemoved')
     else:
-        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='allSites')
+        return expand(rules.angsd_diversity_neutrality_stats.output, chrom=CHROMOSOMES, site='allSites', sample_set='finalSamples_relatedRemoved')
 
 def get_angsd_sfs_toConcat(wildcards):
     if wildcards.site == '0fold':
-        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='0fold')
+        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='0fold', sample_set='finalSamples_relatedRemoved')
     elif wildcards.site == '4fold':
-        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='4fold')
+        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='4fold', sample_set='finalSamples_relatedRemoved')
     else:
-        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='allSites')
+        return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='allSites', sample_set='finalSamples_relatedRemoved')
 
 def get_angsd_gl_toConcat(wildcards):
     if wildcards.site == '0fold' and wildcards.maf == '0.05' and wildcards.sample_set == 'highQualSamples':
