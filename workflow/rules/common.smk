@@ -77,6 +77,12 @@ def get_angsd_sfs_toConcat(wildcards):
     else:
         return expand(rules.angsd_estimate_sfs.output, chrom=CHROMOSOMES, site='allSites', sample_set='finalSamples_relatedRemoved')
 
+def get_sites_for_angsd_index(wildcards):
+    if wildcards.site == 'allSites':
+        return rules.extract_angsd_allSites.output
+    elif wildcards.site == '0fold' or wildcards.site == '4fold':
+        return rules.split_angsd_sites_byChrom.output
+
 def get_angsd_gl_toConcat(wildcards):
     if wildcards.site == '0fold' and wildcards.maf == '0.05' and wildcards.sample_set == 'highQualSamples':
         return expand(rules.subset_angsd_gl.output, site='0fold', maf='0.05', chrom=CHROMOSOMES, sample_set='highQualSamples')
