@@ -22,6 +22,8 @@ rule test_angsd_baq_GL:
         site='allSites'
     shell:
         """
+        NUM_IND=$( wc -l < {input.bams} );
+        MIN_IND=$(( NUM_IND*80/100 ));
         angsd -GL {wildcards.GL} \
             -out {params.out} \ 
             -nThreads {resources.ntasks} \
