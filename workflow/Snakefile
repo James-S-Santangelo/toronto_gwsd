@@ -57,7 +57,7 @@ elif NODES_PER_CHROM > 1:
     NUM_REGIONS_PER_CHROM = NODES_PER_CHROM * CORES_PER_NODE
 
 # Parameters for Admixture analysis 
-NGSADMIX_K = [x for x in range(1, 11)]
+NGSADMIX_K = [x for x in range(2, 11)]
 NGSADMIX_SEEDS = [x for x in range(1, 11)]
 
 wildcard_constraints:
