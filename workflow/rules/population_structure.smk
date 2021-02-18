@@ -2,8 +2,7 @@ rule pcangsd:
     input:
         rules.concat_angsd_gl.output
     output:
-        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR),
-        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.admix.Q.npy'.format(POP_STRUC_DIR)
+        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR)
     log: 'logs/pcangsd/{sample_set}_{site}_maf{maf}_pcangsd.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:pcangsd_v0.99'
     threads: 10

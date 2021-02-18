@@ -50,8 +50,8 @@ rule test_angsd_sfs_baq_GL:
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
     threads: 10
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 25000,
-        time = '06:00:00'
+        mem_mb = lambda wildcards, attempt: attempt * 50000,
+        time = '03:00:00'
     wildcard_constraints:
         chrom='CM019101.1',
         sample_set='finalSamples_relatedRemoved',
