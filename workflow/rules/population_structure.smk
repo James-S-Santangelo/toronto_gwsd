@@ -59,7 +59,6 @@ rule pop_structure_done:
         touch {output}
         """
 
-
 # rule create_pos_file_for_ngsLD:
 #     input:
 #         rules.angsd_gl_allSites.output.mafs
