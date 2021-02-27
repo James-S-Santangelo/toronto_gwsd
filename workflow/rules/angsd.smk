@@ -344,8 +344,6 @@ rule concat_angsd_gl:
         '{0}/gls/{{sample_set}}/{{site}}/allChroms_{{sample_set}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
     log: 'logs/concat_angsd_gl/concat_angsd_gl_{sample_set}_{site}_maf{maf}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
-    wildcard_constraints:
-        site='0fold|4fold'
     shell:
         """
         first=1
@@ -363,11 +361,9 @@ rule concat_angsd_mafs:
     input:
         get_angsd_maf_toConcat
     output:
-        '{0}/gls/{{sample_set}}/{{site}}/{{sample_set}}_allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
+        '{0}/gls/{{sample_set}}/{{site}}/allChroms_{{sample_set}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
     log: 'logs/concat_angsd_mafs/concat_angsd_mafs_{sample_set}_{site}_maf{maf}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
-    wildcard_constraints:
-        site='0fold|4fold'
     shell:
         """
         first=1
@@ -400,8 +396,8 @@ rule angsd_done:
         expand(rules.angsd_depth.output, chrom=CHROMOSOMES),
         expand(rules.concat_angsd_stats.output, site=['allSites','0fold','4fold']),
         expand(rules.sum_sfs.output, site=['allSites','0fold','4fold']),
-        expand(rules.concat_angsd_gl.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['0fold','4fold'], maf=['0.05']),
-        expand(rules.concat_angsd_mafs.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['0fold','4fold'], maf=['0.05']),
+        expand(rules.concat_angsd_gl.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['allSites','0fold','4fold'], maf=['0.05']),
+        expand(rules.concat_angsd_mafs.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'], site=['allSites','0fold','4fold'], maf=['0.05']),
         expand(rules.extract_sample_angsd.output, sample_set=['highQualSamples','finalSamples_relatedRemoved'])
     output:
         '{0}/angsd.done'.format(ANGSD_DIR)
