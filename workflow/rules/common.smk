@@ -92,6 +92,10 @@ def get_angsd_gl_toConcat(wildcards):
         return expand(rules.subset_angsd_gl.output, site='4fold', maf='0.05', chrom=CHROMOSOMES, sample_set='highQualSamples')
     elif wildcards.site == '4fold' and wildcards.maf == '0.05' and wildcards.sample_set == 'finalSamples_relatedRemoved':
         return expand(rules.subset_angsd_gl.output, site='4fold', maf='0.05', chrom=CHROMOSOMES, sample_set='finalSamples_relatedRemoved')
+    elif wildcards.site == 'allSites' and wildcards.maf == '0.05' and wildcards.sample_set == 'highQualSamples':
+        return expand(rules.angsd_gl_allSites.output.gls, maf='0.05', chrom=CHROMOSOMES, sample_set='highQualSamples')
+    elif wildcards.site == 'allSites' and wildcards.maf == '0.05' and wildcards.sample_set == 'finalSamples_relatedRemoved':
+        return expand(rules.angsd_gl_allSites.output.gls, maf='0.05', chrom=CHROMOSOMES, sample_set='finalSamples_relatedRemoved')
 
 def get_angsd_maf_toConcat(wildcards):
     if wildcards.site == '0fold' and wildcards.maf == '0.05' and wildcards.sample_set == 'highQualSamples':
@@ -102,3 +106,7 @@ def get_angsd_maf_toConcat(wildcards):
         return expand(rules.subset_angsd_maf.output, site='4fold', maf='0.05', chrom=CHROMOSOMES, sample_set='highQualSamples')
     elif wildcards.site == '4fold' and wildcards.maf == '0.05' and wildcards.sample_set == 'finalSamples_relatedRemoved':
         return expand(rules.subset_angsd_maf.output, site='4fold', maf='0.05', chrom=CHROMOSOMES, sample_set='finalSamples_relatedRemoved')
+    elif wildcards.site == 'allSites' and wildcards.maf == '0.05' and wildcards.sample_set == 'highQualSamples':
+        return expand(rules.angsd_gl_allSites.output.mafs, maf='0.05', chrom=CHROMOSOMES, sample_set='highQualSamples')
+    elif wildcards.site == 'allSites' and wildcards.maf == '0.05' and wildcards.sample_set == 'finalSamples_relatedRemoved':
+        return expand(rules.angsd_gl_allSites.output.mafs, maf='0.05', chrom=CHROMOSOMES, sample_set='finalSamples_relatedRemoved')
