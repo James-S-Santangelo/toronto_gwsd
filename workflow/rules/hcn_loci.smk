@@ -1,6 +1,6 @@
 rule depth_hcn_loci:
     input:
-        bams = rules.create_bam_list_varCall.output,
+        bams = rules.create_bam_list_highQualSamples.output,
         ref = REFERENCE_GENOME
     output:
         '{0}/depth/{{gene}}/{{gene}}_samtools.depth'.format(HCN_LOCI_DIR)
