@@ -3,8 +3,8 @@ samples: ../resources/sequencedPlants_phenotypesHabitat.txt
 chromosomes: ../resources/chromosome_file.txt
 
 results_prefix: ../results
-raw_read_prefix: /scratch/santang3/toronto_gwsd/raw_data 
-temp_dir: /scratch/santang3/toronto_gwsd/tmp 
+raw_read_prefix: /home/santang3/scratch/toronto_gwsd/data/raw/raw_reads 
+temp_dir: /home/santang3/scratch/toronto_gwsd/tmp 
 
 files:
   reference_genome: /home/santang3/projects/def-nessrobe/clover-ref/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna

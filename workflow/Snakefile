@@ -18,7 +18,7 @@ GFF_FILE = config['files']['gff']
 # Paths for output files
 TMPDIR = config['temp_dir']
 RAW_READ_DIR = config['raw_read_prefix']
-TRIMMED_READ_DIR = '{0}/trimmed_reads'.format(config['raw_read_prefix'])
+TRIMMED_READ_DIR = '{0}/trimmed_reads'.format(config['results_prefix'])
 QC_DIR = '{0}/qc'.format(config['results_prefix'])
 SPECIES_ID_DIR = '{0}/species_id'.format(config['results_prefix'])
 BAM_DIR = '{0}/bam'.format(config['results_prefix'])
