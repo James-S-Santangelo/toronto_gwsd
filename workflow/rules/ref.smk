@@ -1,21 +1,80 @@
-rule get_fourfold_zerofold:
-    input:
-        ref = REFERENCE_GENOME,
-        gff = GFF_FILE
+rule download_reference:
     output:
-        expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(PROGRAM_RESOURCE_DIR), site=['0fold','4fold'])
-    log: 'logs/4fold_0fold/get_fourfold_zerofold.log'
-    conda: '../envs/ref.yaml'
+        '{0}/GCA_005869975.1_AgR_To_v5_genomic.fna.gz'.format(REF_DIR)
+    log: 'logs/download_reference/download_reference.log'
     params:
-        outpath = '{0}/4fold_0fold/'.format(PROGRAM_RESOURCE_DIR)
-    resources:
-        mem_mb = 4000,
-        time = '04:00:00'
+        outpath = '{0}/'.format(REF_DIR)
     shell:
         """
-        ( git clone https://github.com/James-S-Santangelo/Degeneracy.git &&
-        cd Degeneracy &&
-        get_4fold_sites.sh {input.gff} {input.ref} {params.outpath} &&
-        rm -rf Degeneracy ) 2> {log}
+        wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/005/869/975/GCA_005869975.1_AgR_To_v5/GCA_005869975.1_AgR_To_v5_genomic.fna.gz -P {params.outpath} 2> {log}
         """
 
+rule unzip_reference:
+    input:
+        rules.download_reference.output
+    output:
+        '{0}/GCA_005869975.1_AgR_To_v5_genomic.fna'.format(REF_DIR)
+    log: 'logs/unzip_reference/unzip_reference.log'
+    shell:
+        """
+        gunzip {input} 2> {log}
+        """
+
+rule samtools_index_reference:
+    input:
+        rules.unzip_reference.output
+    output:
+        '{0}/GCA_005869975.1_AgR_To_v5_genomic.fna.fai'.format(REF_DIR)
+    conda: '../envs/ref.yaml'
+    log: 'logs/samtools_index_reference/samtools/index_reference.log'
+    shell:
+        """
+        samtools faidx {input} 2> {log}
+        """
+
+rule bwa_index_ref:
+    input:
+        rules.unzip_reference.output
+    output:
+        multiext('{0}/GCA_005869975.1_AgR_To_v5_genomic.fna'.format(REF_DIR), '.amb', '.ann', '.bwt', '.pac', '.sa')
+    conda: '../envs/ref.yaml'
+    log: 'logs/bwa_index_ref/bwa_index_ref.log'
+    resources:
+        mem_mb = 4000,
+        time = '01:00:00'
+    shell:
+        """
+        bwa index {input} 2> {log}
+        """
+
+# rule get_fourfold_zerofold:
+#     input:
+#         ref = REFERENCE_GENOME,
+#         gff = GFF_FILE
+#     output:
+#         expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(PROGRAM_RESOURCE_DIR), site=['0fold','4fold'])
+#     log: 'logs/4fold_0fold/get_fourfold_zerofold.log'
+#     conda: '../envs/ref.yaml'
+#     params:
+#         outpath = '{0}/4fold_0fold/'.format(PROGRAM_RESOURCE_DIR)
+#     resources:
+#         mem_mb = 4000,
+#         time = '04:00:00'
+#     shell:
+#         """
+#         ( git clone https://github.com/James-S-Santangelo/Degeneracy.git &&
+#         cd Degeneracy &&
+#         get_4fold_sites.sh {input.gff} {input.ref} {params.outpath} &&
+#         rm -rf Degeneracy ) 2> {log}
+#         """
+
+rule ref_done:
+    input:
+        rules.samtools_index_reference.output,
+        rules.bwa_index_ref.output
+    output:
+        '{0}/ref.done'.format(REF_DIR)
+    shell:
+        """
+        touch {output}
+        """
