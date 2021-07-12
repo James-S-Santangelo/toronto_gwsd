@@ -1,11 +1,12 @@
 rule bwa_map_unpaired:
     input:
         unp = rules.fastp_trim.output.unp,
-        ref = REFERENCE_GENOME
+        ref = rules.unzip_reference.output,
+        ref_done = rules.ref_done.output
     output:
         temp('{0}/unpaired/{{sample}}_unpaired_sorted.bam'.format(BAM_DIR))
     params:
-        r"-R '@RG\tID:${sample}\tCN:NOVOGENE\tPL:ILLUMINA\tPM:NOVASEQ.S4\tSM:${sample}'"
+        r"-R '@RG\tID:{sample}\tCN:NOVOGENE\tPL:ILLUMINA\tPM:NOVASEQ.S4\tSM:{sample}'"
     conda: '../envs/mapping.yaml'
     log: 'logs/bwa_map_unpaired/{sample}_bwa_map.unpaired.log'
     threads: 2
@@ -22,11 +23,12 @@ rule bwa_map_paired:
     input:
         r1 = rules.fastp_trim.output.r1_trim,
         r2 = rules.fastp_trim.output.r2_trim,
-        ref = REFERENCE_GENOME
+        ref = rules.unzip_reference.output,
+        ref_done = rules.ref_done.output
     output:
         temp('{0}/paired/{{sample}}_paired_sorted.bam'.format(BAM_DIR))
     params:
-        r"-R '@RG\tID:${sample}\tCN:NOVOGENE\tPL:ILLUMINA\tPM:NOVASEQ.S4\tSM:${sample}'"
+        r"-R '@RG\tID:{sample}\tCN:NOVOGENE\tPL:ILLUMINA\tPM:NOVASEQ.S4\tSM:{sample}'"
     conda: '../envs/mapping.yaml'
     log: 'logs/bwa_map_paired/{sample}_bwa_map.paired.log'
     threads: 6
@@ -67,7 +69,7 @@ rule samtools_markdup:
     log: 'logs/samtools_markdup/{sample}_samtools_markdup.log'
     threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 5000,
+        mem_mb = lambda wildcards, attempt: attempt * 10000,
         time = '01:00:00'
     shell:
         """

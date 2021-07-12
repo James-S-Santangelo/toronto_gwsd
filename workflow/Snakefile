@@ -68,14 +68,12 @@ localrules: create_tmp_dir, download_reference, unzip_reference, samtools_index_
 
 include: 'rules/common.smk'
 
-#raw_read_dict = create_raw_read_dict(RAW_READ_DIR, SAMPLES)
-
 rule all:
    input:
         # Reference genome
-        '{0}/ref.done'.format(REF_DIR)
+        '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
-        #'{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
@@ -97,9 +95,9 @@ rule create_tmp_dir:
     shell: 'mkdir {output}'
 
 include: 'rules/ref.smk'
-#include: 'rules/trimming.smk'
-#include: 'rules/mapping.smk'
-#include: 'rules/qc.smk'
+include: 'rules/trimming.smk'
+include: 'rules/mapping.smk'
+include: 'rules/qc.smk'
 #include: 'rules/species_id.smk'
 #include: 'rules/angsd.smk'
 #include: 'rules/freebayes.smk'
