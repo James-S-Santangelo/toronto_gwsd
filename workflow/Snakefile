@@ -78,7 +78,7 @@ rule all:
         # Freebayes
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
-        #'{0}/angsd.done'.format(ANGSD_DIR),
+        '{0}/angsd.done'.format(ANGSD_DIR),
         # NGS relate
         #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
@@ -99,7 +99,7 @@ include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 #include: 'rules/species_id.smk'
-#include: 'rules/angsd.smk'
+include: 'rules/angsd.smk'
 #include: 'rules/freebayes.smk'
 #include: 'rules/param_tests.smk'
 #include: 'rules/relatedness.smk'
