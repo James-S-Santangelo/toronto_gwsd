@@ -1,14 +1,11 @@
 # Sample IDs as list
 samples: ../resources/sequencedPlants_phenotypesHabitat.txt
 chromosomes: ../resources/chromosome_file.txt
+gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
 
 results_prefix: ../results
 raw_read_prefix: /home/santang3/scratch/toronto_gwsd/data/raw/raw_reads 
 temp_dir: /home/santang3/scratch/toronto_gwsd/tmp 
-
-files:
-  reference_genome: /home/santang3/projects/def-nessrobe/clover-ref/ref_genome/GCA_005869975.1_AgR_To_v5_genomic.fna
-  gff: /home/santang3/projects/def-nessrobe/clover-ref/gff/TrR.v5.renamed_reformated.gtf.gz
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
 lowQual_samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']

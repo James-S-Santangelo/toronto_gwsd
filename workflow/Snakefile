@@ -12,8 +12,7 @@ SAMPLES = pd.read_table(config['samples'])['Sample'].tolist()
 CHROMOSOMES = pd.read_table(config['chromosomes'], header=None).iloc[:,0].tolist()
 
 # Reference genome
-#REFERENCE_GENOME = config['files']['reference_genome']
-GFF_FILE = config['files']['gff']
+GFF_FILE = config['gff']
 
 # Paths for output files
 TMPDIR = config['temp_dir']
