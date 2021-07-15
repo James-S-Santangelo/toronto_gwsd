@@ -54,12 +54,12 @@ rule angsd_saf_likelihood_allSites:
         counts = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allFinalSamples_allSites.counts.gz'.format(ANGSD_DIR)
     log: 'logs/angsd_saf_likelihood_allSites/{chrom}_allSites_angsd_saf.log'
     conda: '../envs/angsd.yaml'
-	params:
+    params:
         out = '{0}/sfs/allSites/{{chrom}}/{{chrom}}_allFinalSamples_allSites'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     resources:
-		nodes = 1,
+        nodes = 1,
         ntasks = CORES_PER_NODE,
         time = '12:00:00'
     shell:
@@ -93,12 +93,12 @@ rule angsd_gl_allSites:
         mafs = temp('{0}/gls/allSites/{{chrom}}/{{chrom}}_allSites_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
     log: 'logs/angsd_gl_allSites/{chrom}_allSites_maf{maf}_angsd_gl.log'
     conda: '../envs/angsd.yaml' 
-	params:
+    params:
         out = '{0}/gls/allSites/{{chrom}}/{{chrom}}_allSites_maf{{maf}}'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     resources:
-		nodes = 1,
+        nodes = 1,
         ntasks = CORES_PER_NODE,
         time = '12:00:00'
     shell:
