@@ -294,7 +294,7 @@ rule subset_angsd_gl:
         '{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_allFinalSamples_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
     log: 'logs/subset_angsd_gl/{chrom}_{site}_maf{maf}_subset_gl.log'
     params:
-        unzip_out='{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.beagle'.format(ANGSD_DIR)
+        unzip_out='{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_allFinalSamples_maf{{maf}}.beagle'.format(ANGSD_DIR)
     wildcard_constraints:
         site='0fold|4fold'
     shell:
@@ -313,7 +313,7 @@ rule subset_angsd_maf:
         '{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_allFinalSamples_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
     log: 'logs/subset_angsd_maf/{chrom}_{site}_maf{maf}_subset_maf.log'
     params:
-        unzip_out='{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.mafs'.format(ANGSD_DIR)
+        unzip_out='{0}/gls/{{site}}/{{chrom}}/{{chrom}}_{{site}}_allFinalSamples_maf{{maf}}.mafs'.format(ANGSD_DIR)
     wildcard_constraints:
         site='0fold|4fold'
     shell:

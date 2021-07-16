@@ -2,21 +2,23 @@ rule create_regions_equal_coverage:
     input: 
         qc_done = rules.multiqc.output,
         bam = get_representative_bam,
-        ref_index = '{0}.fai'.format(REFERENCE_GENOME),
+        ref_index = rules.samtools_index_reference.output 
     output:
         temp('{0}/{{chrom}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR))
     log: 'logs/create_regions_equal_cov/{chrom}_create_regions_equal_cov.log'
     conda: '../envs/variant_calling.yaml'
     threads: 8
+    params:
+        num_regions = NUM_REGIONS_PER_CHROM
     resources:
-        mem_mb = lambda wildcards, input, attempt: attempt * (int(input.size_mb) * 2),
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '01:00:00'
     shell:
         """
-        ( samtools view --threads {{threads}} -b -s 0.20 {{input.bam}} {{wildcards.chrom}} |\
+        ( samtools view --threads {threads} -b -s 0.20 {input.bam} {wildcards.chrom} |\
             bamtools coverage |\
-            coverage_to_regions.py {{input.ref_index}} {0} > {{output}} ) 2> {{log}} 
-        """.format(NUM_REGIONS_PER_CHROM)
+            coverage_to_regions.py {input.ref_index} {params.num_regions} > {output} ) 2> {log} 
+        """
 
 rule region_files_forFreebayes:
     input:
@@ -24,19 +26,23 @@ rule region_files_forFreebayes:
     output:
         '{0}/{{chrom}}_regions/{{chrom}}_{{node}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/regions_files_forFreebayes/{chrom}_{node}_forFreebayes.log'
+    params:
+        cores = CORES_PER_NODE,
+        outpath = PROGRAM_RESOURCE_DIR
     shell:
         """
         split --numeric-suffixes=1 \
-            -l {0} \
+            -l {params.cores} \
             --additional-suffix=_forFreebayes.regions \
-            {{input}} \
-            {1}/{{wildcards.chrom}}_regions/{{wildcards.chrom}}_node 2> {{log}}
-        """.format(CORES_PER_NODE, PROGRAM_RESOURCE_DIR)
+            {input} \
+            {params.outpath}/{wildcards.chrom}_regions/{wildcards.chrom}_node 2> {log}
+        """
 
 rule freebayes_call_variants:
     input:
         bams = rules.create_bam_list_allFinalSamples.output,
-        regions = rules.region_files_forFreebayes.output
+        regions = rules.region_files_forFreebayes.output,
+        ref = rules.unzip_reference.output
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_{{node}}_allSamples.vcf'.format(FREEBAYES_DIR))
     log: 'logs/freebayes/{chrom}__{node}_freebayes.log'
@@ -48,14 +54,14 @@ rule freebayes_call_variants:
         time = '12:00:00'
     shell:
         """
-        ( freebayes-parallel {{input.regions}} {{resources.ntasks}} \
-            --fasta-reference {0} \
-            --bam-list {{input.bams}} \
+        ( freebayes-parallel {input.regions} {resources.ntasks} \
+            --fasta-reference {input.ref} \
+            --bam-list {input.bams} \
             --use-best-n-alleles 2 \
             --report-monomorphic \
             --max-complex-gap 1 \
-            --haplotype-length 1 > {{output}} ) 2> {{log}}
-        """.format(REFERENCE_GENOME)
+            --haplotype-length 1 > {output} ) 2> {log}
+        """
  
 rule bgzip_vcf:
     input:
@@ -98,27 +104,30 @@ rule concat_vcfs:
     log: 'logs/concat_vcfs/{chrom}_concat_vcfs.log'
     conda: '../envs/variant_calling.yaml'
     threads: 8
+    params:
+        nodes = NODES_PER_CHROM
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '02:00:00'
     shell:
         """
-        if [[ {0} -eq 1 ]]
+        if [[ {params.nodes} -eq 1 ]]
         then
-            mv {{input.node_vcfs}} {{output}} 2> {{log}}
-        elif [[ {0} -gt 1 ]]
+            mv {input.node_vcfs} {output} 2> {log}
+        elif [[ {params.nodes} -gt 1 ]]
         then
             ( bcftools concat --allow-overlaps \
-                --threads {{threads}} \
+                --threads {threads} \
                 --output-type z \
-                --output {{output}} \
-                {{input.node_vcfs}} ) 2> {{log}}
+                --output {output} \
+                {input.node_vcfs} ) 2> {log}
         fi
-        """.format(NODES_PER_CHROM)
+        """
 
 rule bcftools_split_variants:
     input:
-        vcf = rules.concat_vcfs.output
+        vcf = rules.concat_vcfs.output,
+        tmp = rules.create_tmp_dir.output
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allSamples_{{site_type}}_sorted.vcf.gz'.format(FREEBAYES_DIR)
     log: 'logs/bcftools_split_variants/{chrom}_bcftools_split_variants_{site_type}.log'
@@ -131,17 +140,17 @@ rule bcftools_split_variants:
         time = '06:00:00'
     shell:
         """
-        if [ {{wildcards.site_type}} = 'invariant' ]; then
-            bcftools view --threads {{threads}} -O z --include 'N_ALT = 0' {{input}} > {{output}} 2> {{log}}
-        elif [ {{wildcards.site_type}} = 'snps' ]; then
-            ( bcftools view --threads {{threads}} -O v --types {{wildcards.site_type}} {{input}} |\
+        if [ {wildcards.site_type} = 'invariant' ]; then
+            bcftools view --threads {threads} -O z --include 'N_ALT = 0' {input.vcf} > {output} 2> {log}
+        elif [ {wildcards.site_type} = 'snps' ]; then
+            ( bcftools view --threads {threads} -O v --types {wildcards.site_type} {input.vcf} |\
             vcfallelicprimitives --keep-info --keep-geno |\
-            bcftools view --threads {{threads}} --types {{wildcards.site_type}} --min-alleles 2 --max-alleles 2 |\
-            bcftools sort -O z -T {0}/{{wildcards.chrom}} -o {{output}} ) 2> {{log}}
+            bcftools view --threads {threads} --types {wildcards.site_type} --min-alleles 2 --max-alleles 2 |\
+            bcftools sort -O z -T {inpur.tmp}/{wildcards.chrom} -o {output} ) 2> {log}
         else
-            bcftools view --threads {{threads}} -O z --types {{wildcards.site_type}} {{input}} > {{output}} 2> {{log}}
+            bcftools view --threads {threads} -O z --types {wildcards.site_type} {input} > {output} 2> {log}
         fi
-        """.format(TMPDIR)
+        """
 
 rule tabix_vcf:
     input:

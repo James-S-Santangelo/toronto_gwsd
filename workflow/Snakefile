@@ -75,7 +75,7 @@ rule all:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        #'{0}/freebayes.done'.format(FREEBAYES_DIR),
+        '{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),
         # NGS relate
@@ -99,7 +99,7 @@ include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 #include: 'rules/species_id.smk'
 include: 'rules/angsd.smk'
-#include: 'rules/freebayes.smk'
+include: 'rules/freebayes.smk'
 #include: 'rules/param_tests.smk'
 #include: 'rules/relatedness.smk'
 #include: 'rules/population_structure.smk'
