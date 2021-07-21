@@ -22,5 +22,5 @@ angsd:
 
 freebayes:
   sample: s_7_7
-  nodes_per_chrom: 12
-  cores_per_node: 32
+  nodes_per_chrom: 24
+  cores_per_node: 40

@@ -4,7 +4,7 @@ rule create_regions_equal_coverage:
         bam = get_representative_bam,
         ref_index = rules.samtools_index_reference.output 
     output:
-        temp('{0}/{{chrom}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR))
+        temp('{0}/freebayes_regions/{{chrom}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR))
     log: 'logs/create_regions_equal_cov/{chrom}_create_regions_equal_cov.log'
     conda: '../envs/freebayes.yaml'
     threads: 8
@@ -24,18 +24,18 @@ rule region_files_forFreebayes:
     input:
         rules.create_regions_equal_coverage.output
     output:
-        '{0}/{{chrom}}_regions/{{chrom}}_{{node}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/freebayes_regions/{{chrom}}/{{chrom}}_{{node}}_forFreebayes.regions'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/regions_files_forFreebayes/{chrom}_{node}_forFreebayes.log'
     params:
         cores = CORES_PER_NODE,
-        outpath = PROGRAM_RESOURCE_DIR
+        outpath = '{0}/freebayes_regions'.format(PROGRAM_RESOURCE_DIR)
     shell:
         """
         split --numeric-suffixes=1 \
             -l {params.cores} \
             --additional-suffix=_forFreebayes.regions \
             {input} \
-            {params.outpath}/{wildcards.chrom}_regions/{wildcards.chrom}_node 2> {log}
+            {params.outpath}/{wildcards.chrom}/{wildcards.chrom}_node 2> {log}
         """
 
 rule freebayes_call_variants:
