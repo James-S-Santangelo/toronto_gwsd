@@ -2,12 +2,12 @@ rule pcangsd:
     input:
         rules.concat_angsd_gl.output
     output:
-        '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR)
-    log: 'logs/pcangsd/{sample_set}_{site}_maf{maf}_pcangsd.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:pcangsd_v0.99'
+        '{0}/pcangsd/allSamples_allChroms_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR)
+    log: 'logs/pcangsd/allSamples_allChroms_{site}_maf{maf}_pcangsd.log'
+    container: 'library://james-s-santangelo/pcangsd/pcangsd:0.99'
     threads: 10
     params:
-        out = '{0}/pcangsd/{{sample_set}}/{{sample_set}}_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
+        out = '{0}/pcangsd/allSamples_allChroms_{{site}}_maf{{maf}}_pcangsd'.format(POP_STRUC_DIR)
     wildcard_constraints:
         site='4fold'
     resources:
@@ -15,7 +15,7 @@ rule pcangsd:
         time = '01:00:00'
     shell:
         """
-        python3 /opt/pcangsd/pcangsd.py \
+        python3 /opt/pcangsd-v.0.99/pcangsd.py \
             -beagle {input} \
             -o {params.out} \
             -threads {threads} \
@@ -26,16 +26,16 @@ rule ngsadmix:
     input:
         rules.concat_angsd_gl.output
     output:
-        '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
-        '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR)
-    log: 'logs/ngsadmix/{sample_set}_{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+        fopt = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
+        qopt = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR),
+        lf = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.log'.format(POP_STRUC_DIR)
+    log: 'logs/ngsadmix/{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     threads: 10
     params:
-        out = '{0}/ngsadmix/{{sample_set}}/K{{k}}/{{sample_set}}_ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}'.format(POP_STRUC_DIR)
+        out = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}'.format(POP_STRUC_DIR)
     wildcard_constraints:
-        site = '4fold',
-        sample_set = 'finalSamples_relatedRemoved'
+        site = '4fold'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '02:00:00'
@@ -48,10 +48,55 @@ rule ngsadmix:
             -outfiles {params.out} 2> {log}
         """
 
+rule logfile_for_clumpak:
+    """
+    Create Inputfile for CLUMPAK containing Log likelihood values of NGSadmix runs for each K
+    """
+    input:
+        expand(rules.ngsadmix.output.lf, site='4fold', maf='0.05', k=NGSADMIX_K, seed=NGSADMIX_SEEDS)
+    output:
+        '{0}/clumpak/ngsadmix_logfile_for_clumpak.txt'.format(PROGRAM_RESOURCE_DIR)
+    run:
+        import re
+        with open(output[0], 'w') as fout:
+            for lf in input:
+                # Get K
+                m1 = re.search('(?<=_K)(\d+)', lf)
+                k = m1.group(1)
+                # Get likelihood
+                line = open(lf, 'r').readlines()[-1]  # Likelihood always on last line
+                m2 = re.search('(?<=like=)(-?\d+.\d+)', line)
+                like = m2.group(1)
+                fout.write('{0}\t{1}\n'.format(k, like))
+
+rule clumpak_best_k_by_evanno:
+    """
+    Find optimal K value by city using Evanno method, as implemented in CLUMPAK
+    """
+    input:
+        rules.logfile_for_clumpak.output
+    output:
+        directory('{0}/bestKbyEvanno'.format(POP_STRUC_DIR))
+    log: 'logs/clumpak_best_k_by_evanno/evanno.log'
+    container: 'library://james-s-santangelo/clumpak/clumpak:1.1'
+    params:
+        outdir = '{0}/bestKbyEvanno'.format(POP_STRUC_DIR)
+    resources:
+        mem_mb = 1000,
+        time = '01:00:00'
+    shell:
+        """
+        perl /opt/bin/BestKByEvanno.pl --id clumpak_best_k_out \
+            --d {params.outdir} \
+            --f {input} \
+            --inputtype lnprobbyk 2>&1 > {log}
+        """
+
 rule pop_structure_done:
     input:
-        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05'], sample_set=['highQualSamples','finalSamples_relatedRemoved']),
-        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS, sample_set=['finalSamples_relatedRemoved'])
+        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
+        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
+        expand(rules.clumpak_best_k_by_evanno.output)   
     output:
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
     shell:
