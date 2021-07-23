@@ -181,7 +181,7 @@ rule angsd_estimate_sfs:
     output:
         temp('{0}/sfs/{{site}}/{{chrom}}/{{chrom}}_allFinalSamples_{{site}}.sfs'.format(ANGSD_DIR))
     log: 'logs/angsd_estimate_sfs/{chrom}_{site}_sfs.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     threads: 10
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 60000,
@@ -198,7 +198,7 @@ rule angsd_estimate_thetas:
         idx = '{0}/summary_stats/thetas/{{site}}/{{chrom}}/{{chrom}}_allFinalSamples_{{site}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/{{site}}/{{chrom}}/{{chrom}}_allFinalSamples_{{site}}.thetas.gz'.format(ANGSD_DIR)
     log: 'logs/angsd_estimate_thetas/{chrom}_{site}_thetas.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     threads: 10
     params:
         out = '{0}/summary_stats/thetas/{{site}}/{{chrom}}/{{chrom}}_allFinalSamples_{{site}}'.format(ANGSD_DIR)
@@ -221,7 +221,7 @@ rule angsd_diversity_neutrality_stats:
     output:
        temp( '{0}/summary_stats/thetas/{{site}}/{{chrom}}/{{chrom}}_allFinalSamples_{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR))
     log: 'logs/angsd_diversity_neutrality_stats/{chrom}_{site}_diversity_neutrality.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '03:00:00'
