@@ -3,8 +3,7 @@ channels:
     - bioconda
 dependencies:
     - samtools=1.10
-    - freebayes=1.3.2
-    - bamtools=2.5.1
-    - vcflib=1.0.1
+    - freebayes=1.3.5
+    - vcflib=1.0.2
     - bcftools=1.10.2
     - scikit-allel=1.3.2
