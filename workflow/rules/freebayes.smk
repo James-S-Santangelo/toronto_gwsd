@@ -20,27 +20,28 @@ rule create_region_files_forFreebayes:
             --chromosome {params.chroms} 2> {log}
         """
 
-# rule freebayes_call_variants:
-#     input:
-#         bams = rules.create_bam_list_allFinalSamples.output,
-#         regions = rules.create_region_files_forFreebayes.output,
-#         ref = rules.unzip_reference.output
-#     output:
-#         temp('{0}/vcf/{{chrom}}/{{chrom}}_{{node}}_allSamples.vcf'.format(FREEBAYES_DIR))
-#     log: 'logs/freebayes/{chrom}__{node}_freebayes.log'
-#     conda: '../envs/freebayes.yaml'
-#     resources:
-#         nodes = 1,
-#         ntasks = CORES_PER_NODE,
-#         time = '12:00:00'
-#     shell:
-#         """
-#         ( freebayes-parallel {input.regions} {resources.ntasks} \
-#             --fasta-reference {input.ref} \
-#             --bam-list {input.bams} \
-#             --use-best-n-alleles 2 \
-#             --report-monomorphic > {output} ) 2> {log}
-#         """
+rule freebayes_call_variants:
+    input:
+        bams = rules.create_bam_list_allFinalSamples.output,
+        region = '{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), 
+        ref = rules.unzip_reference.output
+    output:
+        temp('{0}/vcf/{{chrom}}/{{chrom}}_chunk{{i}}_allSamples.vcf'.format(FREEBAYES_DIR))
+    log: 'logs/freebayes/{chrom}/{chrom}_chunk{i}_freebayes.log'
+    conda: '../envs/freebayes.yaml'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = lambda wildcards, attempt: str(attempt * 3) + ":00:00"
+    shell:
+        """
+        freebayes \
+            --fasta-reference {input.ref} \
+            --targets {input.region} \
+            --bam-list {input.bams} \
+            --use-best-n-alleles 2 \
+            --skip-coverage 15000 \
+            --report-monomorphic > {output} 2> {log}
+        """
 #  
 # rule bgzip_vcf:
 #     input:
