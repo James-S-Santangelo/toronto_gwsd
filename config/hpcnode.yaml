@@ -23,7 +23,8 @@ angsd:
   min_dp_ind_sfs: 1
   min_dp_ind_gl: 3
 
+cluster:
+  cores_per_node: 32
+
 freebayes:
-  sample: s_7_7  # Name of representative sample (i.e., with 'average' genome-wide coverage)
-  nodes_per_chrom: 1
-  cores_per_node: 30
+  nchunks: 500

@@ -41,22 +41,17 @@ POPS_MULTIPLE_INDS = config['pops_multi_ind']
 RELATED_SAMPLES_TO_EXCLUDE = config['related_samples_to_exclude']
 ALL_SAMPLES_TO_EXCLUDE = LOWQUAL_SAMPLES_TO_EXCLUDE + RELATED_SAMPLES_TO_EXCLUDE
 
+# Cluster
+CORES_PER_NODE = config['cluster']['cores_per_node']
+
 # Parameters for variant calling with ANGSD
 ANGSD_MAX_DP = config['angsd']['max_dp']
 ANGSD_MIN_DP_IND_SFS = config['angsd']['min_dp_ind_sfs']
 ANGSD_MIN_DP_IND_GL = config['angsd']['min_dp_ind_gl']
 
 # Parameters for genotype calling with freebayes
-FREEBAYES_NCHUNKS = 500
+FREEBAYES_NCHUNKS = config['freebayes']['nchunks']
 FREEBAYES_CHUNKS = list(range(1, FREEBAYES_NCHUNKS + 1))
-REPRESENTATIVE_SAMPLE = config['freebayes']['sample']
-NODES_PER_CHROM = config['freebayes']['nodes_per_chrom']
-CORES_PER_NODE = config['freebayes']['cores_per_node']
-NODES = ['node{0:0=2d}'.format(x + 1) for x in range(NODES_PER_CHROM)]
-if NODES_PER_CHROM == 1:
-    NUM_REGIONS_PER_CHROM = CORES_PER_NODE
-elif NODES_PER_CHROM > 1:
-    NUM_REGIONS_PER_CHROM = NODES_PER_CHROM * CORES_PER_NODE
 
 # Parameters for Admixture analysis 
 NGSADMIX_K = [x for x in range(2, 11)]
@@ -77,7 +72,7 @@ rule all:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        expand('{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, i=FREEBAYES_CHUNKS), 
+        expand('{0}/vcf/{{chrom}}/{{chrom}}_chunk{{i}}_allSamples.vcf'.format(FREEBAYES_DIR), chrom=CHROMOSOMES, i=FREEBAYES_CHUNKS),
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),

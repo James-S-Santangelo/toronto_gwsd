@@ -20,7 +20,8 @@ angsd:
   min_dp_ind_sfs: 1
   min_dp_ind_gl: 3
 
-freebayes:
-  sample: s_7_7
-  nodes_per_chrom: 12
+cluster:
   cores_per_node: 40
+
+freebayes:
+  nchunks: 500
