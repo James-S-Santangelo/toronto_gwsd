@@ -72,7 +72,7 @@ rule all:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        expand('{0}/vcf/{{chrom}}/{{chrom}}_chunk{{i}}_allSamples.vcf'.format(FREEBAYES_DIR), chrom=CHROMOSOMES, i=FREEBAYES_CHUNKS),
+        '{0}/freebayes.done'.format(FREEBAYES_DIR),
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),

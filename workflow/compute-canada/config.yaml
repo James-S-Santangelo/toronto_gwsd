@@ -1,6 +1,6 @@
 # Configuration file for launching tasks on Compute Canada
 
-jobs: 500  
+jobs: 200  
 local-cores: 1
 
 jobscript: "slurm-jobscript.sh"
@@ -8,7 +8,7 @@ cluster: "slurm-submit.py"
 #cluster-status: "slurm-status.py"
 
 #default-resources: [mem_mb=4000, time="01:00:00"]
-restart-times: 3
+#restart-times: 3
 max-jobs-per-second: 1
 max-status-checks-per-second: 1
 latency-wait: 60
