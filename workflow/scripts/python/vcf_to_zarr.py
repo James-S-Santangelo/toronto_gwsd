@@ -35,8 +35,7 @@ def vcf_to_zarr(vcf_in, outpath):
             compressor=numcodecs.Blosc(cname='zstd', clevel=1, shuffle=False)
             )
 
-with open(snakemake.log[0], 'w') as f:
-    sys.stderr = sys.stdout = f
-    vcf_in = snakemake.input[0]
-    outpath = snakemake.output[0]
-    vcf_to_zarr(vcf_in, outpath)
+
+vcf_in = sys.argv[1]
+outpath = sys.argv[2]
+vcf_to_zarr(vcf_in, outpath)

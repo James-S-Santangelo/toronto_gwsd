@@ -12,7 +12,8 @@ SAMPLES = pd.read_table(config['samples'])['Sample'].tolist()
 CHROMOSOMES = pd.read_table(config['chromosomes'], header=None).iloc[:,0].tolist()
 
 # Reference genome
-GFF_FILE = config['gff']
+# Make ancient to prevent triguring pipeline if time stamp changes
+GFF_FILE = ancient(config['gff'])
 
 # Paths for output files
 TMPDIR = config['temp_dir']

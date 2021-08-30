@@ -112,8 +112,10 @@ rule vcf_to_zarr:
     resources:
         mem_mb = 4000,
         time = '02:00:00'
-    script:
-        "../scripts/python/vcf_to_zarr.py"
+    shell:
+        """
+        python3 scripts/python/vcf_to_zarr.py {input} {output} 2> {log}
+        """
 
 rule freebayes_done:
     input:
