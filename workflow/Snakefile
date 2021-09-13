@@ -103,7 +103,7 @@ include: 'rules/freebayes.smk'
 #include: 'rules/relatedness.smk'
 include: 'rules/population_structure.smk'
 #include: 'rules/hcn_loci.smk'
-#include: 'rules/notebooks.smk'
+include: 'rules/notebooks.smk'
 
 rule clean:
     params:
