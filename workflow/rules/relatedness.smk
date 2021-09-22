@@ -1,59 +1,58 @@
-rule bams_list_byPop_multiInd:
+rule create_bam_list_highQualSamples:
     input:
-        rules.create_bam_list_highQualSamples.output
+        expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
-        '{0}/bam_lists/population_bam_lists/{{popu}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/bams_list_byPop_multiInd/{popu}_bam_list.log'
+        '{0}/bam_lists/highQualSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: 'logs/create_bam_list/highQualSamples_bam_list.log'
     run:
         import os
-        with open(output[0], 'w') as fout:
-            with open(input[0], 'r') as fin:
-                lines = fin.readlines()
-                for line in lines:
-                    sline = line.strip()
-                    pop = os.path.basename(sline).split('_')[1]
-                    if pop == wildcards.popu:
-                        fout.write(line)
+        with open(output[0], 'w') as f:
+            for bam in input:
+                sample = os.path.basename(bam).split('_merged')[0]
+                if sample not in LOWQUAL_SAMPLES_TO_EXCLUDE:
+                    f.write('{0}\n'.format(bam))
 
 rule angsd_gl_forNGSrelate:
     input:
-        bams = rules.bams_list_byPop_multiInd.output,
-        ref = REFERENCE_GENOME
+        bams = rules.create_bam_list_highQualSamples.output,
+        ref = rules.unzip_reference.output
     output:
-        gls = '{0}/gls/ngsrelate/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
-        mafs = '{0}/gls/ngsrelate/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
-        pos = '{0}/gls/ngsrelate/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelateSNPs_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_gl_forNGSrelate/{chrom}_{popu}_ngsRelateSNPs_maf{maf}.log'
+        gls = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
+        mafs = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
+        pos = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
+    log: 'logs/angsd_gl_forNGSrelate/{chrom}_ngsRelateSNPs_maf{maf}.log'
     conda: '../envs/angsd.yaml'
     params:
-        out = '{0}/gls/ngsrelate/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelateSNPs_maf{{maf}}'.format(ANGSD_DIR),
+        out = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_maf{{maf}}'.format(ANGSD_DIR),
+        max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
+    threads: 12
     resources:
-        nodes = 1,
-        ntasks = CORES_PER_NODE,
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '12:00:00'
     wildcard_constraints:
         chrom = 'CM019101.1'
     shell:
         """
         NUM_IND=$( wc -l < {input.bams} );
-        MIN_IND=$(( NUM_IND / 2 ));
+        MIN_IND=$(( NUM_IND*80/100 ))
         angsd -GL 1 \
             -out {params.out} \
-            -nThreads {resources.ntasks} \
+            -nThreads {threads} \
             -doGlf 3 \
             -doMajorMinor 1 \
             -SNP_pval 1e-6 \
             -doMaf 1 \
             -doCounts 1 \
             -setMinDepthInd {params.min_dp_ind} \
+            -setMaxDepth {params.max_dp} \
             -baq 2 \
             -ref {input.ref} \
             -minInd $MIN_IND \
             -minQ 20 \
             -minMapQ 30 \
             -minMaf {wildcards.maf} \
-            -r CM019101.1 \
+            -r {wildcards.chrom} \
             -bam {input.bams} 2> {log}
         """
 
@@ -61,8 +60,8 @@ rule convert_freq_forNGSrelate:
     input:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
-        '{0}/gls/ngsrelate/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelate_maf{{maf}}.freqs'.format(ANGSD_DIR)
-    log: 'logs/convert_freq_forNGSrelate/{chrom}_pop{popu}_maf{maf}_convert_freqs.log'
+        '{0}/gls/ngsrelate/{{chrom}}_ngsRelate_maf{{maf}}.freqs'.format(ANGSD_DIR)
+    log: 'logs/convert_freq_forNGSrelate/{chrom}_maf{maf}_convert_freqs.log'
     wildcard_constraints:
         chrom = 'CM019101.1'
     shell:
@@ -72,22 +71,22 @@ rule convert_freq_forNGSrelate:
 
 rule ngsrelate:
     input:
-        bam = rules.bams_list_byPop_multiInd.output,
+        bams = rules.create_bam_list_highQualSamples.output,
         gls = rules.angsd_gl_forNGSrelate.output.gls,
         freq = rules.convert_freq_forNGSrelate.output
     output:
-        '{0}/pop{{popu}}/{{chrom}}_pop{{popu}}_ngsRelate_maf{{maf}}.out'.format(NGSRELATE_DIR)
-    log: 'logs/ngsrelate/{chrom}_pop{popu}_ngsRelate_maf{maf}.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:ngsrelate_vlatest'
+        '{0}/{{chrom}}_ngsRelate_maf{{maf}}.out'.format(NGSRELATE_DIR)
+    log: 'logs/ngsrelate/{chrom}_ngsRelate_maf{maf}.log'
+    container: 'library://james-s-santangelo/ngsrelate/ngsrelate:2.0' 
     threads: 10
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
+        time = '02:00:00'
     wildcard_constraints:
         chrom = 'CM019101.1'
     shell:
         """
-        N=$( wc -l < {input.bam} );
+        N=$( wc -l < {input.bams} );
         ngsRelate -f {input.freq} \
             -O {output} \
             -g {input.gls} \
@@ -97,7 +96,7 @@ rule ngsrelate:
 
 rule ngsrelate_done:
     input:
-        expand(rules.ngsrelate.output, chrom='CM019101.1', popu=POPS_MULTIPLE_INDS, maf=['0.05'])
+        expand(rules.ngsrelate.output, chrom='CM019101.1', maf=['0.05'])
     output:
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR)
     shell:
