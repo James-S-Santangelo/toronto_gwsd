@@ -68,64 +68,71 @@ rule angsd_saf_likelihood_byHabitat:
             -bam {input.bams} 2> {log}
         """
 
-# rule angsd_estimate_joint_sfs_byCity:
-#     """
-#     Estimated folded, two-dimensional urban-rural SFS for each city using realSFS. Uses 4fold sites.
-#     """
-#     input:
-#         get_habitat_saf_files_byCity
-#     output:
-#         '{0}/sfs/by_city/{{city}}/{{city}}_{{site}}_r_u.2dsfs'.format(ANGSD_DIR)
-#     log: 'logs/angsd_estimate_2dsfs_byCity/{city}_{site}.2dsfs.log'
-#     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
-#     threads: 4
-#     resources:
-#         mem_mb = lambda wildcards, attempt: attempt * 10000,
-#         time = '01:00:00'
-#     shell:
-#         """
-#         realSFS {input} -maxIter 2000 -seed 42 -fold 1 -P {threads} > {output} 2> {log}
-#         """
-# 
-# rule angsd_fst_index:
-#     """
-#     Estimate per-site alphas (numerator) and betas (denominator) for Fst estimation. Done separately using 
-#     both Weir and Cockeram and Hudson's Fst
-#     """
-#     input: 
-#         saf_idx = get_habitat_saf_files_byCity,
-#         joint_sfs = rules.angsd_estimate_joint_sfs_byCity.output
-#     output:
-#         fst = '{0}/summary_stats/fst/fst{{fst}}/{{city}}/{{city}}_{{site}}_r_u_fst{{fst}}.fst.gz'.format(ANGSD_DIR),
-#         idx = '{0}/summary_stats/fst/fst{{fst}}/{{city}}/{{city}}_{{site}}_r_u_fst{{fst}}.fst.idx'.format(ANGSD_DIR)
-#     log: 'logs/angsd_fst_index/{city}_{site}_fst{fst}_index.log'
-#     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
-#     threads: 4
-#     resources:
-#         mem_mb = 4000,
-#         time = '01:00:00'
-#     params:
-#         fstout = '{0}/summary_stats/fst/fst{{fst}}/{{city}}/{{city}}_{{site}}_r_u_fst{{fst}}'.format(ANGSD_DIR)
-#     shell:
-#         """
-#         realSFS fst index {input.saf_idx} -sfs {input.joint_sfs} -fold 1 -P {threads} -whichFst {wildcards.fst} -fstout {params.fstout} 2> {log}
-#         """
-# 
-# rule angsd_fst_readable:
-#     """
-#     Create readable Fst files. Required due to format of realSFS fst index output files. 
-#     """
-#     input:
-#         rules.angsd_fst_index.output.idx
-#     output:
-#         '{0}/summary_stats/fst/fst{{fst}}/{{city}}/{{city}}_{{site}}_r_u_fst{{fst}}_readable.fst'.format(ANGSD_DIR)
-#     log: 'logs/angsd_fst_readable/{city}_{site}_fst{fst}_readable.log'
-#     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
-#     shell:
-#         """
-#         realSFS fst print {input} > {output} 2> {log}
-#         """
-# 
+rule angsd_estimate_joint_habitat_sfs:
+    """
+    Estimated folded, two-dimensional urban-rural SFS for each city using realSFS. Uses 4fold sites.
+    """
+    input:
+        safs = get_habitat_saf_files,
+        sites = rules.split_angsd_sites_byChrom.output,
+        sites_idx = rules.angsd_index_sites.output
+    output:
+        '{0}/sfs/habitat_2dsfs/{{chrom}}/{{chrom}}_Toronto_2dsfs_{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
+    log: 'logs/angsd_estimate_habitat_2dsfs/{chrom}_Toronto_{site}_{hab_comb}.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 6
+    wildcard_constraints:
+        site='4fold'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 10000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS {input.safs} -sites {input.sites} -maxIter 2000 -seed 42 -fold 1 -P {threads} > {output} 2> {log}
+        """
+
+rule angsd_habitat_fst_index:
+    """
+    Estimate per-site alphas (numerator) and betas (denominator) for Fst estimation
+    """
+    input: 
+        saf_idx = get_habitat_saf_files,
+        joint_sfs = rules.angsd_estimate_joint_habitat_sfs.output
+    output:
+        fst = '{0}/summary_stats/hudson_fst/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
+        idx = '{0}/summary_stats/hudson_fst/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
+    log: 'logs/angsd_habitat_fst_index/{chrom}_Toronto_{site}_{hab_comb}_index.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    wildcard_constraints:
+        site='4fold'
+    threads: 4
+    resources:
+        mem_mb = 4000,
+        time = '01:00:00'
+    params:
+        fstout = '{0}/summary_stats/hudson_fst/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}'.format(ANGSD_DIR)
+    shell:
+        """
+        realSFS fst index {input.saf_idx} -sfs {input.joint_sfs} -fold 1 -P {threads} -whichFst 1 -fstout {params.fstout} 2> {log}
+        """
+
+rule angsd_habitat_fst_readable:
+    """
+    Create readable Fst files. Required due to format of realSFS fst index output files. 
+    """
+    input:
+        rules.angsd_habitat_fst_index.output.idx
+    output:
+        '{0}/summary_stats/hudson_fst/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
+    log: 'logs/angsd_habitat_fst_readable/{chrom}_Toronto_{site}_{hab_comb}_readable.log'
+    wildcard_constraints:
+        site='4fold'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        realSFS fst print {input} > {output} 2> {log}
+        """
+
 # rule angsd_estimate_sfs_byCity_byHabitat:
 #     """
 #     Estimate folded SFS separately for each habitat in each city (i.e., 1D SFS) using realSFS. 
@@ -196,18 +203,15 @@ rule angsd_saf_likelihood_byHabitat:
 # #### POST ####
 # ##############
 # 
-# rule angsd_byCity_byHabitat_done:
-#     """
-#     Generate empty flag file signalling successful completion of SFS, summary stat and GL estimation 
-#     for habitats within cities
-#     """
-#     input:
-#         expand(rules.angsd_fst_readable.output, city=CITIES, site=['4fold'], fst=['0', '1']),
-#         expand(rules.angsd_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold']),
-#         expand(rules.angsd_diversity_neutrality_stats_byCity_byHabitat.output, city=CITIES, habitat=HABITATS, site=['4fold'])
-#     output:
-#         '{0}/angsd_byCity_byHabitat.done'.format(ANGSD_DIR)
-#     shell:
-#         """
-#         touch {output}
-#         """
+rule angsd_byCity_byHabitat_done:
+    """
+    Generate empty flag file signalling successful completion of SFS and summary stat for habitats
+    """
+    input:
+        expand(rules.angsd_habitat_fst_readable.output, site=['4fold'], hab_comb=HABITAT_COMBOS, chrom=CHROMOSOMES)
+    output:
+        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR)
+    shell:
+        """
+        touch {output}
+        """

@@ -4,7 +4,7 @@ chromosomes: ../resources/chromosome_file.txt
 gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
 
 results_prefix: /home/santang3/scratch/gwsd/results
-raw_read_prefix: /home/santang3/scratch/gwsd/raw_reads 
+raw_read_prefix: /home/santang3/projects/def-johnso73/raw_data
 temp_dir: /home/santang3/scratch/gwsd/tmp 
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 

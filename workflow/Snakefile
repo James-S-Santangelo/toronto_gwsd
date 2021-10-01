@@ -56,6 +56,9 @@ FREEBAYES_CHUNKS = list(range(1, FREEBAYES_NCHUNKS + 1))
 NGSADMIX_K = [x for x in range(2, 11)]
 NGSADMIX_SEEDS = [x for x in range(1, 11)]
 
+# Parameters for estimating pi by habitat and Fst between habitats
+HABITAT_COMBOS = ['Urban_Rural', 'Urban_Suburban', 'Rural_Suburban']
+
 wildcard_constraints:
     chrom='|'.join([x for x in CHROMOSOMES])
 
@@ -75,7 +78,7 @@ rule all:
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),
-        expand('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.{{ext}}'.format(ANGSD_DIR), habitat=HABITATS, chrom=CHROMOSOMES, ext=['saf.gz', 'saf.idx', 'saf.pos.gz']),
+        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
         # NGS relate
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
