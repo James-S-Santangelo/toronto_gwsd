@@ -71,7 +71,7 @@ def get_files_for_saf_estimation_byHabitat(wildcards):
     return { 'bams' : bams, 'ref' : ref }
 
 def get_habitat_saf_files(wildcards):
-    all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output, chrom=wildcards.chrom, habitat=HABITATS)
+    all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, chrom=wildcards.chrom, habitat=HABITATS)
     first_hab = wildcards.hab_comb.split('_')[0]
     second_hab = wildcards.hab_comb.split('_')[1]
     saf1 = [x for x in all_saf_files if '_{0}_'.format(first_hab) in os.path.basename(x)]
