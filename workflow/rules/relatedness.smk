@@ -28,7 +28,7 @@ rule angsd_gl_forNGSrelate:
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     threads: 12
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        mem_mb = lambda wildcards, attempt: attempt * 12000,
         time = '12:00:00'
     wildcard_constraints:
         chrom = 'CM019101.1'

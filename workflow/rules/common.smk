@@ -64,3 +64,8 @@ def get_angsd_maf_toConcat(wildcards):
         return expand(rules.angsd_gl_allSites.output.mafs, chrom=CHROMOSOMES, maf=wildcards.maf, site=wildcards.site)
     else:
         return expand(rules.subset_angsd_maf.output, chrom=CHROMOSOMES, maf=wildcards.maf, site=wildcards.site)
+
+def get_files_for_saf_estimation_byHabitat(wildcards):
+    ref = rules.unzip_reference.output
+    bams = expand(rules.create_bam_list_byHabitat.output, habitat = wildcards.habitat)
+    return { 'bams' : bams, 'ref' : ref }

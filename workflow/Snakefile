@@ -10,6 +10,7 @@ configfile: '../config/hpcnode.yaml'
 # Samples and chromosomes as list
 SAMPLES = pd.read_table(config['samples'])['Sample'].tolist()
 CHROMOSOMES = pd.read_table(config['chromosomes'], header=None).iloc[:,0].tolist()
+HABITATS = pd.read_table(config['samples'])['Habitat'].unique().tolist() 
 
 # Reference genome
 # Make ancient to prevent triguring pipeline if time stamp changes
@@ -58,7 +59,7 @@ NGSADMIX_SEEDS = [x for x in range(1, 11)]
 wildcard_constraints:
     chrom='|'.join([x for x in CHROMOSOMES])
 
-localrules: create_tmp_dir, download_reference, unzip_reference, samtools_index_reference, clone_degeneracy, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, concat_angsd_stats, create_pos_file_for_ngsLD, concat_sfs, sum_sfs, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites, files_for_angsd_site_subset, subset_angsd_gl, subset_angsd_maf, extract_sample_angsd, extract_angsd_allSites, angsd_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta, logfile_for_clumpak, pop_structure_done, species_id_done, hcn_loci_done, bams_list_byPop_multiInd, convert_freq_forNGSrelate, ngsrelate_done, create_bam_list_allFinalSamples
+localrules: create_tmp_dir, download_reference, unzip_reference, samtools_index_reference, clone_degeneracy, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, concat_angsd_stats, create_pos_file_for_ngsLD, concat_sfs, sum_sfs, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites, files_for_angsd_site_subset, subset_angsd_gl, subset_angsd_maf, extract_sample_angsd, extract_angsd_allSites, angsd_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta, logfile_for_clumpak, pop_structure_done, species_id_done, hcn_loci_done, bams_list_byPop_multiInd, convert_freq_forNGSrelate, ngsrelate_done, create_bam_list_allFinalSamples, create_bam_list_byHabitat
 
 include: 'rules/common.smk'
 
@@ -74,8 +75,9 @@ rule all:
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),
+        expand('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.{{ext}}'.format(ANGSD_DIR), habitat=HABITATS, chrom=CHROMOSOMES, ext=['saf.gz', 'saf.idx', 'saf.pos.gz']),
         # NGS relate
-        #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
+        '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Param tests
@@ -94,10 +96,11 @@ include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 #include: 'rules/species_id.smk'
+include: 'rules/relatedness.smk'
 include: 'rules/angsd.smk'
+include: 'rules/angsd_byHabitat.smk'
 include: 'rules/freebayes.smk'
 #include: 'rules/param_tests.smk'
-include: 'rules/relatedness.smk'
 include: 'rules/population_structure.smk'
 #include: 'rules/hcn_loci.smk'
 include: 'rules/notebooks.smk'
