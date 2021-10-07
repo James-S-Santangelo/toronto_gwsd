@@ -84,7 +84,7 @@ rule angsd_estimate_joint_habitat_sfs:
     wildcard_constraints:
         site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 10000,
+        mem_mb = lambda wildcards, attempt: attempt * 60000,
         time = '01:00:00'
     shell:
         """
@@ -108,7 +108,7 @@ rule angsd_habitat_fst_index:
     threads: 4
     resources:
         mem_mb = 4000,
-        time = '01:00:00'
+        time = '02:00:00'
     params:
         fstout = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}'.format(ANGSD_DIR)
     shell:
@@ -125,6 +125,9 @@ rule angsd_habitat_fst_readable:
     output:
         '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
     log: 'logs/angsd_habitat_fst_readable/{chrom}_Toronto_{site}_{hab_comb}_readable.log'
+    resources:
+        mem_mb = 4000,
+        time = '01:00:00'
     wildcard_constraints:
         site='4fold'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
@@ -149,7 +152,7 @@ rule angsd_estimate_sfs_byHabitat:
     wildcard_constraints:
         site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 10000,
+        mem_mb = lambda wildcards, attempt: attempt * 60000,
         time = '01:00:00'
     shell:
         """
@@ -217,7 +220,7 @@ rule angsd_byHabitat_done:
     """
     input:
         expand(rules.angsd_habitat_fst_readable.output, site=['4fold'], hab_comb=HABITAT_COMBOS, chrom=CHROMOSOMES),
-        expand(rules.angsd_diversity_neutrality_stats.output, site=['4fold'], hab_comb=HABITATS, chrom=CHROMOSOMES)
+        expand(rules.angsd_diversity_neutrality_stats_byHabitat.output, site=['4fold'], habitat=HABITATS, chrom=CHROMOSOMES)
     output:
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR)
     shell:
