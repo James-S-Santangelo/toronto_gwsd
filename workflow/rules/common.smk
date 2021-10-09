@@ -14,6 +14,11 @@ def get_fastas_to_concat(wildcards):
     elif wildcards.gene == 'matk':
         return expand(rules.chloroplast_gene_consensus.output, sample=SAMPLES, gene='matk')
 
+def aggregate_ncbi_input(wildcards):
+    checkpoint_output = checkpoints.download_nt_database.get(**wildcards).output[0]
+    DB = glob_wildcards(os.path.join(checkpoint_output, 'nt.{db}.tar.gz')).db
+    return expand('{0}/ncbi_nt_database/nt.{{db}}.{{ext}}'.format(PROGRAM_RESOURCE_DIR), db=DB, ext=['nhd', 'nhi', 'nhr', 'nin', 'nnd', 'nni', 'nog', 'nsq'])
+
 def get_vcfs_by_chrom(wildcards):
     return expand(rules.freebayes_call_variants.output, chrom=wildcards.chrom, i=FREEBAYES_CHUNKS)
 

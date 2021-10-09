@@ -33,6 +33,11 @@ POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 HCN_LOCI_DIR = '{0}/hcn_loci'.format(config['results_prefix'])
 
+# Extensions and number of files for NCBI nucleotide database download for BLASTing matK and rbcL
+NT_DB_FILE = ['%02d' % x for x in range(0, config['species_id']['num_nt_db_files'])]
+NT_DB_FILE_EXT = ['nhd', 'nhi', 'nhr', 'nhn', 'nnd', 'nni', 'nog', 'nsq', 'tar.gz.md5']
+NT_DB_FINAL_EXT = ['nal', 'ndb', 'nos', 'not', 'ntf', 'nto']
+
 # Parameters for initial PCA and relatedness analysis post-QC
 LOWQUAL_SAMPLES_TO_EXCLUDE = config['lowQual_samples_to_exclude']
 
@@ -62,7 +67,7 @@ HABITAT_COMBOS = ['Urban_Rural', 'Urban_Suburban', 'Rural_Suburban']
 wildcard_constraints:
     chrom='|'.join([x for x in CHROMOSOMES])
 
-localrules: create_tmp_dir, download_reference, unzip_reference, samtools_index_reference, clone_degeneracy, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, concat_angsd_stats, create_pos_file_for_ngsLD, concat_sfs, sum_sfs, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites, files_for_angsd_site_subset, subset_angsd_gl, subset_angsd_maf, extract_sample_angsd, extract_angsd_allSites, angsd_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta, logfile_for_clumpak, pop_structure_done, species_id_done, hcn_loci_done, bams_list_byPop_multiInd, convert_freq_forNGSrelate, ngsrelate_done, create_bam_list_allFinalSamples, create_bam_list_byHabitat, angsd_byHabitat_done
+localrules: create_tmp_dir, download_reference, unzip_reference, samtools_index_reference, clone_degeneracy, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, concat_angsd_stats, create_pos_file_for_ngsLD, concat_sfs, sum_sfs, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites, files_for_angsd_site_subset, subset_angsd_gl, subset_angsd_maf, extract_sample_angsd, extract_angsd_allSites, angsd_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta,download_nt_database, logfile_for_clumpak, pop_structure_done, species_id_done, hcn_loci_done, bams_list_byPop_multiInd, convert_freq_forNGSrelate, ngsrelate_done, create_bam_list_allFinalSamples, create_bam_list_byHabitat, angsd_byHabitat_done, extract_nt_database, ncbi_db_download_done
 
 include: 'rules/common.smk'
 
@@ -72,7 +77,7 @@ rule all:
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
-        #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
+        '{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
         #'{0}/freebayes.done'.format(FREEBAYES_DIR),
@@ -98,7 +103,7 @@ include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
-#include: 'rules/species_id.smk'
+include: 'rules/species_id.smk'
 include: 'rules/relatedness.smk'
 include: 'rules/angsd.smk'
 include: 'rules/angsd_byHabitat.smk'
