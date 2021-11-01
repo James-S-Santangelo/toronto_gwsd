@@ -82,7 +82,7 @@ rule all:
         # NGS relate
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
-        '{0}/population_structure.done'.format(POP_STRUC_DIR),
+        '{0}/population_structure.done'.format(POP_STRUC_DIR)
         # Param tests
         #'{0}/test_params/param_tests.done'.format(ANGSD_DIR)
         # HCN loci
