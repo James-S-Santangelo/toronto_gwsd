@@ -75,7 +75,8 @@ rule all:
         '{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        #'{0}/freebayes.done'.format(FREEBAYES_DIR),
+        expand('{0}/filtering/{{chrom}}_{{site_type}}_prop_sites_missing_bySamples.imiss'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, site_type='snps'),
+        #'{0}/filtering.done'.format(FREEBAYES_DIR),
         # Angsd
         '{0}/angsd.done'.format(ANGSD_DIR),
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
@@ -83,12 +84,8 @@ rule all:
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
-        # Param tests
-        #'{0}/test_params/param_tests.done'.format(ANGSD_DIR)
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
-        # NGSLD
-        #expand('{0}/pruned/{{chrom}}/{{chrom}}_withMaf{{maf}}_pruned.id'.format(NGSLD_DIR), chrom=CHROMOSOMES, maf=['0.05']),
 
 rule create_tmp_dir:
     output: directory(TMPDIR)
@@ -103,7 +100,7 @@ include: 'rules/angsd.smk'
 include: 'rules/relatedness.smk'
 include: 'rules/angsd_byHabitat.smk'
 include: 'rules/freebayes.smk'
-#include: 'rules/param_tests.smk'
+include: 'rules/filtering.smk'
 include: 'rules/population_structure.smk'
 #include: 'rules/hcn_loci.smk'
 include: 'rules/notebooks.smk'

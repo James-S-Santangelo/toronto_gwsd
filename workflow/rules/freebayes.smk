@@ -45,7 +45,7 @@ rule freebayes_call_variants:
 rule concat_vcfs:
     input:
         vcfs = get_vcfs_by_chrom,
-        tmp = rules.create_tmp_dir.output
+        tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples.vcf.gz'.format(FREEBAYES_DIR)
     log: 'logs/concat_vcfs/{chrom}_concat_vcfs.log'
@@ -64,7 +64,7 @@ rule concat_vcfs:
 rule bcftools_split_variants:
     input:
         vcf = rules.concat_vcfs.output,
-        tmp = rules.create_tmp_dir.output
+        tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}.vcf.gz'.format(FREEBAYES_DIR)
     log: 'logs/bcftools_split_variants/{chrom}_bcftools_split_variants_{site_type}.log'
