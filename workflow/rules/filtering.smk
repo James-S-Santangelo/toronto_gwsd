@@ -21,4 +21,48 @@ rule prop_sites_missing_bySample:
         """
         vcftools --gzvcf {input.vcf} --missing-indv --out {params.out}
         """
+
+rule bcftools_filter_vcfs:
+    input:
+        prop_missing = rules.prop_sites_missing_bySample.output,
+        vcf = rules.bcftools_split_variants.output
+    output:
+        '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz'.format(FREEBAYES_DIR)
+    log: 'logs/bcftools_filter_vcfs/{chrom}_{site_type}_miss{miss}_filter.log'
+    conda: '../envs/filtering.yaml'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '03:00:00'
+    shell:
+        """
+        bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} |
+            bcftools filter -i 'QUAL >= 30' |
+            bcftools filter -i 'AB >= 0.25 & AB <= 0.75 | AB <= 0.01' |
+            bcftools filter -i 'SAF > 0 & SAR > 0' |
+            bcftools filter -i 'MQM >=30 & MQMR >= 30' |
+            bcftools filter -i '(QUAL / INFO/DP) > 0.25' |
+            bcftools filter -O z -i '((PAIRED > 0.05) & (PAIREDR > 0.05) & (PAIREDR / PAIRED < 1.75 ) & (PAIREDR / PAIRED > 0.25)) | ((PAIRED < 0.05) & (PAIREDR < 0.05))' \
+            > {output} 2> {log}
+        """
+
+rule tabix_filtered_vcf:
+    input:
+        rules.bcftools_filter_vcfs.output
+    output:
+        '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz.tbi'.format(FREEBAYES_DIR)
+    log: 'logs/tabix_filtered_vcf/{chrom}_{site_type}_{miss}_tabix.log'
+    conda: '../envs/filtering.yaml'
+    shell:
+        """
+        tabix {input} 2> {log}
+        """
         
+rule vcf_filtering_done:
+    input:
+        expand(rules.tabix_filtered_vcf.output, chrom=CHROMOSOMES, site_type='snps', miss=['0.2', '0'])
+    output:
+        '{0}/filtering.done'.format(FREEBAYES_DIR)
+    shell:
+        """
+        touch {output}
+        """
