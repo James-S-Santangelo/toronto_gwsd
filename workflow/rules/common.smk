@@ -85,9 +85,6 @@ def get_habitat_saf_files(wildcards):
 
 def get_whatshap_phase_input(wildcards):
     ref = rules.unzip_reference.output
-    vcf = expand(rules.bcftools_filter_vcfs.output, chrom=wildcards.chrom, site_type=wildcards.site_type, miss='0')
-    idx = expand(rules.tabix_filtered_vcf.output, chrom=wildcards.chrom, site_type=wildcards.site_type, miss='0')
-    bams = expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
-    return { 'ref' : ref, 'vcf' : vcf, 'idx' : idx, 'bams' : bams }
-
-
+    vcf = rules.bcftools_split_samples.output
+    bam = expand(rules.samtools_markdup.output.bam, sample = wildcards.sample)
+    return { 'ref' : ref, 'vcf' : vcf, 'bam' : bam }

@@ -27,7 +27,7 @@ rule bcftools_filter_vcfs:
         prop_missing = rules.prop_sites_missing_bySample.output,
         vcf = rules.bcftools_split_variants.output
     output:
-        '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz'.format(FREEBAYES_DIR)
+        temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz'.format(FREEBAYES_DIR))
     log: 'logs/bcftools_filter_vcfs/{chrom}_{site_type}_miss{miss}_filter.log'
     conda: '../envs/filtering.yaml'
     resources:
@@ -45,21 +45,24 @@ rule bcftools_filter_vcfs:
             > {output} 2> {log}
         """
 
-rule tabix_filtered_vcf:
+rule remove_duplicate_sites:
     input:
         rules.bcftools_filter_vcfs.output
     output:
-        '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz.tbi'.format(FREEBAYES_DIR)
-    log: 'logs/tabix_filtered_vcf/{chrom}_{site_type}_{miss}_tabix.log'
+        temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered_noDups.vcf'.format(FREEBAYES_DIR))
+    log: 'logs/remove_duplicate_sites/{chrom}_{site_type}_miss{miss}_removeDups.log'
     conda: '../envs/filtering.yaml'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        time = '01:00:00'
     shell:
         """
-        tabix {input} 2> {log}
+        ( tabix {input} && vcfuniq {input} > {output} ) 2> {log}
         """
-        
+
 rule vcf_filtering_done:
     input:
-        expand(rules.tabix_filtered_vcf.output, chrom=CHROMOSOMES, site_type='snps', miss=['0.2', '0'])
+        expand(rules.remove_duplicate_sites.output, chrom=CHROMOSOMES, site_type='snps', miss=['0.2', '0'])
     output:
         '{0}/filtering.done'.format(FREEBAYES_DIR)
     shell:
