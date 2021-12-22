@@ -4,7 +4,7 @@
 __default__:
   job-name: '{rule}_{wildcards}'
   account: 'def-nessrobe'
-  output: 'slurm_logs/{rule}/{rule}_{wildcards}.out'
-  error: 'slurm_logs/{rule}/{rule}_{wildcards}.err'
+  output: '/home/santang3/scratch/gwsd/slurm_logs/{rule}/{rule}_{wildcards}.out'
+  error: '/home/santang3/scratch/gwsd/slurm_logs/slurm_logs/{rule}/{rule}_{wildcards}.err'
   mail-type: 'FAIL'
   mail-user: 'james.santangelo37@gmail.com'

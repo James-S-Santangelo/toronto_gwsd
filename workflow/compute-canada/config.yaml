@@ -5,9 +5,9 @@ local-cores: 1
 
 jobscript: "slurm-jobscript.sh"
 cluster: "slurm-submit.py"
-#cluster-status: "slurm-status.py"
+cluster-status: "slurm-status.py"
 
-#default-resources: [mem_mb=4000, time="01:00:00"]
+default-resources: [mem_mb=4000, time="01:00:00", tmpdir="/home/santang3/scratch/gwsd/tmp"]
 #restart-times: 3
 max-jobs-per-second: 1
 max-status-checks-per-second: 1

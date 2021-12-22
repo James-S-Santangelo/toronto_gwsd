@@ -3,7 +3,7 @@ import glob
 import pandas as pd
 from snakemake.utils import min_version
 
-min_version('5.26.1')
+min_version('6.12.1')
 
 configfile: '../config/hpcnode.yaml'
 
