@@ -55,9 +55,9 @@ rule merge_bams:
         time = '01:00:00'
     shell:
         """
-        ( samtools cat --threads {{threads}} {{input.pair}} {{input.unp}} |\
-            samtools collate --threads {{threads}} -o {{output}} - {0}/{{wildcards.sample}}_merged ) 2> {{log}}
-        """.format(TMPDIR)
+        ( samtools cat --threads {threads} {input.pair} {input.unp} |\
+            samtools collate --threads {threads} -o {output} - {resources.tmpdir}/{wildcards.sample}_merged ) 2> {log}
+        """
 
 rule samtools_markdup:
     input:
@@ -73,10 +73,10 @@ rule samtools_markdup:
         time = '01:00:00'
     shell:
         """
-        ( samtools fixmate --threads {{threads}} -m {{input}} - |\
-            samtools sort --threads {{threads}} -T {0}/{{wildcards.sample}} -o - |\
-            samtools markdup --threads {{threads}} -T {0} -f {{output.stats}} - {{output.bam}} ) 2> {{log}}
-        """.format(TMPDIR)
+        ( samtools fixmate --threads {threads} -m {input} - |\
+            samtools sort --threads {threads} -T {resources.tmpdir}/{wildcards.sample} -o - |\
+            samtools markdup --threads {threads} -T {resources.tmpdir} -f {output.stats} - {output.bam} ) 2> {log}
+        """ 
 
 rule index_bam:
     input:

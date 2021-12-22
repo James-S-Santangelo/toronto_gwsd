@@ -1,7 +1,6 @@
 rule fastqc_raw_reads:
     input:
-        unpack(get_raw_reads),
-        tmp = rules.create_tmp_dir.output
+        unpack(get_raw_reads)
     output:
         html1 = '{0}/fastqc_raw_reads/{{sample}}_1_fastqc.html'.format(QC_DIR),
         html2 = '{0}/fastqc_raw_reads/{{sample}}_2_fastqc.html'.format(QC_DIR),
@@ -15,7 +14,7 @@ rule fastqc_raw_reads:
         time = '01:00:00'
     shell:
         """
-        ( fastqc --threads {{threads}} --outdir {0}/fastqc_raw_reads --noextract --quiet --dir {{input.tmp}} {{input.read1}} {{input.read2}} &&
+        ( fastqc --threads {{threads}} --outdir {0}/fastqc_raw_reads --noextract --quiet --dir {{resources.tmpdir}} {{input.read1}} {{input.read2}} &&
 
         mv {0}/fastqc_raw_reads/{{wildcards.sample}}_*_1_fastqc.html {0}/fastqc_raw_reads/{{wildcards.sample}}_1_fastqc.html &&
         mv {0}/fastqc_raw_reads/{{wildcards.sample}}_*_1_fastqc.zip {0}/fastqc_raw_reads/{{wildcards.sample}}_1_fastqc.zip &&
@@ -25,7 +24,6 @@ rule fastqc_raw_reads:
 
 rule fastqc_trimmed_reads:
     input:
-        tmp = rules.create_tmp_dir.output,
         read1 = rules.fastp_trim.output.r1_trim,
         read2 = rules.fastp_trim.output.r2_trim
     output:
@@ -41,8 +39,8 @@ rule fastqc_trimmed_reads:
         time = '01:00:00'
     shell:
         """
-        fastqc --threads {{threads}} --outdir {0}/fastqc_trimmed_reads --noextract --quiet --dir {1} {{input.read1}} {{input.read2}} 2> {{log}}
-        """.format(QC_DIR, TMPDIR)
+        fastqc --threads {{threads}} --outdir {0}/fastqc_trimmed_reads --noextract --quiet --dir {{resources.tmpdir}} {{input.read1}} {{input.read2}} 2> {{log}}
+        """.format(QC_DIR)
 
 rule qualimap_bam_qc:
     input:

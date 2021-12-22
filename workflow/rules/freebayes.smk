@@ -42,10 +42,10 @@ rule freebayes_call_variants:
             --skip-coverage 15000 \
             --report-monomorphic > {output} 2> {log}
         """
+
 rule concat_vcfs:
     input:
         vcfs = get_vcfs_by_chrom,
-        tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples.vcf.gz'.format(FREEBAYES_DIR)
     log: LOG_DIR + '/concat_vcfs/{chrom}_concat_vcfs.log'
@@ -64,7 +64,6 @@ rule concat_vcfs:
 rule bcftools_split_variants:
     input:
         vcf = rules.concat_vcfs.output,
-        tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}.vcf.gz'.format(FREEBAYES_DIR)
     log: LOG_DIR + '/bcftools_split_variants/{chrom}_bcftools_split_variants_{site_type}.log'
@@ -83,7 +82,7 @@ rule bcftools_split_variants:
             ( bcftools view --threads {threads} -O v --types {wildcards.site_type} {input.vcf} |\
             vcfallelicprimitives --keep-info --keep-geno |\
             bcftools view --threads {threads} --types {wildcards.site_type} --min-alleles 2 --max-alleles 2 |\
-            bcftools sort -O z -T {input.tmp}/{wildcards.chrom} -o {output} ) 2> {log}
+            bcftools sort -O z -T {resources.tmpdir}/{wildcards.chrom} -o {output} ) 2> {log}
         fi
         """
 

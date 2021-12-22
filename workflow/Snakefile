@@ -89,10 +89,6 @@ rule all:
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
 
-rule create_tmp_dir:
-    output: directory(TMPDIR)
-    shell: 'mkdir {output}'
-
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
@@ -110,6 +106,6 @@ include: 'rules/notebooks.smk'
 
 rule clean:
     params:
-        'logs {0} {1}/* {2} fastp.json'.format(config['results_prefix'], TRIMMED_READ_DIR, TMPDIR)
+        '{0} {1}'.format(config['results_prefix'], LOG_DIR)
     shell:
         'rm -rfv {params}'
