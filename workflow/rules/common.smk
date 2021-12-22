@@ -1,12 +1,31 @@
 # Python functions used throughout snakemake workflow
 
+def run_fast_scandir(dir, sample):
+    """
+    Helper function to perform fast recursive search
+    """
+    subfolders, files = [], []
+
+    for f in os.scandir(dir):
+        if f.is_dir():
+            subfolders.append(f.path)
+        if f.is_file():
+            if re.findall(r'^{0}_'.format(sample), f.name):
+                files.append(f.path)
+    for dir in list(subfolders):
+        sf, f = run_fast_scandir(dir, sample)
+        subfolders.extend(sf)
+        files.extend(f) 
+    return subfolders, sorted(files)
+
 def get_raw_reads(wildcards):
     """
-    Extract forward and reverse read FASTQ paths from file
+    Recursively search for forward and reverse reads for sample
     """
-    R1 = glob.glob(RAW_READ_DIR + '/{0}/{0}_*_1.fq.gz'.format(wildcards.sample))[0]
-    R2 = glob.glob(RAW_READ_DIR + '/{0}/{0}_*_2.fq.gz'.format(wildcards.sample))[0]
-    return { 'read1' : R1, 'read2' : R2 }
+    folders, reads = run_fast_scandir(RAW_READ_DIR, wildcards.sample)
+    R1 = reads[0]
+    R2 = reads[1]
+    return { 'read1' : R1, 'read2' : R2  }
 
 def get_fastas_to_concat(wildcards):
     if wildcards.gene == 'rbcl':
