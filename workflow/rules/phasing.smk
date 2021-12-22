@@ -9,7 +9,7 @@ rule bcftools_split_samples:
         lambda wildcards: expand(rules.remove_duplicate_sites.output, chrom=wildcards.chrom, sample=wildcards.sample, site_type=['snps'], miss=['0'])
     output:
         temp('{0}/vcf/{{chrom}}/by_sample/{{sample}}.vcf'.format(FREEBAYES_DIR))
-    log: 'logs/bcftools_split_samples/{chrom}/{chrom}_{sample}_split.log'
+    log: LOG_DIR + '/bcftools_split_samples/{chrom}/{chrom}_{sample}_split.log'
     conda: '../envs/phasing.yaml'
     params:
         out = '{0}/vcf/{{chrom}}/by_sample/'.format(FREEBAYES_DIR)
@@ -26,7 +26,7 @@ rule whatshap_phase:
         unpack(get_whatshap_phase_input)
     output:
         '{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf'.format(FREEBAYES_DIR)
-    log: 'logs/whatshap_phase/{chrom}/{chrom}_{sample}_whatshap_phase.log'
+    log: LOG_DIR + '/whatshap_phase/{chrom}/{chrom}_{sample}_whatshap_phase.log'
     conda: '../envs/phasing.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -46,7 +46,7 @@ rule bgzip_index_whatshap_vcf:
     output:
         vcf = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
-    log: 'logs/bgzip_index_whatshap_vcf/{chrom}_{sample}_bgzip_index.log'
+    log: LOG_DIR + '/bgzip_index_whatshap_vcf/{chrom}_{sample}_bgzip_index.log'
     conda: '../envs/phasing.yaml'
     shell:
         """
@@ -59,7 +59,7 @@ rule bcftools_remove_format_tags:
     output:
         vcf = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased_remTag.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased_remTag.vcf.gz.tbi'.format(FREEBAYES_DIR))
-    log: 'logs/bgzip_index_whatshap_vcf/{chrom}_{sample}_remAD.log'
+    log: LOG_DIR + '/bgzip_index_whatshap_vcf/{chrom}_{sample}_remAD.log'
     conda: '../envs/phasing.yaml'
     shell:
         """
@@ -74,7 +74,7 @@ rule bcftools_merge_phased:
     output:
         vcf = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR),
         idx = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
-    log: 'logs/bcftools_merge_phased/{chrom}_merge.log'
+    log: LOG_DIR + '/bcftools_merge_phased/{chrom}_merge.log'
     conda: '../envs/phasing.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,

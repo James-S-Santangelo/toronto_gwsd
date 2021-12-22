@@ -9,7 +9,7 @@ rule prop_sites_missing_bySample:
         idx = rules.tabix_vcf.output
     output:
         '{0}/filtering/{{chrom}}_{{site_type}}_prop_sites_missing_bySamples.imiss'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/prop_sites_missing_bySample/{chrom}_{site_type}_prop_sites_missing_bySample.log'
+    log: LOG_DIR + '/prop_sites_missing_bySample/{chrom}_{site_type}_prop_sites_missing_bySample.log'
     conda: '../envs/filtering.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -28,7 +28,7 @@ rule bcftools_filter_vcfs:
         vcf = rules.bcftools_split_variants.output
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered.vcf.gz'.format(FREEBAYES_DIR))
-    log: 'logs/bcftools_filter_vcfs/{chrom}_{site_type}_miss{miss}_filter.log'
+    log: LOG_DIR + '/bcftools_filter_vcfs/{chrom}_{site_type}_miss{miss}_filter.log'
     conda: '../envs/filtering.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -50,7 +50,7 @@ rule remove_duplicate_sites:
         rules.bcftools_filter_vcfs.output
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered_noDups.vcf'.format(FREEBAYES_DIR))
-    log: 'logs/remove_duplicate_sites/{chrom}_{site_type}_miss{miss}_removeDups.log'
+    log: LOG_DIR + '/remove_duplicate_sites/{chrom}_{site_type}_miss{miss}_removeDups.log'
     conda: '../envs/filtering.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 8000,

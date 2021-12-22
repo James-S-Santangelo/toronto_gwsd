@@ -3,7 +3,7 @@ rule pcangsd:
         rules.concat_angsd_gl.output
     output:
         '{0}/pcangsd/allSamples_allChroms_{{site}}_maf{{maf}}_pcangsd.cov'.format(POP_STRUC_DIR)
-    log: 'logs/pcangsd/allSamples_allChroms_{site}_maf{maf}_pcangsd.log'
+    log: LOG_DIR + '/pcangsd/allSamples_allChroms_{site}_maf{maf}_pcangsd.log'
     container: 'library://james-s-santangelo/pcangsd/pcangsd:0.99'
     threads: 10
     params:
@@ -29,7 +29,7 @@ rule ngsadmix:
         fopt = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.fopt.gz'.format(POP_STRUC_DIR),
         qopt = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.qopt'.format(POP_STRUC_DIR),
         lf = '{0}/ngsadmix/K{{k}}/ngsadmix_{{site}}_maf{{maf}}_K{{k}}_seed{{seed}}.log'.format(POP_STRUC_DIR)
-    log: 'logs/ngsadmix/{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
+    log: LOG_DIR + '/ngsadmix/{site}_maf{maf}_K{k}_seed{seed}_ngsadmix.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     threads: 10
     params:
@@ -77,7 +77,7 @@ rule clumpak_best_k_by_evanno:
         rules.logfile_for_clumpak.output
     output:
         directory('{0}/bestKbyEvanno'.format(POP_STRUC_DIR))
-    log: 'logs/clumpak_best_k_by_evanno/evanno.log'
+    log: LOG_DIR + '/clumpak_best_k_by_evanno/evanno.log'
     container: 'library://james-s-santangelo/clumpak/clumpak:1.1'
     params:
         outdir = '{0}/bestKbyEvanno'.format(POP_STRUC_DIR)
@@ -109,7 +109,7 @@ rule pop_structure_done:
 #         rules.angsd_gl_allSites.output.mafs
 #     output:
 #         '{0}/ngsld_pos/{{chrom}}_angsdGL_withMaf{{maf}}.pos'.format(PROGRAM_RESOURCE_DIR)
-#     log: 'logs/create_pos_file_for_ngsLD/{chrom}_withMaf{maf}_pos.log'
+#     log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_withMaf{maf}_pos.log'
 #     shell:
 #         """
 #         zcat {input} | cut -f 1,2 | tail -n +2 > {output} 2> {log}
@@ -121,7 +121,7 @@ rule pop_structure_done:
 #         gls = rules.angsd_gl_allSites.output.gls
 #     output:
 #         '{0}/{{chrom}}/{{chrom}}_allSamples_withMaf{{maf}}.ld.gz'.format(NGSLD_DIR)
-#     log: 'logs/calc_ld_angsd_gl/{chrom}_withMaf{maf}_calc_ld.log'
+#     log: LOG_DIR + '/calc_ld_angsd_gl/{chrom}_withMaf{maf}_calc_ld.log'
 #     container: 'shub://James-S-Santangelo/singularity-recipes:ngsld_v1.1.1'
 #     threads: 16
 #     resources:
@@ -145,7 +145,7 @@ rule pop_structure_done:
 #         rules.calc_ld_angsd_gl.output
 #     output:
 #         '{0}/pruned/{{chrom}}/{{chrom}}_withMaf{{maf}}_pruned.id'.format(NGSLD_DIR)
-#     log: 'logs/prune_ld/{chrom}_withMaf{maf}_prune_ld.log'
+#     log: LOG_DIR + '/prune_ld/{chrom}_withMaf{maf}_prune_ld.log'
 #     container: 'shub://James-S-Santangelo/singularity-recipes:ngsld_v1.1.1'
 #     resources:
 #         mem_mb = lambda wildcards, attempt: attempt * 50000,

@@ -5,7 +5,7 @@ rule create_region_files_forFreebayes:
         bams = rules.create_bam_list_allFinalSamples.output
     output:
         expand('{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, i=FREEBAYES_CHUNKS)
-    log: 'logs/create_regions_files_forFreebayes/create_region_files_forFreebayes.log'
+    log: LOG_DIR + '/create_regions_files_forFreebayes/create_region_files_forFreebayes.log'
     params:
         chroms = CHROMOSOMES,
         nchunks = FREEBAYES_NCHUNKS,
@@ -27,7 +27,7 @@ rule freebayes_call_variants:
         ref = rules.unzip_reference.output
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_chunk{{i}}_allSamples.vcf'.format(FREEBAYES_DIR))
-    log: 'logs/freebayes/{chrom}/{chrom}/{chrom}_chunk{i}_freebayes.log'
+    log: LOG_DIR + '/freebayes/{chrom}/{chrom}/{chrom}_chunk{i}_freebayes.log'
     conda: '../envs/freebayes.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
@@ -48,7 +48,7 @@ rule concat_vcfs:
         tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples.vcf.gz'.format(FREEBAYES_DIR)
-    log: 'logs/concat_vcfs/{chrom}_concat_vcfs.log'
+    log: LOG_DIR + '/concat_vcfs/{chrom}_concat_vcfs.log'
     conda: '../envs/freebayes.yaml'
     threads: 8
     resources:
@@ -67,7 +67,7 @@ rule bcftools_split_variants:
         tmp = ancient(rules.create_tmp_dir.output)
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}.vcf.gz'.format(FREEBAYES_DIR)
-    log: 'logs/bcftools_split_variants/{chrom}_bcftools_split_variants_{site_type}.log'
+    log: LOG_DIR + '/bcftools_split_variants/{chrom}_bcftools_split_variants_{site_type}.log'
     conda: '../envs/freebayes.yaml'
     wildcard_constraints:
         site_type='snps|invariant'
@@ -92,7 +92,7 @@ rule tabix_vcf:
         rules.bcftools_split_variants.output
     output:
         '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}.vcf.gz.tbi'.format(FREEBAYES_DIR)
-    log: 'logs/tabix/{chrom}_tabix_{site_type}.log'
+    log: LOG_DIR + '/tabix/{chrom}_tabix_{site_type}.log'
     conda: '../envs/freebayes.yaml'
     shell:
         """
@@ -104,7 +104,7 @@ rule vcf_to_zarr:
         rules.bcftools_split_variants.output
     output:
         directory('{0}/zarr_db/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}.zarr'.format(FREEBAYES_DIR))
-    log: 'logs/vcf_to_zarr/{chrom}_vcf_to_zarr_{site_type}.log'
+    log: LOG_DIR + '/vcf_to_zarr/{chrom}_vcf_to_zarr_{site_type}.log'
     conda: '../envs/freebayes.yaml'
     wildcard_constraints:
         site_type='snps|invariant'

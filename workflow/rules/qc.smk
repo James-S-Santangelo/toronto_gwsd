@@ -8,7 +8,7 @@ rule fastqc_raw_reads:
         zip1 = temp('{0}/fastqc_raw_reads/{{sample}}_1_fastqc.zip'.format(QC_DIR)),
         zip2 = temp('{0}/fastqc_raw_reads/{{sample}}_2_fastqc.zip'.format(QC_DIR))
     conda: '../envs/qc.yaml'
-    log: 'logs/fastqc_raw_reads/{sample}_fastqc_raw_reads.log'
+    log: LOG_DIR + '/fastqc_raw_reads/{sample}_fastqc_raw_reads.log'
     threads: 2
     resources: 
         mem_mb = 1000, 
@@ -34,7 +34,7 @@ rule fastqc_trimmed_reads:
         zip1 = temp('{0}/fastqc_trimmed_reads/{{sample}}_trimmed_1_fastqc.zip'.format(QC_DIR)),
         zip2 = temp('{0}/fastqc_trimmed_reads/{{sample}}_trimmed_2_fastqc.zip'.format(QC_DIR))
     conda: '../envs/qc.yaml'
-    log: 'logs/fastqc_trimmed_reads/{sample}_fastqc_trimmed_reads.log'
+    log: LOG_DIR + '/fastqc_trimmed_reads/{sample}_fastqc_trimmed_reads.log'
     threads: 2
     resources:
         mem_mb = 1000,
@@ -50,7 +50,7 @@ rule qualimap_bam_qc:
         index = rules.index_bam.output
     output:
         directory('{0}/qualimap/{{sample}}_qualimap_bamqc'.format(QC_DIR))
-    log: 'logs/qualimap/{sample}_bamqc.log'
+    log: LOG_DIR + '/qualimap/{sample}_bamqc.log'
     conda: '../envs/qc.yaml'
     threads: 8
     resources:
@@ -75,7 +75,7 @@ rule bamtools_stats:
     output:
         '{0}/bamtools_stats/{{sample}}_bamtools.stats'.format(QC_DIR)
     conda: '../envs/qc.yaml'
-    log: 'logs/bamtools_stats/{sample}_bamtools_stats.log'
+    log: LOG_DIR + '/bamtools_stats/{sample}_bamtools_stats.log'
     resources:
         mem_mb = 4000,
         time = '01:00:00'
@@ -90,7 +90,7 @@ rule bamutil_validate:
         index = rules.index_bam.output
     output:
         '{0}/bamutil_validate/{{sample}}_validation.txt'.format(QC_DIR)
-    log: 'logs/bamutil_validate/{sample}_validation.log'
+    log: LOG_DIR + '/bamutil_validate/{sample}_validation.log'
     conda: '../envs/qc.yaml'
     resources:
         mem_mb = 4000,
@@ -117,7 +117,7 @@ rule multiqc:
     output:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR)
     conda: '../envs/qc.yaml'
-    log: 'logs/multiqc/multiqc.log'
+    log: LOG_DIR + '/multiqc/multiqc.log'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 10000,
         time = '01:00:00'

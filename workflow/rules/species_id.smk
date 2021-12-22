@@ -3,7 +3,7 @@ rule create_bam_list_allSamples:
         expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
         '{0}/bam_lists/allSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/create_bam_list/allSamples_bam_list.log'
+    log: LOG_DIR + '/create_bam_list/allSamples_bam_list.log'
     run:
         import os
         with open(output[0], 'w') as f:
@@ -20,7 +20,7 @@ rule bcftools_chloroplast_gene_variants:
         ref = rules.unzip_reference.output
     output:
         '{0}/{{gene}}/allSamples_{{gene}}.vcf.gz'.format(SPECIES_ID_DIR)
-    log: 'logs/chloroplast_gene_variants/chloroplast_{gene}_variants.log'
+    log: LOG_DIR + '/chloroplast_gene_variants/chloroplast_{gene}_variants.log'
     conda: '../envs/species_id.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 2000,
@@ -52,7 +52,7 @@ rule chloroplast_gene_fasta:
        rules.unzip_reference.output
     output:
        '{0}/{{gene}}/{{gene}}.fna'.format(SPECIES_ID_DIR)
-    log: 'logs/chloroplast_gene_fasta/{gene}_fasta.log'
+    log: LOG_DIR + '/chloroplast_gene_fasta/{gene}_fasta.log'
     conda: '../envs/species_id.yaml'
     params:
         region = lambda w: 'VCDJ01010680.1:6656-8083' if w.gene == 'rbcl' else 'VCDJ01010680.1:3872-5392'
@@ -69,7 +69,7 @@ rule index_chloroplast_gene_vcf:
         rules.bcftools_chloroplast_gene_variants.output
     output:
         '{0}/{{gene}}/allSamples_{{gene}}.vcf.gz.tbi'.format(SPECIES_ID_DIR)
-    log: 'logs/index_chloroplast_gene_vcf/index_{gene}_vcf.log'
+    log: LOG_DIR + '/index_chloroplast_gene_vcf/index_{gene}_vcf.log'
     conda: '../envs/species_id.yaml'
     shell:
         """
@@ -87,7 +87,7 @@ rule chloroplast_gene_consensus:
         idx = rules.index_chloroplast_gene_vcf.output
     output:
         temp('{0}/{{gene}}/consensus_fasta/{{sample}}_{{gene}}.fna'.format(SPECIES_ID_DIR))
-    log: 'logs/{gene}_consensus/{sample}_{gene}_consensus.log'
+    log: LOG_DIR + '/{gene}_consensus/{sample}_{gene}_consensus.log'
     conda: '../envs/species_id.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 1000,
@@ -107,7 +107,7 @@ rule concat_fasta:
         get_fastas_to_concat
     output:
         '{0}/{{gene}}/consensus_fasta/allSamples_{{gene}}.fasta'.format(SPECIES_ID_DIR)
-    log: 'logs/concat_fasta/{gene}_concat_fastas.log'
+    log: LOG_DIR + '/concat_fasta/{gene}_concat_fastas.log'
     run:
         import os
         with open(output[0], 'w') as fout:
@@ -124,7 +124,7 @@ checkpoint download_nt_database:
     """
     output:
         temp(directory('{0}/ncbi_nt_database/'.format(PROGRAM_RESOURCE_DIR)))
-    log: 'logs/download_nt_database/download_nt_database.log'
+    log: LOG_DIR + '/download_nt_database/download_nt_database.log'
     conda: '../envs/species_id.yaml'
     shell:
         """
@@ -168,7 +168,7 @@ rule blast_chloroplast_genes:
         done = rules.ncbi_db_download_done.output
     output:
         '{0}/{{gene}}/{{gene}}_blast_results.txt'.format(SPECIES_ID_DIR)
-    log: 'logs/blast_chloroplast_genes/{gene}_blast.log'
+    log: LOG_DIR + '/blast_chloroplast_genes/{gene}_blast.log'
     conda: '../envs/species_id.yaml'
     threads: 6
     resources:

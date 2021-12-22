@@ -6,7 +6,7 @@ rule test_angsd_baq_GL:
         saf = '{0}/test_params/GL{{GL}}_baq{{baq}}/{{chrom}}_allFinalSamples_{{site}}_GL{{GL}}_baq{{baq}}.saf.gz'.format(ANGSD_DIR),
         saf_idx = '{0}/test_params/GL{{GL}}_baq{{baq}}/{{chrom}}_allFinalSamples_{{site}}_GL{{GL}}_baq{{baq}}.saf.idx'.format(ANGSD_DIR),
         saf_pos = '{0}/test_params/GL{{GL}}_baq{{baq}}/{{chrom}}_allFinalSamples_{{site}}_GL{{GL}}_baq{{baq}}.saf.pos.gz'.format(ANGSD_DIR)
-    log: 'logs/test_angsd_baq_GL/{chrom}_allFinalSamples_{site}_GL{GL}_baq{baq}.log'
+    log: LOG_DIR + '/test_angsd_baq_GL/{chrom}_allFinalSamples_{site}_GL{GL}_baq{baq}.log'
     conda: '../envs/angsd.yaml'
     params:
         out = '{0}/test_params/GL{{GL}}_baq{{baq}}/{{chrom}}_allFinalSamples_{{site}}_GL{{GL}}_baq{{baq}}'.format(ANGSD_DIR),
@@ -46,7 +46,7 @@ rule test_angsd_sfs_baq_GL:
         rules.test_angsd_baq_GL.output.saf_idx 
     output:
         '{0}/test_params/GL{{GL}}_baq{{baq}}/{{chrom}}_allFinalSamples_{{site}}_GL{{GL}}_baq{{baq}}.sfs'.format(ANGSD_DIR)
-    log: 'logs/test_angsd_sfs_baq_GL/{chrom}_allFinalSamples_{site}_GL{GL}_baq{baq}.log'
+    log: LOG_DIR + '/test_angsd_sfs_baq_GL/{chrom}_allFinalSamples_{site}_GL{GL}_baq{baq}.log'
     container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
     threads: 10
     resources:

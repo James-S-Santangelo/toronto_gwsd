@@ -8,7 +8,7 @@ rule fastp_trim:
         html = '{0}/fastp_trim_reports/{{sample}}_fastp.html'.format(QC_DIR),
         json = temp('{0}/fastp_trim_reports/{{sample}}_fastp.json'.format(QC_DIR))
     conda: '../envs/trimming.yaml'
-    log: 'logs/fastp_trim/{sample}_fastp.log'
+    log: LOG_DIR + '/fastp_trim/{sample}_fastp.log'
     threads: 4
     resources:
         mem_mb = lambda wildcards, input, attempt: attempt * int(input.size_mb / 2),

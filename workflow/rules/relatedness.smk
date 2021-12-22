@@ -3,7 +3,7 @@ rule create_bam_list_highQualSamples:
         expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
         '{0}/bam_lists/highQualSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/create_bam_list/highQualSamples_bam_list.log'
+    log: LOG_DIR + '/create_bam_list/highQualSamples_bam_list.log'
     run:
         import os
         with open(output[0], 'w') as f:
@@ -22,7 +22,7 @@ rule angsd_gl_forNGSrelate:
         gls = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
         mafs = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
         pos = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_gl_forNGSrelate/{chrom}_ngsRelateSNPs_{site}_maf{maf}.log'
+    log: LOG_DIR + '/angsd_gl_forNGSrelate/{chrom}_ngsRelateSNPs_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
@@ -65,7 +65,7 @@ rule convert_freq_forNGSrelate:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
         '{0}/gls/ngsrelate/{{chrom}}_ngsRelate_{{site}}_maf{{maf}}.freqs'.format(ANGSD_DIR)
-    log: 'logs/convert_freq_forNGSrelate/{chrom}_{site}_maf{maf}_convert_freqs.log'
+    log: LOG_DIR + '/convert_freq_forNGSrelate/{chrom}_{site}_maf{maf}_convert_freqs.log'
     wildcard_constraints:
         chrom = 'CM019101.1',
         site='4fold'
@@ -81,7 +81,7 @@ rule ngsrelate:
         freq = rules.convert_freq_forNGSrelate.output
     output:
         '{0}/{{chrom}}_ngsRelate_{{site}}_maf{{maf}}.out'.format(NGSRELATE_DIR)
-    log: 'logs/ngsrelate/{chrom}_ngsRelate_{site}_maf{maf}.log'
+    log: LOG_DIR + '/ngsrelate/{chrom}_ngsRelate_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/ngsrelate/ngsrelate:2.0' 
     threads: 10
     resources:

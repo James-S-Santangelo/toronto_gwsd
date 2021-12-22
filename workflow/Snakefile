@@ -17,7 +17,7 @@ HABITATS = pd.read_table(config['samples'])['Habitat'].unique().tolist()
 GFF_FILE = ancient(config['gff'])
 
 # Paths for output files
-TMPDIR = config['temp_dir']
+LOG_DIR = config['log_prefix']
 RAW_READ_DIR = config['raw_read_prefix']
 REF_DIR = '{0}/ref'.format(config['results_prefix'])
 TRIMMED_READ_DIR = '{0}/trimmed_reads'.format(config['results_prefix'])
@@ -27,7 +27,6 @@ BAM_DIR = '{0}/bam'.format(config['results_prefix'])
 FREEBAYES_DIR = '{0}/freebayes'.format(config['results_prefix'])
 PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
-NGSLD_DIR = '{0}/ngsld'.format(config['results_prefix'])
 NGSRELATE_DIR = '{0}/ngsrelate'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])

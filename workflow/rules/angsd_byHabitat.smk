@@ -12,7 +12,7 @@ rule create_bam_list_byHabitat:
         rules.create_bam_list_highQualSamples.output
     output:
         '{0}/bam_lists/{{habitat}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/create_bam_list/{habitat}_bams.log'
+    log: LOG_DIR + '/create_bam_list/{habitat}_bams.log'
     wildcard_constraints:
         habitat='Urban|Rural|Suburban'
     run:
@@ -38,7 +38,7 @@ rule angsd_saf_likelihood_byHabitat:
         saf = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.gz'.format(ANGSD_DIR)),
         saf_idx = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.idx'.format(ANGSD_DIR)),
         saf_pos = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.pos.gz'.format(ANGSD_DIR))
-    log: 'logs/angsd_saf_likelihood_byHabitat/{chrom}_{habitat}_allSites_saf.log'
+    log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{chrom}_{habitat}_allSites_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites'.format(ANGSD_DIR),
@@ -78,7 +78,7 @@ rule angsd_estimate_joint_habitat_sfs:
         sites_idx = rules.angsd_index_sites.output
     output:
         '{0}/sfs/2dsfs/habitat/{{chrom}}/{{chrom}}_Toronto_2dsfs_{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_habitat_2dsfs/{chrom}_Toronto_{site}_{hab_comb}.log'
+    log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{chrom}_Toronto_{site}_{hab_comb}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     wildcard_constraints:
@@ -101,7 +101,7 @@ rule angsd_habitat_fst_index:
     output:
         fst = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
-    log: 'logs/angsd_habitat_fst_index/{chrom}_Toronto_{site}_{hab_comb}_index.log'
+    log: LOG_DIR + '/angsd_habitat_fst_index/{chrom}_Toronto_{site}_{hab_comb}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     wildcard_constraints:
         site='4fold'
@@ -124,7 +124,7 @@ rule angsd_habitat_fst_readable:
         rules.angsd_habitat_fst_index.output.idx
     output:
         '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
-    log: 'logs/angsd_habitat_fst_readable/{chrom}_Toronto_{site}_{hab_comb}_readable.log'
+    log: LOG_DIR + '/angsd_habitat_fst_readable/{chrom}_Toronto_{site}_{hab_comb}_readable.log'
     resources:
         mem_mb = 4000,
         time = '01:00:00'
@@ -146,7 +146,7 @@ rule angsd_estimate_sfs_byHabitat:
         sides_idx = rules.angsd_index_sites.output
     output:
         '{0}/sfs/1dsfs/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_sfs_byHabitat/{chrom}_Toronto_{site}_{habitat}_sfs.log'
+    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{chrom}_Toronto_{site}_{habitat}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     wildcard_constraints:
@@ -169,7 +169,7 @@ rule angsd_estimate_thetas_byHabitat:
     output:
         idx = '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
-    log: 'logs/angsd_estimate_thetas_byHabitat/{chrom}_{site}_{habitat}_thetas.log'
+    log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{chrom}_{site}_{habitat}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     wildcard_constraints:
@@ -196,7 +196,7 @@ rule angsd_diversity_neutrality_stats_byHabitat:
         rules.angsd_estimate_thetas_byHabitat.output.idx
     output:
        '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: 'logs/angsd_diversity_neutrality_stats_byHabitat/{chrom}_Toronto_{site}_{habitat}_diversity_neutrality.log'
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{chrom}_Toronto_{site}_{habitat}_diversity_neutrality.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     wildcard_constraints:
         site='4fold'
