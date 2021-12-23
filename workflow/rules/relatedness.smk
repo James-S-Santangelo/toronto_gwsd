@@ -1,40 +1,50 @@
+# Rules to estimate relatedness across all 120 samples
+
+###############
+#### SETUP ####
+###############
+
 rule create_bam_list_highQualSamples:
     input:
-        expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
+        bams = lambda wildcards: expand(rules.subset_bams_degeneracy.output.bam, sample=SAMPLES, site=wildcards.site),
+        ref_flag = rules.ref_done.output 
     output:
-        '{0}/bam_lists/highQualSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/create_bam_list/highQualSamples_bam_list.log'
+        '{0}/bam_lists/highQualSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list/highQualSamples_{site}_bam_list.log'
     run:
         import os
         with open(output[0], 'w') as f:
             for bam in input:
-                sample = os.path.basename(bam).split('_merged')[0]
+                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1) 
                 if sample not in LOWQUAL_SAMPLES_TO_EXCLUDE:
                     f.write('{0}\n'.format(bam))
+
+#####################################
+#### BINARY GENOTYPE LIKELIHOODS ####
+#####################################
 
 rule angsd_gl_forNGSrelate:
     input:
         bams = rules.create_bam_list_highQualSamples.output,
         ref = rules.unzip_reference.output,
-        sites = rules.split_angsd_sites_byChrom.output,
-        idx = rules.angsd_index_sites.output
+        sites = rules.select_random_degenerate_sites.output,
+        idx = rules.angsd_index_random_degen_sites.output,
+        chroms = config['chromosomes']
     output:
-        gls = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
-        mafs = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
-        pos = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_gl_forNGSrelate/{chrom}_ngsRelateSNPs_{site}_maf{maf}.log'
+        gls = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
+        mafs = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
+        pos = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_gl_forNGSrelate/ngsRelateSNPs_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        out = '{0}/gls/ngsrelate/{{chrom}}_ngsRelateSNPs_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
+        out = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
-    threads: 12
+    threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 12000,
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '12:00:00'
-    wildcard_constraints:
-        chrom = 'CM019101.1',
-        site='4fold'
     shell:
         """
         NUM_IND=$( wc -l < {input.bams} );
@@ -56,19 +66,20 @@ rule angsd_gl_forNGSrelate:
             -minQ 20 \
             -minMapQ 30 \
             -minMaf {wildcards.maf} \
-            -r {wildcards.chrom} \
+            -rf {input.chroms} \
             -bam {input.bams} 2> {log}
         """
+
+###################
+#### NGSRELATE ####
+###################
 
 rule convert_freq_forNGSrelate:
     input:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
-        '{0}/gls/ngsrelate/{{chrom}}_ngsRelate_{{site}}_maf{{maf}}.freqs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/convert_freq_forNGSrelate/{chrom}_{site}_maf{maf}_convert_freqs.log'
-    wildcard_constraints:
-        chrom = 'CM019101.1',
-        site='4fold'
+        '{0}/gls/ngsrelate/ngsRelate_{{site}}_maf{{maf}}.freqs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/convert_freq_forNGSrelate/{site}_maf{maf}_convert_freqs.log'
     shell:
         """
         zcat {input} | cut -f6 | sed 1d > {output} 2> {log}
@@ -80,16 +91,13 @@ rule ngsrelate:
         gls = rules.angsd_gl_forNGSrelate.output.gls,
         freq = rules.convert_freq_forNGSrelate.output
     output:
-        '{0}/{{chrom}}_ngsRelate_{{site}}_maf{{maf}}.out'.format(NGSRELATE_DIR)
-    log: LOG_DIR + '/ngsrelate/{chrom}_ngsRelate_{site}_maf{maf}.log'
+        '{0}/ngsRelate_{{site}}_maf{{maf}}.out'.format(NGSRELATE_DIR)
+    log: LOG_DIR + '/ngsrelate/ngsRelate_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/ngsrelate/ngsrelate:2.0' 
     threads: 10
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '02:00:00'
-    wildcard_constraints:
-        chrom = 'CM019101.1',
-        site='4fold'
     shell:
         """
         N=$( wc -l < {input.bams} );
@@ -102,7 +110,7 @@ rule ngsrelate:
 
 rule ngsrelate_done:
     input:
-        expand(rules.ngsrelate.output, chrom='CM019101.1', maf=['0.05'], site=['4fold'])
+        expand(rules.ngsrelate.output, maf=['0.05'], site=['4fold'])
     output:
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR)
     shell:

@@ -77,6 +77,41 @@ rule angsd_index_sites_byChrom:
         angsd sites index {input} 2> {log}
         """
 
+rule select_random_degenerate_sites:
+    """
+    Randomly select `params.nSites` degenerate (i.e., 4fold or 0fold) sites from across the genome
+    """
+    input:
+        rules.convert_sites_for_angsd.output
+    output:
+        '{0}/angsd_sites/Trepens_{{site}}_random.sites'.format(PROGRAM_RESOURCE_DIR)
+    params:
+        nSites = 250000
+    run:
+        import random
+        sites = open(input[0], 'r').readlines()
+        random.seed(42)
+        rand_sites = sorted(random.sample(sites, k = int(params.nSites)))
+        with open(output[0], 'w') as fout:
+            for site in rand_sites:
+                fout.write(site)
+
+rule angsd_index_random_degen_sites:
+    """
+    Index randomly selected genome-wide degenerate sites for use with ANGSD
+    """
+    input:
+        rules.select_random_degenerate_sites.output
+    output:
+        binary = '{0}/angsd_sites/Trepens_{{site}}_random.sites.bin'.format(PROGRAM_RESOURCE_DIR),
+        idx = '{0}/angsd_sites/Trepens_{{site}}_random.sites.idx'.format(PROGRAM_RESOURCE_DIR)
+    log: 'logs/angsd_index_random_degen_sites/random_{site}_index.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        angsd sites index {input} 2> {log}
+        """
+
 ##############################
 #### GENOTYPE LIKELIHOODS ####
 ##############################
@@ -85,16 +120,17 @@ rule angsd_gl_degenerate_allSamples:
     input:
         bams = rules.create_bam_list_allFinalSamples.output,
         ref = rules.unzip_reference.output,
-        sites = rules.split_angsd_sites_byChrom.output,
-        idx = rules.angsd_index_sites_byChrom.output
+        sites = rules.select_random_degenerate_sites.output,
+        idx = rules.angsd_index_random_degen_sites.output,
+        chroms = config['chromosomes']
     output:
-        gls = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
-        mafs = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
-    log: LOG_DIR + '/angsd_gl_allSites/{chrom}_{site}_maf{maf}_angsd_gl.log'
+        gls = temp('{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
+        mafs = temp('{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
+    log: LOG_DIR + '/angsd_gl_allSites/{site}_maf{maf}_angsd_gl.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 8
     params:
-        out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
+        out = '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     resources:
@@ -121,48 +157,8 @@ rule angsd_gl_degenerate_allSamples:
             -minMapQ 30 \
             -sites {input.sites} \  
             -minMaf {wildcards.maf} \
-            -r {wildcards.chrom} \
+            -rf {input.chroms} \
             -bam {input.bams} 2> {log}
-        """
- 
-rule concat_angsd_gl:
-    input:
-        lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
-    output:
-        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/concat_angsd_gl/concat_angsd_gl_{site}_maf{maf}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    shell:
-        """
-        first=1
-        for f in {input}; do
-            if [ "$first"  ]; then
-                zcat "$f"
-                first=
-            else
-                zcat "$f"| tail -n +2
-            fi
-        done | bgzip -c > {output} 2> {log}
-        """
-
-rule concat_angsd_mafs:
-    input:
-        lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
-    output:
-        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/concat_angsd_mafs/concat_angsd_mafs_{site}_maf{maf}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    shell:
-        """
-        first=1
-        for f in {input}; do
-            if [ "$first"  ]; then
-                zcat "$f"
-                first=
-            else
-                zcat "$f"| tail -n +2
-            fi
-        done | bgzip -c > {output} 2> {log}
         """
 
 rule extract_sample_angsd:
@@ -182,8 +178,7 @@ rule extract_sample_angsd:
 
 rule angsd_allSamples_done:
     input:
-        expand(rules.concat_angsd_gl.output, site=['4fold'], maf=['0.05']),
-        expand(rules.concat_angsd_mafs.output, site=['4fold'], maf=['0.05']),
+        expand(rules.angsd_gl_degenerate_allSamples.output, site=['4fold'], maf=['0.05']),
         expand(rules.extract_sample_angsd.output, site=['4fold'])
     output:
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR)
