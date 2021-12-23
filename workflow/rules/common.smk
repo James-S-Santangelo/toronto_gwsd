@@ -58,15 +58,18 @@ def get_bed_to_subset(wildcards):
 
 def get_files_for_saf_estimation_byHabitat(wildcards):
     ref = rules.unzip_reference.output
-    bams = expand(rules.create_bam_list_byHabitat.output, habitat = wildcards.habitat)
-    return { 'bams' : bams, 'ref' : ref }
+    bams = expand(rules.create_bam_list_byHabitat.output, habitat = wildcards.habitat, site=wildcards.site)
+    sites = rules.select_random_degenerate_sites.output
+    idx = rules.angsd_index_random_degen_sites.output
+    chroms = config['chromosomes']
+    return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
 
 def get_habitat_saf_files(wildcards):
-    all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, chrom=wildcards.chrom, habitat=HABITATS)
+    all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, habitat=HABITATS, site=wildcards.site)
     first_hab = wildcards.hab_comb.split('_')[0]
     second_hab = wildcards.hab_comb.split('_')[1]
-    saf1 = [x for x in all_saf_files if '_{0}_'.format(first_hab) in os.path.basename(x)]
-    saf2 = [x for x in all_saf_files if '_{0}_'.format(second_hab) in os.path.basename(x)]
+    saf1 = [x for x in all_saf_files if '{0}'.format(first_hab) in os.path.basename(x)]
+    saf2 = [x for x in all_saf_files if '{0}'.format(second_hab) in os.path.basename(x)]
     return saf1 + saf2
 
 def get_whatshap_phase_input(wildcards):

@@ -9,22 +9,22 @@ rule create_bam_list_byHabitat:
     Create text file with paths to BAMS for urban, rural, and suburban samples
     """
     input:
-        rules.create_bam_list_highQualSamples.output
+        samples = config['samples'],
+        bams = rules.create_bam_list_allFinalSamples.output
     output:
-        '{0}/bam_lists/{{habitat}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/create_bam_list/{habitat}_bams.log'
-    wildcard_constraints:
-        habitat='Urban|Rural|Suburban'
+        '{0}/bam_lists/{{habitat}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list/{habitat}_{{site}}_bams.log'
     run:
         import os
         import pandas as pd
-        df = pd.read_table(config['samples'], sep = '\t')
+        df = pd.read_table(input.samples[0], sep = '\t')
         df_sub = df[(df['Habitat'] == wildcards.habitat)]
         samples_habitat = df_sub['Sample'].tolist()
-        bams = open(input[0], 'r').readlines()
+        bams = open(input.bams[0], 'r').readlines()
         with open(output[0], 'w') as f:
             for bam in bams:
-                sample = os.path.basename(bam).split('_merged')[0]
+                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1) 
                 if sample in samples_habitat:
                     f.write('{0}'.format(bam))
 
@@ -35,17 +35,17 @@ rule angsd_saf_likelihood_byHabitat:
     input:
         unpack(get_files_for_saf_estimation_byHabitat)
     output:
-        saf = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.gz'.format(ANGSD_DIR)),
-        saf_idx = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.idx'.format(ANGSD_DIR)),
-        saf_pos = temp('{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.pos.gz'.format(ANGSD_DIR))
-    log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{chrom}_{habitat}_allSites_saf.log'
+        saf = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR)),
+        saf_idx = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR)),
+        saf_pos = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR))
+    log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{habitat}_{site}_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        out = '{0}/sfs/{{habitat}}/{{chrom}}/{{chrom}}_{{habitat}}_allSites'.format(ANGSD_DIR),
+        out = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
-    threads: 12
+    threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 12000,
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '12:00:00'
     shell:
         """
@@ -63,8 +63,9 @@ rule angsd_saf_likelihood_byHabitat:
             -minQ 20 \
             -minMapQ 30 \
             -doSaf 1 \
+            -sites {input.sites} \
             -anc {input.ref} \
-            -r {wildcards.chrom} \
+            -rf {wildcards.chrom} \
             -bam {input.bams} 2> {log}
         """
 
@@ -74,21 +75,24 @@ rule angsd_estimate_joint_habitat_sfs:
     """
     input:
         safs = get_habitat_saf_files,
-        sites = rules.split_angsd_sites_byChrom.output,
-        sites_idx = rules.angsd_index_sites.output
+        sites = rules.select_random_degenerate_sites.output,
+        idx = rules.angsd_index_random_degen_sites.output,
     output:
-        '{0}/sfs/2dsfs/habitat/{{chrom}}/{{chrom}}_Toronto_2dsfs_{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{chrom}_Toronto_{site}_{hab_comb}.log'
+        '{0}/sfs/2dsfs/byHabitat/{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{site}_{hab_comb}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
-    wildcard_constraints:
-        site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 60000,
+        mem_mb = lambda wildcards, attempt: attempt * 15000,
         time = '01:00:00'
     shell:
         """
-        realSFS {input.safs} -sites {input.sites} -maxIter 2000 -seed 42 -fold 1 -P {threads} > {output} 2> {log}
+        realSFS {input.safs} \
+            -sites {input.sites} \
+            -maxIter 2000 \
+            -seed 42 \
+            -fold 1 \
+            -P {threads} > {output} 2> {log}
         """
 
 rule angsd_habitat_fst_index:
@@ -99,21 +103,24 @@ rule angsd_habitat_fst_index:
         saf_idx = get_habitat_saf_files,
         joint_sfs = rules.angsd_estimate_joint_habitat_sfs.output
     output:
-        fst = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
-        idx = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_habitat_fst_index/{chrom}_Toronto_{site}_{hab_comb}_index.log'
+        fst = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
+        idx = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_habitat_fst_index/{site}_{hab_comb}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    wildcard_constraints:
-        site='4fold'
     threads: 4
     resources:
         mem_mb = 4000,
         time = '02:00:00'
     params:
-        fstout = '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}'.format(ANGSD_DIR)
+        fstout = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}'.format(ANGSD_DIR)
     shell:
         """
-        realSFS fst index {input.saf_idx} -sfs {input.joint_sfs} -fold 1 -P {threads} -whichFst 1 -fstout {params.fstout} 2> {log}
+        realSFS fst index {input.saf_idx} \
+            -sfs {input.joint_sfs} \
+            -fold 1 \
+            -P {threads} \
+            -whichFst 1 \
+            -fstout {params.fstout} 2> {log}
         """
 
 rule angsd_habitat_fst_readable:
@@ -123,13 +130,11 @@ rule angsd_habitat_fst_readable:
     input:
         rules.angsd_habitat_fst_index.output.idx
     output:
-        '{0}/summary_stats/hudson_fst/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_habitat_fst_readable/{chrom}_Toronto_{site}_{hab_comb}_readable.log'
+        '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_habitat_fst_readable/{site}_{hab_comb}_readable.log'
     resources:
         mem_mb = 4000,
         time = '01:00:00'
-    wildcard_constraints:
-        site='4fold'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
@@ -142,21 +147,26 @@ rule angsd_estimate_sfs_byHabitat:
     """
     input:
         saf = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
-        sites = rules.split_angsd_sites_byChrom.output,
-        sides_idx = rules.angsd_index_sites.output
+        sites = rules.select_random_degenerate_sites.output,
+        idx = rules.angsd_index_random_degen_sites.output,
     output:
-        '{0}/sfs/1dsfs/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{chrom}_Toronto_{site}_{habitat}_sfs.log'
+        '{0}/sfs/1dsfs/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{site}_{habitat}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     wildcard_constraints:
         site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 60000,
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '01:00:00'
     shell:
         """
-        realSFS {input.saf} -sites {input.sites} -P {threads} -fold 1 -maxIter 2000 -seed 42 > {output} 2> {log}
+        realSFS {input.saf} \
+            -sites {input.sites} \
+            -P {threads} \
+            -fold 1 \
+            -maxIter 2000 \
+            -seed 42 > {output} 2> {log}
         """
 
 rule angsd_estimate_thetas_byHabitat:
@@ -167,15 +177,15 @@ rule angsd_estimate_thetas_byHabitat:
         saf_idx = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
         sfs = rules.angsd_estimate_sfs_byHabitat.output
     output:
-        idx = '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
-        thet = '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{chrom}_{site}_{habitat}_thetas.log'
+        idx = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
+        thet = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{site}_{habitat}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     wildcard_constraints:
         site='4fold'
     params:
-        out = '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}'.format(ANGSD_DIR)
+        out = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}'.format(ANGSD_DIR)
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
@@ -195,8 +205,8 @@ rule angsd_diversity_neutrality_stats_byHabitat:
     input:
         rules.angsd_estimate_thetas_byHabitat.output.idx
     output:
-       '{0}/summary_stats/thetas/habitat/{{chrom}}/{{chrom}}_Toronto_{{site}}_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{chrom}_Toronto_{site}_{habitat}_diversity_neutrality.log'
+       '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{site}_{habitat}_diversity_neutrality.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     wildcard_constraints:
         site='4fold'
@@ -208,8 +218,6 @@ rule angsd_diversity_neutrality_stats_byHabitat:
         thetaStat do_stat {input} 2> {log}
         """
 
-
-
 ##############
 ###POST ####
 ##############
@@ -219,8 +227,8 @@ rule angsd_byHabitat_done:
     Generate empty flag file signalling successful completion of SFS and summary stat for habitats
     """
     input:
-        expand(rules.angsd_habitat_fst_readable.output, site=['4fold'], hab_comb=HABITAT_COMBOS, chrom=CHROMOSOMES),
-        expand(rules.angsd_diversity_neutrality_stats_byHabitat.output, site=['4fold'], habitat=HABITATS, chrom=CHROMOSOMES)
+        expand(rules.angsd_habitat_fst_readable.output, site=['4fold'], hab_comb=HABITAT_COMBOS),
+        expand(rules.angsd_diversity_neutrality_stats_byHabitat.output, site=['4fold'], habitat=HABITATS)
     output:
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR)
     shell:
