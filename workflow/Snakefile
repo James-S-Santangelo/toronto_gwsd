@@ -76,16 +76,16 @@ rule all:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         '{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        '{0}/filtering.done'.format(FREEBAYES_DIR),
-        '{0}/phasing.done'.format(FREEBAYES_DIR),
+        #'{0}/freebayes.done'.format(FREEBAYES_DIR),
+        #'{0}/filtering.done'.format(FREEBAYES_DIR),
+        #'{0}/phasing.done'.format(FREEBAYES_DIR),
         # Angsd
-        '{0}/angsd.done'.format(ANGSD_DIR),
-        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
+        '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
         # NGS relate
-        '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
+        #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
-        '{0}/population_structure.done'.format(POP_STRUC_DIR)
+        #'{0}/population_structure.done'.format(POP_STRUC_DIR)
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
 
@@ -95,14 +95,14 @@ include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
 include: 'rules/angsd_allSamples.smk'
-include: 'rules/relatedness.smk'
-include: 'rules/angsd_byHabitat.smk'
-include: 'rules/freebayes.smk'
-include: 'rules/filtering.smk'
-include: 'rules/phasing.smk'
-include: 'rules/population_structure.smk'
-#include: 'rules/hcn_loci.smk'
-include: 'rules/notebooks.smk'
+# include: 'rules/relatedness.smk'
+# include: 'rules/angsd_byHabitat.smk'
+# include: 'rules/freebayes.smk'
+# include: 'rules/filtering.smk'
+# include: 'rules/phasing.smk'
+# include: 'rules/population_structure.smk'
+# #include: 'rules/hcn_loci.smk'
+# include: 'rules/notebooks.smk'
 
 rule clean:
     params:

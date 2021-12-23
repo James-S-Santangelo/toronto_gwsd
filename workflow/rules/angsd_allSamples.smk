@@ -1,88 +1,45 @@
+# Rules to estimate genotype likelihoods across all samples for population structure
+
+###############
+#### SETUP ####
+###############
+
+rule subset_bams_degeneracy:
+    """
+    Subset BAMs for all samples around 4fold sites to speed up ANGSD computations.
+    """
+    input:
+        unpack(get_subset_bams_degeneracy_input)
+    output:
+        bam = '{0}/{{site}}/{{sample}}_{{site}}.bam'.format(BAM_DIR),
+        idx = '{0}/{{site}}/{{sample}}_{{site}}.bam.bai'.format(BAM_DIR)
+    log: LOG_DIR + '/subset_bams_degenerate/{sample}_{site}_subset.log'
+    conda: '../envs/ref.yaml'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 2000,
+        time = '01:00:00'
+    shell:
+        """
+        ( samtools view -bh -L {input.regions} {input.bam} > {output.bam} &&\
+            samtools index {output.bam} ) 2> {log}
+        """
+
 rule create_bam_list_allFinalSamples:
     input:
-        bams = expand(rules.samtools_markdup.output.bam, sample=SAMPLES),
+        bams = lambda wildcards: expand(rules.subset_bams_degeneracy.output.bam, sample=SAMPLES, site=wildcards.site),
         ref_flag = rules.ref_done.output 
     output:
-        '{0}/bam_lists/allFinalSamples_bams.list'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/create_bam_list/allFinalSamples_bam_list.log'
+        '{0}/bam_lists/allFinalSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list/allFinalSamples_{site}_bam_list.log'
     run:
         import os
         with open(output[0], 'w') as f:
             for bam in input.bams:
-                sample = os.path.basename(bam).split('_merged')[0]
-                if sample not in ALL_SAMPLES_TO_EXCLUDE:
+                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1) 
+                if sample in FINAL_SAMPLES:
                     f.write('{0}\n'.format(bam))
 
-rule angsd_depth:
-    input:
-        bams = rules.create_bam_list_allFinalSamples.output
-    output:
-        sam = '{0}/depth/{{chrom}}/{{chrom}}_allFinalSamples_allSites.depthSample'.format(ANGSD_DIR),
-        glo = '{0}/depth/{{chrom}}/{{chrom}}_allFinalSamples_allSites.depthGlobal'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_depth/{chrom}_angsd_depth.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    params:
-        out = '{0}/depth/{{chrom}}/{{chrom}}_allFinalSamples_allSites'.format(ANGSD_DIR)
-    threads: 12
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
-        time = lambda wildcards, attempt: str(attempt * 6) + ':00:00' 
-    wildcard_constraints:
-        chrom = 'CM019101.1'
-    shell:
-        """
-        angsd -bam {input.bams} \
-            -nThreads {threads} \
-            -doDepth 1 \
-            -doCounts 1 \
-            -r {wildcards.chrom} \
-            -minMapQ 30 \
-            -minQ 20 \
-            -maxDepth 10000 \
-            -out {params.out} 2> {log}
-        """
-
-rule angsd_gl_allSites:
-    input:
-        bams = rules.create_bam_list_allFinalSamples.output,
-        ref = rules.unzip_reference.output
-    output:
-        gls = temp('{0}/gls/allSites/{{chrom}}/{{chrom}}_allSites_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
-        mafs = temp('{0}/gls/allSites/{{chrom}}/{{chrom}}_allSites_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
-    log: LOG_DIR + '/angsd_gl_allSites/{chrom}_allSites_maf{maf}_angsd_gl.log'
-    conda: '../envs/angsd.yaml' 
-    params:
-        out = '{0}/gls/allSites/{{chrom}}/{{chrom}}_allSites_maf{{maf}}'.format(ANGSD_DIR),
-        max_dp = ANGSD_MAX_DP,
-        min_dp_ind = ANGSD_MIN_DP_IND_GL
-    resources:
-        nodes = 1,
-        ntasks = CORES_PER_NODE,
-        time = '12:00:00'
-    shell:
-        """
-        NUM_IND=$( wc -l < {input.bams} );
-        MIN_IND=$(( NUM_IND*80/100 ))
-        angsd -GL 1 \
-            -out {params.out} \
-            -nThreads {resources.ntasks} \
-            -doGlf 2 \
-            -doMajorMinor 1 \
-            -SNP_pval 1e-6 \
-            -doMaf 1 \
-            -doCounts 1 \
-            -setMinDepthInd {params.min_dp_ind} \
-            -setMaxDepth {params.max_dp} \
-            -baq 2 \
-            -ref {input.ref} \
-            -minInd $MIN_IND \
-            -minQ 20 \
-            -minMapQ 30 \
-            -minMaf {wildcards.maf} \
-            -r {wildcards.chrom} \
-            -bam {input.bams} 2> {log}
-        """
- 
 rule convert_sites_for_angsd:
     input:
         get_bed_to_subset
@@ -96,19 +53,6 @@ rule convert_sites_for_angsd:
         awk '{{print $1"\t"$2+1}}' {input} > {output} 2> {log}
         """
 
-rule extract_angsd_allSites:
-    input:
-        rules.angsd_saf_likelihood_allSites.output.pos
-    output:
-        '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_allSites.sites'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/extract_angsd_allSites/{chrom}_extract_allSites.log'
-    wildcard_constraints:
-        site = 'allSites'
-    shell:
-        """
-        zcat {input} | tail -n +2 | cut -f1,2 > {output} 2> {log}
-        """
-
 rule split_angsd_sites_byChrom:
     input:
         rules.convert_sites_for_angsd.output
@@ -120,9 +64,9 @@ rule split_angsd_sites_byChrom:
         grep {wildcards.chrom} {input} > {output} 2> {log}
         """
 
-rule angsd_index_sites:
+rule angsd_index_sites_byChrom:
     input:
-        get_sites_for_angsd_index
+        rules.split_angsd_sites_byChrom.output
     output:
         binary = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}.sites.idx'.format(PROGRAM_RESOURCE_DIR)
@@ -133,26 +77,61 @@ rule angsd_index_sites:
         angsd sites index {input} 2> {log}
         """
 
-rule files_for_angsd_site_subset:
+##############################
+#### GENOTYPE LIKELIHOODS ####
+##############################
+
+rule angsd_gl_degenerate_allSamples:
     input:
-        rules.split_angsd_sites_byChrom.output
+        bams = rules.create_bam_list_allFinalSamples.output,
+        ref = rules.unzip_reference.output,
+        sites = rules.split_angsd_sites_byChrom.output,
+        idx = rules.angsd_index_sites_byChrom.output
     output:
-        gl = '{0}/angsd_sites/{{chrom}}/{{chrom}}_{{site}}_gl.positions'.format(PROGRAM_RESOURCE_DIR),
-        maf = '{0}/angsd_sites/{{chrom}}/{{chrom}}_{{site}}_maf.positions'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/files_for_angsd_site_subset/{chrom}_{site}_subsetFile.log'
+        gls = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
+        mafs = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
+    log: LOG_DIR + '/angsd_gl_allSites/{chrom}_{site}_maf{maf}_angsd_gl.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 8
+    params:
+        out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
+        max_dp = ANGSD_MAX_DP,
+        min_dp_ind = ANGSD_MIN_DP_IND_GL
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '12:00:00'
     shell:
         """
-        ( sed 's/\t/_/g' {input} > {output.gl};
-        cut -f2 {input} > {output.maf} ) 2> {log}
+        NUM_IND=$( wc -l < {input.bams} );
+        MIN_IND=$(( NUM_IND*80/100 ))
+        angsd -GL 1 \
+            -out {params.out} \
+            -nThreads {threads} \
+            -doGlf 2 \
+            -doMajorMinor 1 \
+            -SNP_pval 1e-6 \
+            -doMaf 1 \
+            -doCounts 1 \
+            -setMinDepthInd {params.min_dp_ind} \
+            -setMaxDepth {params.max_dp} \
+            -baq 2 \
+            -ref {input.ref} \
+            -minInd $MIN_IND \
+            -minQ 20 \
+            -minMapQ 30 \
+            -sites {input.sites} \  
+            -minMaf {wildcards.maf} \
+            -r {wildcards.chrom} \
+            -bam {input.bams} 2> {log}
         """
-
+ 
 rule concat_angsd_gl:
     input:
-        get_angsd_gl_toConcat
+        lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
     output:
-        '{0}/gls/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
+        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/concat_angsd_gl/concat_angsd_gl_{site}_maf{maf}.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
         first=1
@@ -168,11 +147,11 @@ rule concat_angsd_gl:
 
 rule concat_angsd_mafs:
     input:
-        get_angsd_maf_toConcat
+        lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
     output:
-        '{0}/gls/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
+        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_allFinalSamples_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/concat_angsd_mafs/concat_angsd_mafs_{site}_maf{maf}.log'
-    container: 'shub://James-S-Santangelo/singularity-recipes:angsd_v0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
         first=1
@@ -190,23 +169,23 @@ rule extract_sample_angsd:
     input:
         rules.create_bam_list_allFinalSamples.output
     output:
-        '{0}/angsd_allFinalSamples_order.txt'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/angsd_allFinalSamples_{{site}}_order.txt'.format(PROGRAM_RESOURCE_DIR)
     run:
         with open(output[0], 'w') as fout:
             with open(input[0], 'r') as fin:
                 for line in fin:
                     sline = line.strip().split('/')
                     bam = sline[-1]
-                    sample = bam.split('_merged')[0]
+                    search = re.search('^(.+)(?=_\w)', bam)
+                    sample = search.group(1) 
                     fout.write('{0}\n'.format(sample))
 
-rule angsd_done:
+rule angsd_allSamples_done:
     input:
-        expand(rules.angsd_depth.output, chrom='CM019101.1'),
-        expand(rules.concat_angsd_gl.output, site=['allSites','0fold','4fold'], maf=['0.05']),
-        expand(rules.concat_angsd_mafs.output, site=['allSites','0fold','4fold'], maf=['0.05']),
-        expand(rules.extract_sample_angsd.output)
+        expand(rules.concat_angsd_gl.output, site=['4fold'], maf=['0.05']),
+        expand(rules.concat_angsd_mafs.output, site=['4fold'], maf=['0.05']),
+        expand(rules.extract_sample_angsd.output, site=['4fold'])
     output:
-        '{0}/angsd.done'.format(ANGSD_DIR)
+        '{0}/angsd_allSamples.done'.format(ANGSD_DIR)
     shell:
         "touch {output}"
