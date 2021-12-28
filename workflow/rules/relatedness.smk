@@ -13,12 +13,18 @@ rule create_bam_list_highQualSamples:
     log: LOG_DIR + '/create_bam_list/highQualSamples_{site}_bam_list.log'
     run:
         import os
-        with open(output[0], 'w') as f:
-            for bam in input:
-                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
-                sample = search.group(1) 
-                if sample not in LOWQUAL_SAMPLES_TO_EXCLUDE:
-                    f.write('{0}\n'.format(bam))
+        import logging
+        logging.basicConfig(filename=log[0], level=logging.DEBUG)
+        try:
+            with open(output[0], 'w') as f:
+                for bam in input.bams:
+                    search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                    sample = search.group(1) 
+                    if sample not in LOWQUAL_SAMPLES_TO_EXCLUDE:
+                        f.write('{0}\n'.format(bam))
+        except:
+            logging.exception("An error occurred!")
+            raise
 
 #####################################
 #### BINARY GENOTYPE LIKELIHOODS ####
@@ -28,23 +34,22 @@ rule angsd_gl_forNGSrelate:
     input:
         bams = rules.create_bam_list_highQualSamples.output,
         ref = rules.unzip_reference.output,
-        sites = rules.select_random_degenerate_sites.output,
-        idx = rules.angsd_index_random_degen_sites.output,
-        chroms = config['chromosomes']
+        sites = rules.split_random_angsd_sites_byChrom.output,
+        idx = rules.index_random_chromosomal_angsd_sites.output
     output:
-        gls = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.glf.gz'.format(ANGSD_DIR),
-        mafs = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR),
-        pos = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}.glf.pos.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_gl_forNGSrelate/ngsRelateSNPs_{site}_maf{maf}.log'
+        gls = temp('{0}/gls/ngsrelate/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_forNGSrelate.glf.gz'.format(ANGSD_DIR)),
+        mafs = temp('{0}/gls/ngsrelate/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_forNGSrelate.mafs.gz'.format(ANGSD_DIR)),
+        pos = temp('{0}/gls/ngsrelate/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_forNGSrelate.glf.pos.gz'.format(ANGSD_DIR))
+    log: LOG_DIR + '/angsd_gl_forNGSrelate/{chrom}_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        out = '{0}/gls/ngsrelate/ngsRelateSNPs_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
+        out = '{0}/gls/ngsrelate/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_forNGSrelate'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     threads: 8
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '12:00:00'
+        time = '6:00:00'
     shell:
         """
         NUM_IND=$( wc -l < {input.bams} );
@@ -66,7 +71,7 @@ rule angsd_gl_forNGSrelate:
             -minQ 20 \
             -minMapQ 30 \
             -minMaf {wildcards.maf} \
-            -rf {input.chroms} \
+            -r {wildcards.chrom} \
             -bam {input.bams} 2> {log}
         """
 
@@ -78,8 +83,8 @@ rule convert_freq_forNGSrelate:
     input:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
-        '{0}/gls/ngsrelate/ngsRelate_{{site}}_maf{{maf}}.freqs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/convert_freq_forNGSrelate/{site}_maf{maf}_convert_freqs.log'
+        '{0}/gls/ngsrelate/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_forNGSrelate.freqs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/convert_freq_forNGSrelate/{chrom}_{site}_maf{maf}_convert_freqs.log'
     shell:
         """
         zcat {input} | cut -f6 | sed 1d > {output} 2> {log}
@@ -91,8 +96,8 @@ rule ngsrelate:
         gls = rules.angsd_gl_forNGSrelate.output.gls,
         freq = rules.convert_freq_forNGSrelate.output
     output:
-        '{0}/ngsRelate_{{site}}_maf{{maf}}.out'.format(NGSRELATE_DIR)
-    log: LOG_DIR + '/ngsrelate/ngsRelate_{site}_maf{maf}.log'
+        '{0}/{{chrom}}_{{site}}_maf{{maf}}_NGSrelate.out'.format(NGSRELATE_DIR)
+    log: LOG_DIR + '/ngsrelate/{chrom}_{site}_maf{maf}.log'
     container: 'library://james-s-santangelo/ngsrelate/ngsrelate:2.0' 
     threads: 10
     resources:
@@ -110,7 +115,7 @@ rule ngsrelate:
 
 rule ngsrelate_done:
     input:
-        expand(rules.ngsrelate.output, maf=['0.05'], site=['4fold'])
+        expand(rules.ngsrelate.output, maf=['0.05'], site=['4fold'], chrom=CHROMOSOMES)
     output:
         '{0}/ngsrelate.done'.format(NGSRELATE_DIR)
     shell:

@@ -1,12 +1,12 @@
 # Rules for estimating SFS (1D and 2D), summary stats, and GLs for urban, rural, and suburban habitats within cities
 
-###############################
-#### SFS AND SUMMARY STATS ####
-###############################
+###############
+#### SETUP ####
+###############
 
 rule create_bam_list_byHabitat:
     """
-    Create text file with paths to BAMS for urban, rural, and suburban samples
+    Create text file with paths to BAMS for urban, rural, and suburban samples. BAMs are subsetted around 4fold sites
     """
     input:
         samples = config['samples'],
@@ -16,17 +16,27 @@ rule create_bam_list_byHabitat:
     log: LOG_DIR + '/create_bam_list/{habitat}_{{site}}_bams.log'
     run:
         import os
+        import logging
         import pandas as pd
-        df = pd.read_table(input.samples[0], sep = '\t')
-        df_sub = df[(df['Habitat'] == wildcards.habitat)]
-        samples_habitat = df_sub['Sample'].tolist()
-        bams = open(input.bams[0], 'r').readlines()
-        with open(output[0], 'w') as f:
-            for bam in bams:
-                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
-                sample = search.group(1) 
-                if sample in samples_habitat:
-                    f.write('{0}'.format(bam))
+        logging.basicConfig(filename=log[0], level=logging.DEBUG)
+        try:
+            df = pd.read_table(input.samples, sep = '\t')
+            df_sub = df[(df['Habitat'] == wildcards.habitat)]
+            samples_habitat = df_sub['Sample'].tolist()
+            bams = open(input.bams[0], 'r').readlines()
+            with open(output[0], 'w') as f:
+                for bam in bams:
+                    search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                    sample = search.group(1) 
+                    if sample in samples_habitat:
+                        f.write('{0}'.format(bam))
+        except:
+            logging.exception("An error occured!") 
+            raise
+
+################################
+#### SAF AND SFS ESTIMATION ####
+################################
 
 rule angsd_saf_likelihood_byHabitat:
     """
@@ -35,9 +45,9 @@ rule angsd_saf_likelihood_byHabitat:
     input:
         unpack(get_files_for_saf_estimation_byHabitat)
     output:
-        saf = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR)),
-        saf_idx = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR)),
-        saf_pos = temp('{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR))
+        saf = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{habitat}_{site}_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
@@ -45,7 +55,7 @@ rule angsd_saf_likelihood_byHabitat:
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '12:00:00'
     shell:
         """
@@ -65,7 +75,7 @@ rule angsd_saf_likelihood_byHabitat:
             -doSaf 1 \
             -sites {input.sites} \
             -anc {input.ref} \
-            -rf {wildcards.chrom} \
+            -rf {input.chroms} \
             -bam {input.bams} 2> {log}
         """
 
@@ -94,6 +104,38 @@ rule angsd_estimate_joint_habitat_sfs:
             -fold 1 \
             -P {threads} > {output} 2> {log}
         """
+
+rule angsd_estimate_sfs_byHabitat:
+    """
+    Estimate folded SFS separately for each habitat (i.e., 1D SFS) using realSFS. 
+    """
+    input:
+        saf = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
+        sites = rules.select_random_degenerate_sites.output,
+        idx = rules.angsd_index_random_degen_sites.output,
+    output:
+        '{0}/sfs/1dsfs/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{site}_{habitat}_sfs.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 6
+    wildcard_constraints:
+        site='4fold'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS {input.saf} \
+            -sites {input.sites} \
+            -P {threads} \
+            -fold 1 \
+            -maxIter 2000 \
+            -seed 42 > {output} 2> {log}
+        """
+
+########################
+#### FST AND THETAS ####
+########################
 
 rule angsd_habitat_fst_index:
     """
@@ -141,33 +183,6 @@ rule angsd_habitat_fst_readable:
         realSFS fst print {input} > {output} 2> {log}
         """
 
-rule angsd_estimate_sfs_byHabitat:
-    """
-    Estimate folded SFS separately for each habitat (i.e., 1D SFS) using realSFS. 
-    """
-    input:
-        saf = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
-        sites = rules.select_random_degenerate_sites.output,
-        idx = rules.angsd_index_random_degen_sites.output,
-    output:
-        '{0}/sfs/1dsfs/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{site}_{habitat}_sfs.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    threads: 6
-    wildcard_constraints:
-        site='4fold'
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
-        time = '01:00:00'
-    shell:
-        """
-        realSFS {input.saf} \
-            -sites {input.sites} \
-            -P {threads} \
-            -fold 1 \
-            -maxIter 2000 \
-            -seed 42 > {output} 2> {log}
-        """
 
 rule angsd_estimate_thetas_byHabitat:
     """
@@ -219,7 +234,7 @@ rule angsd_diversity_neutrality_stats_byHabitat:
         """
 
 ##############
-###POST ####
+#### POST ####
 ##############
 
 rule angsd_byHabitat_done:
