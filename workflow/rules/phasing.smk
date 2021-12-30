@@ -12,7 +12,7 @@ rule bcftools_concat_filtered_vcfs:
             miss=['0'])
     output:
         vcf = temp('{0}/vcf/allChroms_allFinalSamples_filtered_noDups.vcf.gz'.format(FREEBAYES_DIR)),
-        idx = temp('{0}/vcf/allChroms_allFinalSamples_filtered_noDups.vcf.tbi'.format(FREEBAYES_DIR))
+        idx = temp('{0}/vcf/allChroms_allFinalSamples_filtered_noDups.vcf.gz.tbi'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/bcftools_concat_filtered_vcfs/bcftools_concat_filtered_vcfs.log'
     conda: '../envs/phasing.yaml'
     threads: 4
@@ -21,6 +21,7 @@ rule bcftools_concat_filtered_vcfs:
         ( bcftools concat \
             --output-type z \
             --threads {threads} \
+            --output {output.vcf} \
             {input} && tabix {output.vcf} ) 2> {log}
         """
     
@@ -96,12 +97,14 @@ rule bcftools_merge_phased:
     conda: '../envs/phasing.yaml'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
+        time = '03:00:00'
+    threads: 8
     shell:
         """
         ( bcftools merge \
             --info-rules - \
             -O z \
+            --threads {threads} \
             {input} > {output.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
@@ -122,6 +125,7 @@ rule split_phased_vcf_byChrom:
        ( bcftools filter \
             -r {wildcards.chrom} \
             -O z \
+            -o {output.vcf} \
             --threads {threads} \
             {input} && tabix {output.vcf} ) 2> {log}
         """

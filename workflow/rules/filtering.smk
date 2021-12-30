@@ -43,7 +43,7 @@ rule bcftools_filter_vcfs:
             bcftools filter -i 'MQM >=30 & MQMR >= 30' |
             bcftools filter -i '(QUAL / INFO/DP) > 0.25' |
             bcftools filter -O z -i '((PAIRED > 0.05) & (PAIREDR > 0.05) & (PAIREDR / PAIRED < 1.75 ) & (PAIREDR / PAIRED > 0.25)) | ((PAIRED < 0.05) & (PAIREDR < 0.05))' \
-            > {output} && tabix {output} ) 2> {log}
+            > {output.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
 rule remove_duplicate_sites:

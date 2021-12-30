@@ -3,5 +3,5 @@ channels:
   - bioconda
 dependencies:
   - whatshap=1.1
-  - bcftools=1.10.2
+  - bcftools=1.11
   - shapeit4=4.2.2
