@@ -126,9 +126,35 @@ rule split_phased_vcf_byChrom:
             {input} && tabix {output.vcf} ) 2> {log}
         """
 
+############################
+#### POPULATION PHASING ####
+############################
+
+rule shapeit_phase:
+    input:
+        rules.split_phased_vcf_byChrom.output.vcf
+    output:
+        vcf = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),
+        idx = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased_shapeitPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
+    log: LOG_DIR + '/shapeit_phase/{chrom}_shapeit.log'
+    conda: '../envs/phasing.yaml'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 8
+    shell:
+        """
+        shapeit4 --input {input} \
+            --region {wildcards.chrom} \
+            --use-PS 0.0001 \
+            --thread {threads} \
+            --log {log} \
+            --output {output.vcf} && tabix {output.vcf}
+        """
+
 rule phasing_done:
     input:
-        expand(rules.split_phased_vcf_byChrom.output, chrom=CHROMOSOMES)
+        expand(rules.shapeit_phase.output, chrom=CHROMOSOMES)
     output:
         "{0}/phasing.done".format(FREEBAYES_DIR)
     shell:
