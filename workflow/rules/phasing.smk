@@ -6,7 +6,11 @@
 
 rule bcftools_split_samples:
     input:
-        lambda wildcards: expand(rules.remove_duplicate_sites.output, chrom=wildcards.chrom, sample=wildcards.sample, site_type=['snps'], miss=['0'])
+        lambda wildcards: expand(rules.remove_duplicate_sites.output, 
+            chrom=wildcards.chrom, 
+            sample=wildcards.sample, 
+            site_type=['snps'], 
+            miss=['0'])
     output:
         temp('{0}/vcf/{{chrom}}/by_sample/{{sample}}.vcf'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/bcftools_split_samples/{chrom}/{chrom}_{sample}_split.log'
@@ -21,41 +25,37 @@ rule bcftools_split_samples:
             --output {params.out} 2> {log}
         """
 
+#############################
+#### READ-BACKED PHASING ####
+#############################
+
 rule whatshap_phase:
     input:
         unpack(get_whatshap_phase_input)
     output:
-        '{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf'.format(FREEBAYES_DIR)
-    log: LOG_DIR + '/whatshap_phase/{chrom}/{chrom}_{sample}_whatshap_phase.log'
-    conda: '../envs/phasing.yaml'
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '03:00:00'
-    shell:
-        """
-        whatshap phase \
-            --output {output} \
-            --reference {input.ref} \
-            --chromosome {wildcards.chrom} \
-            {input.vcf} {input.bam} 2> {log}
-        """
-
-rule bgzip_index_whatshap_vcf:
-    input:
-        rules.whatshap_phase.output
-    output:
         vcf = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
-    log: LOG_DIR + '/bgzip_index_whatshap_vcf/{chrom}_{sample}_bgzip_index.log'
+    log: LOG_DIR + '/whatshap_phase/{chrom}/{chrom}_{sample}_whatshap_phase.log'
     conda: '../envs/phasing.yaml'
+    params:
+        vcf_out = '{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased.vcf'.format(FREEBAYES_DIR),
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 2000,
+        time = '01:00:00'
     shell:
         """
-        ( bgzip {input} && tabix {output.vcf} 2> {log} ) 
+        ( whatshap phase \
+            --output {params.vcf_out} \
+            --reference {input.ref} \
+            --chromosome {wildcards.chrom} \
+            {input.vcf} {input.bam} \
+                && bgzip {params.vcf_out} \
+                && tabix {output} ) 2> {log}
         """
 
 rule bcftools_remove_format_tags:
     input:
-        rules.bgzip_index_whatshap_vcf.output.vcf
+        rules.whatshap_phase.output.vcf
     output:
         vcf = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased_remTag.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/{{chrom}}/by_sample/{{chrom}}_{{sample}}_whatshapPhased_remTag.vcf.gz.tbi'.format(FREEBAYES_DIR))
