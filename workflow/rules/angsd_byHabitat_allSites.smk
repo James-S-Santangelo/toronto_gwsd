@@ -6,7 +6,7 @@
 
 rule create_bam_lists_allFinalSamples_allSites:
     input:
-        bams = expand(rules.samtools_markdup.output, sample=SAMPLES)
+        bams = expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
         '{0}/bam_lists/allFinalSamples_allSites_bams.list'.format(PROGRAM_RESOURCE_DIR)
     log: LOG_DIR + '/create_bam_list/allFinalSamples_allSites_bam_list.log'
@@ -14,7 +14,7 @@ rule create_bam_lists_allFinalSamples_allSites:
         import os
         with open(output[0], 'w') as f:
             for bam in input.bams:
-                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                search = re.search('^(s_\d+_\d+)(?=_\w)', os.path.basename(bam))
                 sample = search.group(1) 
                 if sample in FINAL_SAMPLES:
                     f.write('{0}\n'.format(bam))
@@ -42,7 +42,7 @@ rule create_bam_list_byHabitat_allSites:
             bams = open(input.bams[0], 'r').readlines()
             with open(output[0], 'w') as f:
                 for bam in bams:
-                    search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
+                    search = re.search('^(s_\d+_\d+)(?=_\w)', os.path.basename(bam))
                     sample = search.group(1) 
                     if sample in samples_habitat:
                         f.write('{0}'.format(bam))
@@ -65,14 +65,14 @@ rule angsd_saf_likelihood_byHabitat_allSites:
         saf = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.gz'.format(ANGSD_DIR),
         saf_idx = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.idx'.format(ANGSD_DIR),
         saf_pos = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.pos.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{chrom}_{habitat}_allSites_saf.log'
+    log: LOG_DIR + '/angsd_saf_likelihood_byHabitat_allSites/{chrom}_{habitat}_allSites_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         out = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        mem_mb = lambda wildcards, attempt: attempt * 10000,
         time = '6:00:00'
     shell:
         """
@@ -103,12 +103,12 @@ rule angsd_estimate_joint_habitat_sfs_allSites:
         safs = get_habitat_saf_files_allSites
     output:
         '{0}/sfs/2dsfs/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{chrom}_allSites_{hab_comb}.log'
+    log: LOG_DIR + '/angsd_estimate_habitat_2dsfs_allSites/{chrom}_allSites_{hab_comb}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 20000,
-        time = '01:00:00'
+        mem_mb = lambda wildcards, attempt: attempt * 30000,
+        time = '06:00:00'
     shell:
         """
         realSFS {input.safs} \
@@ -126,7 +126,7 @@ rule angsd_estimate_sfs_byHabitat_allSites:
         saf = rules.angsd_saf_likelihood_byHabitat_allSites.output.saf_idx
     output:
         '{0}/sfs/1dsfs/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.sfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{chrom}_allSites_{habitat}_sfs.log'
+    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat_allSites/{chrom}_allSites_{habitat}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     resources:
@@ -155,7 +155,7 @@ rule angsd_habitat_fst_index_allSites:
     output:
         fst = '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_habitat_fst_index/{chrom}_allSites_{hab_comb}_index.log'
+    log: LOG_DIR + '/angsd_habitat_fst_index_allSites/{chrom}_allSites_{hab_comb}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     resources:
@@ -181,7 +181,7 @@ rule angsd_habitat_fst_readable_allSites:
         rules.angsd_habitat_fst_index_allSites.output.idx
     output:
         '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_habitat_fst_readable/{chrom}_allSites_{hab_comb}_readable.log'
+    log: LOG_DIR + '/angsd_habitat_fst_readable_allSites/{chrom}_allSites_{hab_comb}_readable.log'
     resources:
         mem_mb = 4000,
         time = '01:00:00'
@@ -202,7 +202,7 @@ rule angsd_estimate_thetas_byHabitat_allSites:
     output:
         idx = '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{chrom}_allSites_{habitat}_thetas.log'
+    log: LOG_DIR + '/angsd_estimate_thetas_byHabitat_allSites/{chrom}_allSites_{habitat}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 4
     params:
@@ -227,7 +227,7 @@ rule angsd_diversity_neutrality_stats_byHabitat_allSites:
         rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
     output:
        '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{chrom}_allSites_{habitat}_diversity_neutrality.log'
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat_allSites/{chrom}_allSites_{habitat}_diversity_neutrality.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
