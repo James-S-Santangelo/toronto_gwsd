@@ -105,7 +105,7 @@ rule angsd_index_random_degen_sites:
     output:
         binary = '{0}/angsd_sites/Trepens_{{site}}_random.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/Trepens_{{site}}_random.sites.idx'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/angsd_index_random_degen_sites/random_{site}_index.log'
+    log: LOG_DIR + '/angsd_index_random_degen_sites/random_{site}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
@@ -120,7 +120,7 @@ rule split_random_angsd_sites_byChrom:
         rules.select_random_degenerate_sites.output
     output:
         sites = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites'.format(PROGRAM_RESOURCE_DIR),
-    log: 'logs/split_random_angsd_sites_byChrom/{chrom}_{site}_split_angsd_sites_random.log'
+    log: LOG_DIR + '/split_random_angsd_sites_byChrom/{chrom}_{site}_split_angsd_sites_random.log'
     shell:
         """
         grep {wildcards.chrom} {input} > {output.sites} 2> {log}
@@ -135,7 +135,7 @@ rule index_random_chromosomal_angsd_sites:
     output:
         binary = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites.idx'.format(PROGRAM_RESOURCE_DIR)
-    log: 'logs/index_random_chromosomal_angsd_sites/{chrom}_{site}_index.log'
+    log: LOG_DIR + '/index_random_chromosomal_angsd_sites/{chrom}_{site}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     shell:
         """
@@ -198,7 +198,7 @@ rule concat_angsd_gl:
     	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
     output:
         '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
-    log: 'logs/concat_angsd_gl/allSamples_{site}_{maf}_concat.log'
+    log: LOG_DIR + '/concat_angsd_gl/allSamples_{site}_{maf}_concat.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     shell:
         """
@@ -221,7 +221,7 @@ rule concat_angsd_mafs:
     	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
     output:
         '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: 'logs/concat_angsd_mafs/allSamples_{site}_{maf}_concat.log'
+    log: LOG_DIR + '/concat_angsd_mafs/allSamples_{site}_{maf}_concat.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     shell:
         """
