@@ -173,25 +173,6 @@ rule angsd_habitat_fst_index_allSites:
             -fstout {params.fstout} 2> {log}
         """
 
-rule angsd_habitat_fst_readable_allSites:
-    """
-    Create readable Fst files. Required due to format of realSFS fst index output files. 
-    """
-    input:
-        rules.angsd_habitat_fst_index_allSites.output.idx
-    output:
-        '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_habitat_fst_readable_allSites/{chrom}_allSites_{hab_comb}_readable.log'
-    resources:
-        mem_mb = 4000,
-        time = '01:00:00'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    shell:
-        """
-        realSFS fst print {input} > {output} 2> {log}
-        """
-
-
 rule angsd_estimate_thetas_byHabitat_allSites:
     """
     Generate per-site thetas in each habitat from 1DSFS
@@ -219,22 +200,45 @@ rule angsd_estimate_thetas_byHabitat_allSites:
             -outname {params.out} 2> {log}
         """
 
-rule angsd_diversity_neutrality_stats_byHabitat_allSites:
-    """
-    Estimate pi, Waterson's theta, Tajima's D, etc. in each habitat
-    """
+###########################
+#### WINDOWED ANALYSES ####
+###########################
+
+rule windowed_theta:
     input:
         rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
     output:
-       '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat_allSites/{chrom}_allSites_{habitat}_diversity_neutrality.log'
+        "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz.pestPG".format(ANGSD_DIR)
+    log: LOG_DIR + '/windowed_theta/{chrom}_{habitat}_windowTheta.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    params:
+        out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz".format(ANGSD_DIR),
+        win = 5000,
+        step = 1000
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
     shell:
         """
-        thetaStat do_stat {input} 2> {log}
+        thetaStat do_stat {input} -win {params.win} -step {params.step} -outnames {output} 2> {log}
+        """
+
+rule windowed_fst:
+    input:
+        rules.angsd_habitat_fst_index_allSites.output.idx
+    output:
+        "{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_windowed.fst".format(ANGSD_DIR)
+    log: LOG_DIR + '/windowed_fst/{chrom}_{hab_comb}_windowedFst.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    params:
+        win = 5000,
+        step = 1000
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS fst stats2 {input} -win {params.win} -step {params.step} > {output} 2> {log}
         """
 
 ##############
@@ -246,8 +250,8 @@ rule angsd_byHabitat_allSites_done:
     Generate empty flag file signalling successful completion of SFS and summary stat for habitats
     """
     input:
-        expand(rules.angsd_habitat_fst_readable_allSites.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
-        expand(rules.angsd_diversity_neutrality_stats_byHabitat_allSites.output, chrom=CHROMOSOMES, habitat=HABITATS)
+        expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
+        expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS)
     output:
         '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR)
     shell:
