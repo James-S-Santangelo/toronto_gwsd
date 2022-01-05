@@ -91,8 +91,8 @@ rule bcftools_merge_phased:
     input:
         lambda wildcards: expand(rules.bcftools_remove_format_tags.output.vcf, sample=FINAL_SAMPLES)
     output:
-        vcf = '{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR),
-        idx = '{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
+        vcf = temp('{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
+        idx = temp('{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/bcftools_merge_phased/merge_phased.log'
     conda: '../envs/phasing.yaml'
     resources:
