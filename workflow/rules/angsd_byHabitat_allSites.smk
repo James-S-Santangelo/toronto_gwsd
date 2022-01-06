@@ -220,7 +220,7 @@ rule windowed_theta:
         time = '01:00:00'
     shell:
         """
-        thetaStat do_stat {input} -win {params.win} -step {params.step} -outnames {output} 2> {log}
+        thetaStat do_stat {input} -win {params.win} -step {params.step} -outnames {params.out} 2> {log}
         """
 
 rule windowed_fst:
