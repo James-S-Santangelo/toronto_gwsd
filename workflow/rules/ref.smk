@@ -47,6 +47,21 @@ rule bwa_index_ref:
         bwa index {input} 2> {log}
         """
 
+rule makeblastdb_fromRef:
+    input:
+        rules.unzip_reference.output
+    output:
+        multiext('{0}/GCA_005869975.1_AgR_To_v5_genomic.fna'.format(REF_DIR), '.ndb', '.nhr', '.nin', '.nog', '.nos', '.not', '.nsq', '.ntf', '.nto') 
+    conda: '../envs/ref.yaml'
+    log: LOG_DIR + '/makeblastdb_fromReb/makeblastdb_fromRef.log'
+    shell:
+        """
+        makeblastdb -in {input} \
+            -dbtype nucl \
+            -parse_seqids \
+            -logfile test.log
+        """
+
 rule clone_degeneracy:
     """
     Clone Degeneracy GitHub repo for getting 4fold and 0fold sites.
