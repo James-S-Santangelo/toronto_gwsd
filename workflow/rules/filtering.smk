@@ -63,7 +63,7 @@ rule remove_duplicate_sites:
 
 rule vcf_filtering_done:
     input:
-        expand(rules.remove_duplicate_sites.output, chrom=CHROMOSOMES, site_type='snps', miss=['0.2', '0'])
+        expand(rules.remove_duplicate_sites.output, chrom=CHROMOSOMES, site_type='snps', miss=['0'])
     output:
         '{0}/filtering.done'.format(FREEBAYES_DIR)
     shell:
