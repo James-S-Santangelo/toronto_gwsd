@@ -136,7 +136,8 @@ rule split_phased_vcf_byChrom:
 
 rule shapeit_phase:
     input:
-        rules.split_phased_vcf_byChrom.output.vcf
+        vcf = rules.split_phased_vcf_byChrom.output.vcf,
+        genMap = rules.split_genMap.output
     output:
         vcf = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),
         idx = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased_shapeitPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
@@ -148,7 +149,8 @@ rule shapeit_phase:
     threads: 8
     shell:
         """
-        shapeit4 --input {input} \
+        shapeit4 --input {input.vcf} \
+            --map {input.genMap} \
             --region {wildcards.chrom} \
             --use-PS 0.0001 \
             --thread {threads} \

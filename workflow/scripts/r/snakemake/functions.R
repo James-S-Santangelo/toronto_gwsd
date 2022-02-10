@@ -199,7 +199,7 @@ scam_plot <- function(chrom_name, markers_df, scam_fits_df){
     scamFit <- filter(scam_fits_df, chrom == chrom_name)
 
     plot <- markers %>%
-        ggplot(., aes(x = mid_pos, y = win_mean_cM)) +
+        ggplot(., aes(x = mid_pos, y = win_mean_cM_off)) +
         geom_point(size = 2.5, color = 'black', shape = 21, fill = 'black', show.legend = FALSE) +
         geom_line(data = scamFit, aes(x = pos, y = preds), size = 1, color = 'red') +
         xlab('Physical position') + ylab('Genetic position (cM)') +

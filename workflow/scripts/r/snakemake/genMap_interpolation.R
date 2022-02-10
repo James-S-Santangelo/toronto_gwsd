@@ -128,7 +128,25 @@ winMeans_df <- chroms %>%
 
 # Fit SCAM model separately for each chromosome
 scamFits_allChroms <- chroms %>%
-    purrr::map_dfr(., get_fits, markers_df = winMeans_df, sites_df = sites_allChroms)
+    purrr::map_dfr(., get_fits, markers_df = winMeans_df, sites_df = sites_allChroms) 
+
+# Find minimum predicted cM
+min_cM <- scamFits_allChroms %>% 
+	group_by(chrom) %>% 
+	summarise(min_cM = min(preds))
+
+# Force minimum predicted cM to 0 for SCAM fits
+scamFits_allChroms <- scamFits_allChroms %>% 
+	group_by(chrom) %>% 
+	mutate(preds = case_when(min(preds) < 0 ~ preds + abs(min(preds)),
+							 min(preds) > 0 ~ preds - abs(min(preds))))
+
+# Offset markers by same amount as fits. Only for plotting
+winMeans_df <- winMeans_df %>% 
+	left_join(., min_cM, by = 'chrom') %>% 
+	group_by(chrom) %>% 
+	mutate(win_mean_cM_off = case_when(min_cM < 0 ~ win_mean_cM + abs(min_cM),
+									   min_cM > 0 ~ win_mean_cM - abs(min_cM)))
 
 # List of plots. Each plot is fit of SCAM model to chromosome markers
 scamFits_plotList <- chroms %>%
