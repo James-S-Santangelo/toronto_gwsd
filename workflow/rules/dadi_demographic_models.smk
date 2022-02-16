@@ -22,10 +22,22 @@ rule dadi_sfs:
             -seed 42 -P {threads} -maxIter 2000 > {output} 2> {log}
         """
 
+rule format_dadi_sfs:
+    input:
+        rules.dadi_sfs.output
+    output:
+        '{0}/{{hab_comb}}_dadi_formatted.sfs'.format(DADI_DIR)
+    params:
+        pop1_n = 41,
+        pop2_n = 41
+    shell:
+        """
+        perl scripts/perl/realsfs2dadi.pl {input} {params.pop1_n} {params.pop2_n} > {output}
+        """
 
 rule dadi_done:
     input:
-        expand(rules.dadi_sfs.output, hab_comb=['Urban_Rural'])
+        expand(rules.format_dadi_sfs.output, hab_comb=['Urban_Rural'])
     output:
         '{0}/dadi.done'.format(DADI_DIR)
     shell:
