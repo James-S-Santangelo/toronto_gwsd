@@ -2,10 +2,11 @@
 samples: ../resources/sequencedPlants_phenotypesHabitat.txt
 chromosomes: ../resources/chromosome_file.txt
 gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
+genmap_files: ../resources/genMap
 
 results_prefix: /scratch/projects/trifolium/gwsd/results 
+log_prefix: /scratch/projects/trifolium/gwsd/logs
 raw_read_prefix: /node1nfs/archive/data/trifolium/toronto_gwsd
-temp_dir: /scratch/projects/trifolium/gwsd/tmp
 
 # Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
 lowQual_samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']

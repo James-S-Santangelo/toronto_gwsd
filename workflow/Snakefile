@@ -15,7 +15,7 @@ HABITATS = pd.read_table(config['samples'])['Habitat'].unique().tolist()
 # External resources
 # Make ancient to prevent triguring pipeline if time stamp changes
 GFF_FILE = ancient(config['gff'])
-GENMAP_RESOURCE_DIR = ancient(config['genmap_files'])
+GENMAP_RESOURCE_DIR = config['genmap_files']
 
 # Paths for output files
 LOG_DIR = config['log_prefix']
@@ -75,9 +75,9 @@ include: 'rules/common.smk'
 rule all:
    input:
         # Reference genome
-        #'{0}/ref.done'.format(REF_DIR),
+        '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
-        #'{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
@@ -86,13 +86,13 @@ rule all:
         # Recombination map
         '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
         # Angsd
-        #'{0}/angsd_allSamples.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
+        '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
         # NGS relate
-        #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
+        '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
-        #'{0}/population_structure.done'.format(POP_STRUC_DIR)
+        '{0}/population_structure.done'.format(POP_STRUC_DIR)
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
 

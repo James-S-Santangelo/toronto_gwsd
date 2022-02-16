@@ -3,7 +3,7 @@
 
 rule blast_markers:
     input:
-        markers = '{0}/{{map_pop}}_tags.fa'.format(GENMAP_RESOURCE_DIR),
+        markers = ancient('{0}/{{map_pop}}_tags.fa'.format(GENMAP_RESOURCE_DIR)),
         db_flag = rules.makeblastdb_fromRef.output,
         ref = rules.unzip_reference.output
     output:
@@ -38,10 +38,10 @@ rule interpolate_genetic_map:
     input:
         DG_markers = expand(rules.blast_markers.output, map_pop='DG'),
         SG_markers = expand(rules.blast_markers.output, map_pop='SG'),
-        DG_genMap = '{0}/DG_genMap.csv'.format(GENMAP_RESOURCE_DIR),
-        SG_genMap = '{0}/SG_genMap.csv'.format(GENMAP_RESOURCE_DIR),
-        DG_names = '{0}/DG_marker_key.csv'.format(GENMAP_RESOURCE_DIR),
-        SG_names = '{0}/SG_marker_key.csv'.format(GENMAP_RESOURCE_DIR),
+        DG_genMap = ancient('{0}/DG_genMap.csv'.format(GENMAP_RESOURCE_DIR)),
+        SG_genMap = ancient('{0}/SG_genMap.csv'.format(GENMAP_RESOURCE_DIR)),
+        DG_names = ancient('{0}/DG_marker_key.csv'.format(GENMAP_RESOURCE_DIR)),
+        SG_names = ancient('{0}/SG_marker_key.csv'.format(GENMAP_RESOURCE_DIR)),
         sites = expand(rules.sites_toInterpolate_byChrom.output, chrom=CHROMOSOMES)
     output:
         markers_byPop_plot = '{0}/genMap/markers_bothPops_withOutliers_allChroms.pdf'.format(FIGURES_DIR),
