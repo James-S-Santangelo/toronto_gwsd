@@ -83,6 +83,7 @@ import os
 import numpy
 import dadi
 import pylab
+import logging
 from datetime import datetime
 import Optimize_Functions
 import Models_2D
@@ -92,10 +93,11 @@ import Models_2D
 # Import data to create joint-site frequency spectrum
 #===========================================================================
 
+sys.stdout = open(snakemake.log[0], 'w')
+sys.stderr = sys.stdout
+
 #**************
-snps = snakemake.input['sfs'][0] 
-print(snps)
-print(type(snps))
+snps = snakemake.input['sfs'][0]
 #Create python dictionary from snps file
 dd = dadi.Misc.make_data_dict(snps)
 
@@ -293,17 +295,4 @@ Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_growth_rur_asym_mig"
 #######################################################################
 '''
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+sys.stdout.close()

@@ -41,6 +41,7 @@ rule run_dadi:
     output:
         logf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{model}}.log.txt'.format(DADI_DIR),
         optimf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{model}}.optimized.txt'.format(DADI_DIR)
+    log: LOG_DIR + '/run_dadi/{hab_comb}_{model}.log'
     conda: '../envs/dadi.yaml'
     params:
         prefix = '{0}/{{model}}/'.format(DADI_DIR)
