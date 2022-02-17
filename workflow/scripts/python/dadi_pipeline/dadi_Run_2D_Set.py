@@ -93,8 +93,9 @@ import Models_2D
 #===========================================================================
 
 #**************
-snps = snakemake.input['sfs'] 
-
+snps = snakemake.input['sfs'][0] 
+print(snps)
+print(type(snps))
 #Create python dictionary from snps file
 dd = dadi.Misc.make_data_dict(snps)
 
@@ -119,7 +120,7 @@ print("Sum of SFS: {}".format(numpy.around(fs.S(), 2)))
 print("\n============================================================================\n")
 
 #================================================================================
-# Calling external 2D models from the Models_2D.py script
+# Calling external 2D odels from the Models_2D.py script
 #================================================================================
 '''
  We will use a function from the Optimize_Functions.py script for our optimization routines:
@@ -170,7 +171,7 @@ and the Island Set, as each was meant to be mutually exclusive.
 
 #create a prefix based on the population names to label the output files
 #ex. Pop1_Pop2
-prefix = '{0}_{1}_{2}'.format(snakemake.wildcards.hab_comb, snakemake.params['prefix'], '_'.join(pop_ids)) 
+prefix = '{0}{1}_{2}'.format(snakemake.params['prefix'], snakemake.wildcards.hab_comb, '_'.join(pop_ids)) 
 
 #**************
 #make sure to define your extrapolation grid size (based on your projections)
@@ -193,19 +194,19 @@ fs_folded = True
 
 #### NO SPLIT MODELS ##################################################
 
-if snakemake.wildcards.models == 'no_div':
+if snakemake.wildcards.model == 'no_div':
     # No split, no change in size
     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div", Models_2D.no_div, rounds, 1, fs_folded=fs_folded,
                                         reps=reps, maxiters=maxiters, folds=folds)
-elif snakemake.wildcards.models == 'no_div_bot':
+elif snakemake.wildcards.model == 'no_div_bot':
     # No split, bottleneck
     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_bot", Models_2D.no_div_bot, rounds, 4, fs_folded=fs_folded,
                                         reps=reps, maxiters=maxiters, folds=folds, param_labels = "nuB, nuF, TB, TF")
-elif snakemake.wildcards.models == 'no_div_growth':
+elif snakemake.wildcards.model == 'no_div_growth':
     # No split, growth
     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_growth", Models_2D.no_div_growth, rounds, 2, fs_folded=fs_folded,
                                         reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu, T")
-elif snakemake.wildcards.models == 'no_div_bot_growth':                                     
+elif snakemake.wildcards.model == 'no_div_bot_growth':                                     
 # No split, bottleneck + growth
     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_bot_growth", Models_2D.no_div_bot_growth, rounds, 4, fs_folded=fs_folded,
                                         reps=reps, maxiters=maxiters, folds=folds, param_labels = "nuB, nuG, TB, TG")  
