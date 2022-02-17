@@ -92,7 +92,6 @@ import Models_2D
 #===========================================================================
 # Import data to create joint-site frequency spectrum
 #===========================================================================
-
 sys.stdout = open(snakemake.log[0], 'w')
 sys.stderr = sys.stdout
 
@@ -173,7 +172,7 @@ and the Island Set, as each was meant to be mutually exclusive.
 
 #create a prefix based on the population names to label the output files
 #ex. Pop1_Pop2
-prefix = '{0}{1}_{2}'.format(snakemake.params['prefix'], snakemake.wildcards.hab_comb, '_'.join(pop_ids)) 
+prefix = '{0}{1}_{2}_{3}'.format(snakemake.params['prefix'], snakemake.wildcards.hab_comb, '_'.join(pop_ids), snakemake.wildcards.rep) 
 
 #**************
 #make sure to define your extrapolation grid size (based on your projections)

@@ -39,9 +39,9 @@ rule run_dadi:
     input:
         sfs = rules.format_dadi_sfs.output
     output:
-        logf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{model}}.log.txt'.format(DADI_DIR),
-        optimf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{model}}.optimized.txt'.format(DADI_DIR)
-    log: LOG_DIR + '/run_dadi/{hab_comb}_{model}.log'
+        logf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.log.txt'.format(DADI_DIR),
+        optimf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.optimized.txt'.format(DADI_DIR)
+    log: LOG_DIR + '/run_dadi/{hab_comb}_{model}_{rep}.log'
     conda: '../envs/dadi.yaml'
     params:
         prefix = '{0}/{{model}}/'.format(DADI_DIR)
@@ -53,7 +53,7 @@ rule run_dadi:
 
 rule dadi_done:
     input:
-        expand(rules.run_dadi.output, hab_comb=['Urban_Rural'], model=['no_div', 'no_div_bot', 'no_div_growth', 'no_div_bot_growth'])
+        expand(rules.run_dadi.output, hab_comb=['Urban_Rural'], model=['no_div', 'no_div_bot', 'no_div_growth', 'no_div_bot_growth'], rep = ['1', '2', '3', '4', '5'])
     output:
         '{0}/dadi.done'.format(DADI_DIR)
     shell:
