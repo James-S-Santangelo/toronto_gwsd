@@ -95,7 +95,7 @@ rule all:
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Demographic modelling
-        '{0}/dadi.done'.format(DADI_DIR),
+        #'{0}/dadi.done'.format(DADI_DIR),
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
 

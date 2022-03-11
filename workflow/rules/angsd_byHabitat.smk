@@ -93,8 +93,8 @@ rule angsd_estimate_joint_habitat_sfs:
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 15000,
-        time = '01:00:00'
+        mem_mb = lambda wildcards, attempt: attempt * 30000,
+        time = '03:00:00'
     shell:
         """
         realSFS {input.safs} \
@@ -121,8 +121,8 @@ rule angsd_estimate_sfs_byHabitat:
     wildcard_constraints:
         site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
-        time = '01:00:00'
+        mem_mb = lambda wildcards, attempt: attempt * 15000,
+        time = '03:00:00'
     shell:
         """
         realSFS {input.saf} \
