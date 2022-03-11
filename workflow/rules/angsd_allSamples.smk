@@ -185,9 +185,49 @@ rule angsd_gl_degenerate_allSamples:
             -minQ 20 \
             -minMapQ 30 \
             -sites {input.sites} \
-            -minMaf {wildcards.maf} \
             -r {wildcards.chrom} \
             -bam {input.bams} 2> {log}
+        """
+
+############################################
+#### ESTIMATE LD AMONG DEGENERATE SITES ####
+############################################
+
+rule create_pos_file_for_ngsLD:
+    input:
+        rules.angsd_gl_degenerate_allSamples.output.mafs
+    output:
+        '{0}/ngsld_pos/{{chrom}}_{{site}}.pos'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_{site}_pos.log'
+    shell:
+        """
+        zcat {input} | cut -f 1,2 | tail -n +2 > {output} 2> {log}
+        """
+
+rule ngsld:
+    input:
+        pos = rules.create_pos_file_for_ngsLD.output,
+        gls = rules.angsd_gl_degenerate_allSamples.output.gls
+    output:
+        '{0}/{{chrom}}/{{chrom}}_{{site}}.ld.gz'.format(NGSLD_DIR)
+    log: LOG_DIR + '/ngsld/{chrom}_{site}_calc_ld.log'
+    container: 'library://james-s-santangelo/ngsld/ngsld:1.1.1'
+    threads: 8
+    params:
+        n_ind = len(FINAL_SAMPLES)
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '3:00:00'
+    shell:
+        """
+        ( NUM_SITES=$(cat {input.pos} | wc -l) &&
+          ngsLD --geno {input.gls} \
+            --pos {input.pos} \
+            --n_ind {params.n_ind} \
+            --n_sites $NUM_SITES \
+            --probs \
+            --n_threads {threads} \
+            --max_kb_dist 100 | gzip --best > {output} ) 2> {log}
         """
 
 rule concat_angsd_gl:
@@ -254,9 +294,10 @@ rule extract_sample_angsd:
 
 rule angsd_allSamples_done:
     input:
-        expand(rules.concat_angsd_gl.output, site=['4fold'], maf=['0.05']),
-        expand(rules.concat_angsd_mafs.output, site=['4fold'], maf=['0.05']),
-        expand(rules.extract_sample_angsd.output, site=['4fold'])
+        expand(rules.ngsld.output, site='4fold', chrom=CHROMOSOMES)
+        #expand(rules.concat_angsd_gl.output, site=['4fold'], maf=['0.05']),
+        #expand(rules.concat_angsd_mafs.output, site=['4fold'], maf=['0.05']),
+        #expand(rules.extract_sample_angsd.output, site=['4fold'])
     output:
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR)
     shell:
