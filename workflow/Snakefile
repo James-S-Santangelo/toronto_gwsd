@@ -79,20 +79,20 @@ rule all:
         # Reference genome
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
-        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        #'{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        '{0}/filtering.done'.format(FREEBAYES_DIR),
-        '{0}/phasing.done'.format(FREEBAYES_DIR),
+        #'{0}/freebayes.done'.format(FREEBAYES_DIR),
+        #'{0}/filtering.done'.format(FREEBAYES_DIR),
+        #'{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
-        '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
+        #'{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
         # Angsd
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
-        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
-        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
+        #'{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
         # NGS relate
-        '{0}/ngsrelate.done'.format(NGSRELATE_DIR),
+        #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Demographic modelling
@@ -106,9 +106,9 @@ include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
 include: 'rules/angsd_allSamples.smk'
-include: 'rules/relatedness.smk'
-include: 'rules/angsd_byHabitat.smk'
-include: 'rules/angsd_byHabitat_allSites.smk'
+#include: 'rules/relatedness.smk'
+#nclude: 'rules/angsd_byHabitat.smk'
+#include: 'rules/angsd_byHabitat_allSites.smk'
 include: 'rules/freebayes.smk'
 include: 'rules/filtering.smk'
 include: 'rules/recombination_map.smk'

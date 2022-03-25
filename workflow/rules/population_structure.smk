@@ -1,3 +1,113 @@
+# Rules to infer population structure and admixture proportions
+
+###############
+#### SETUP ####
+###############
+
+# Estimate LD among 4fold SNPs with MAF > 0.05. 
+# Prune these SNPs within 20 Kb using r-squared cutoff of 0.2
+
+rule create_pos_file_for_ngsLD:
+    input:
+        rules.angsd_gl_degenerate_allSamples.output.mafs
+    output:
+        '{0}/ngsld_pos/{{chrom}}_{{site}}.pos'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_{site}_pos.log'
+    shell:
+        """
+        zcat {input} | cut -f 1,2 | tail -n +2 > {output} 2> {log}
+        """
+
+rule ngsLD_allDegenerateSites:
+    input:
+        pos = rules.create_pos_file_for_ngsLD.output,
+        gls = rules.angsd_gl_degenerate_allSamples.output.gls
+    output:
+        '{0}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.ld.gz'.format(NGSLD_DIR)
+    log: LOG_DIR + '/ngsld/{chrom}_{site}_maf{maf}_calc_ld.log'
+    container: 'library://james-s-santangelo/ngsld/ngsld:1.1.1'
+    threads: 8
+    params:
+        n_ind = len(FINAL_SAMPLES)
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '1:00:00'
+    shell:
+        """
+        ( NUM_SITES=$(cat {input.pos} | wc -l) &&
+          ngsLD --geno {input.gls} \
+            --pos {input.pos} \
+            --n_ind {params.n_ind} \
+            --n_sites $NUM_SITES \
+            --min_maf {wildcards.maf} \
+            --probs \
+            --n_threads {threads} \
+            --max_kb_dist 20 | gzip --best > {output} ) 2> {log}
+        """
+
+rule prune_degenerateSNPs_forPopStructure:
+    input:
+        rules.ngsLD_allDegenerateSites.output
+    output:
+        '{0}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.id'.format(NGSLD_DIR)
+    log: LOG_DIR + '/prune_degenerateSNP_forPopStructure/{chrom}_{site}_maf{maf}_prune_ld.log'
+    container: 'library://james-s-santangelo/ngsld/ngsld:1.1.1'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '3:00:00'
+    shell:
+        """
+        ( zcat {input} | perl /opt/bin/prune_graph.pl \
+            --max_kb_dist 20 \
+            --min_weight 0.2 | sort -v > {output} ) 2> {log}
+        """
+
+rule concat_angsd_gl:
+    """
+    Concatenated GLs from all 16 chromosomes into single file. Done separately for each site type.
+    """
+    input:
+    	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
+    output:
+        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/concat_angsd_gl/allSamples_{site}_{maf}_concat.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
+    shell:
+        """
+        first=1
+        for f in {input}; do
+            if [ "$first"  ]; then
+                zcat "$f"
+                first=
+            else
+                zcat "$f"| tail -n +2
+            fi
+        done | bgzip -c > {output} 2> {log}
+        """
+
+rule concat_angsd_mafs:
+    """
+    Concatenate MAF files for each of 16 chromosomes into single file. Done separately for each site type.
+    """
+    input:
+    	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
+    output:
+        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/concat_angsd_mafs/allSamples_{site}_{maf}_concat.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
+    shell:
+        """
+        first=1
+        for f in {input}; do
+            if [ "$first"  ]; then
+                zcat "$f"
+                first=
+            else
+                zcat "$f"| tail -n +2
+            fi
+        done | bgzip -c > {output} 2> {log}
+        """
+
 rule pcangsd:
     input:
         rules.concat_angsd_gl.output
@@ -94,65 +204,13 @@ rule clumpak_best_k_by_evanno:
 
 rule pop_structure_done:
     input:
-        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
-        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
-        expand(rules.clumpak_best_k_by_evanno.output)   
+        expand(rules.prune_degenerateSNPs_forPopStructure.output, site='4fold', maf='0.05', chrom=CHROMOSOMES)
+        #expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
+        #expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
+        #expand(rules.clumpak_best_k_by_evanno.output)   
     output:
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
     shell:
         """
         touch {output}
         """
-
-# rule create_pos_file_for_ngsLD:
-#     input:
-#         rules.angsd_gl_allSites.output.mafs
-#     output:
-#         '{0}/ngsld_pos/{{chrom}}_angsdGL_withMaf{{maf}}.pos'.format(PROGRAM_RESOURCE_DIR)
-#     log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_withMaf{maf}_pos.log'
-#     shell:
-#         """
-#         zcat {input} | cut -f 1,2 | tail -n +2 > {output} 2> {log}
-#         """
-# 
-# rule calc_ld_angsd_gl:
-#     input:
-#         pos = rules.create_pos_file_for_ngsLD.output,
-#         gls = rules.angsd_gl_allSites.output.gls
-#     output:
-#         '{0}/{{chrom}}/{{chrom}}_allSamples_withMaf{{maf}}.ld.gz'.format(NGSLD_DIR)
-#     log: LOG_DIR + '/calc_ld_angsd_gl/{chrom}_withMaf{maf}_calc_ld.log'
-#     container: 'shub://James-S-Santangelo/singularity-recipes:ngsld_v1.1.1'
-#     threads: 16
-#     resources:
-#         mem_mb = lambda wildcards, attempt: attempt * 8000,
-#         time = '16:00:00'
-#     shell:
-#         """
-#         ( NUM_SITES=$(cat {{input.pos}} | wc -l) &&
-#           ngsLD --geno {{input.gls}} \
-#             --pos {{input.pos}} \
-#             --n_ind {0} \
-#             --n_sites $NUM_SITES \
-#             --probs \
-#             --min_maf {{wildcards.maf}} \
-#             --n_threads {{threads}} \
-#             --max_kb_dist 100 | gzip --best > {{output}} ) 2> {{log}}
-#         """.format(len(SAMPLES))
-# 
-# rule prune_ld:
-#     input:
-#         rules.calc_ld_angsd_gl.output
-#     output:
-#         '{0}/pruned/{{chrom}}/{{chrom}}_withMaf{{maf}}_pruned.id'.format(NGSLD_DIR)
-#     log: LOG_DIR + '/prune_ld/{chrom}_withMaf{maf}_prune_ld.log'
-#     container: 'shub://James-S-Santangelo/singularity-recipes:ngsld_v1.1.1'
-#     resources:
-#         mem_mb = lambda wildcards, attempt: attempt * 50000,
-#         time = '72:00:00'
-#     shell:
-#         """
-#         ( zcat {input} | perl /opt/bin/prune_graph.pl \
-#             --max_kb_dist 20 \
-#             --min_weight 0.2 | sort -V > {output} ) 2> {log}
-#         """
