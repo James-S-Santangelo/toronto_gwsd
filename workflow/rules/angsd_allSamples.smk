@@ -77,71 +77,6 @@ rule angsd_index_sites_byChrom:
         angsd sites index {input} 2> {log}
         """
 
-rule select_random_degenerate_sites:
-    """
-    Randomly select `params.nSites` degenerate (i.e., 4fold or 0fold) sites from across the genome
-    """
-    input:
-        rules.convert_sites_for_angsd.output
-    output:
-        '{0}/angsd_sites/Trepens_{{site}}_random.sites'.format(PROGRAM_RESOURCE_DIR)
-    params:
-        nSites = 2000000
-    run:
-        import random
-        sites = open(input[0], 'r').readlines()
-        random.seed(42)
-        rand_sites = sorted(random.sample(sites, k = int(params.nSites)))
-        with open(output[0], 'w') as fout:
-            for site in rand_sites:
-                fout.write(site)
-
-rule angsd_index_random_degen_sites:
-    """
-    Index randomly selected genome-wide degenerate sites for use with ANGSD
-    """
-    input:
-        rules.select_random_degenerate_sites.output
-    output:
-        binary = '{0}/angsd_sites/Trepens_{{site}}_random.sites.bin'.format(PROGRAM_RESOURCE_DIR),
-        idx = '{0}/angsd_sites/Trepens_{{site}}_random.sites.idx'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/angsd_index_random_degen_sites/random_{site}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    shell:
-        """
-        angsd sites index {input} 2> {log}
-        """
-
-rule split_random_angsd_sites_byChrom:
-    """
-    Split randomly selected degenerate ANGSD sites file into separate sites files by chromosome. Helps parallelize some computations.
-    """
-    input:
-        rules.select_random_degenerate_sites.output
-    output:
-        sites = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites'.format(PROGRAM_RESOURCE_DIR),
-    log: LOG_DIR + '/split_random_angsd_sites_byChrom/{chrom}_{site}_split_angsd_sites_random.log'
-    shell:
-        """
-        grep {wildcards.chrom} {input} > {output.sites} 2> {log}
-        """
-
-rule index_random_chromosomal_angsd_sites:
-    """
-    Index chromosomal ANGSD sites files for use with ANGSD
-    """
-    input:
-        rules.split_random_angsd_sites_byChrom.output
-    output:
-        binary = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites.bin'.format(PROGRAM_RESOURCE_DIR),
-        idx = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}_random.sites.idx'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/index_random_chromosomal_angsd_sites/{chrom}_{site}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
-    shell:
-        """
-        angsd sites index {input} 2> {log}
-        """
-
 ##############################
 #### GENOTYPE LIKELIHOODS ####
 ##############################
@@ -217,7 +152,7 @@ rule ngsld:
         n_ind = len(FINAL_SAMPLES)
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '3:00:00'
+        time = '1:00:00'
     shell:
         """
         ( NUM_SITES=$(cat {input.pos} | wc -l) &&
