@@ -61,6 +61,23 @@ rule prune_degenerateSNPs_forPopStructure:
             --min_weight 0.2 | sort -V > {output} ) 2> {log}
         """
 
+rule pruneGLs_degenerateSNPs:
+    input:
+        gls = rules.angsd_gl_degenerate_allSamples.output.gls,
+        pos = rules.prune_degenerateSNPs_forPopStructure.output
+    output:
+        '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.beagle.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/pruneGLs_degenerateSNPs/{chrom}_{site}_maf{maf}_pruneGLs.log'
+    params:
+        out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.beagle'.format(ANGSD_DIR)
+    shell:
+        """
+        ( zgrep 'marker' {input.gls} > {params.out} &&
+                sed 's/:/_/g' {input.pos} | zgrep -w -f - {input.gls} >> {params.out} &&
+                gzip {params.out} ) 2> {log}
+        """
+        
+
 rule concat_angsd_gl:
     """
     Concatenated GLs from all 16 chromosomes into single file. Done separately for each site type.
@@ -203,7 +220,7 @@ rule clumpak_best_k_by_evanno:
 
 rule pop_structure_done:
     input:
-        expand(rules.prune_degenerateSNPs_forPopStructure.output, site='4fold', maf='0.05', chrom=CHROMOSOMES)
+        expand(rules.pruneGLs_degenerateSNPs.output, site='4fold', maf='0.05', chrom=CHROMOSOMES)
         #expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
         #expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
         #expand(rules.clumpak_best_k_by_evanno.output)   

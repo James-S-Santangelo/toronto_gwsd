@@ -99,7 +99,7 @@ rule angsd_gl_degenerate_allSamples:
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '6:00:00'
+        time = '3:00:00'
     shell:
         """
         NUM_IND=$( wc -l < {input.bams} );
