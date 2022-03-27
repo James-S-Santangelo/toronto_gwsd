@@ -11,14 +11,14 @@ rule create_pos_file_for_ngsLD:
     input:
         rules.angsd_gl_degenerate_allSamples.output.mafs
     output:
-        '{0}/ngsld_pos/{{chrom}}_{{site}}.pos'.format(PROGRAM_RESOURCE_DIR)
-    log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_{site}_pos.log'
+        '{0}/ngsld_pos/{{chrom}}_{{site}}_maf{{maf}}.pos'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_pos_file_for_ngsLD/{chrom}_{site}_maf{maf}_pos.log'
     shell:
         """
         zcat {input} | cut -f 1,2 | tail -n +2 > {output} 2> {log}
         """
 
-rule ngsLD_allDegenerateSites:
+rule ngsLD_degenerateSites:
     input:
         pos = rules.create_pos_file_for_ngsLD.output,
         gls = rules.angsd_gl_degenerate_allSamples.output.gls
@@ -39,7 +39,6 @@ rule ngsLD_allDegenerateSites:
             --pos {input.pos} \
             --n_ind {params.n_ind} \
             --n_sites $NUM_SITES \
-            --min_maf {wildcards.maf} \
             --probs \
             --n_threads {threads} \
             --max_kb_dist 20 | gzip --best > {output} ) 2> {log}
@@ -47,7 +46,7 @@ rule ngsLD_allDegenerateSites:
 
 rule prune_degenerateSNPs_forPopStructure:
     input:
-        rules.ngsLD_allDegenerateSites.output
+        rules.ngsLD_degenerateSites.output
     output:
         '{0}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.id'.format(NGSLD_DIR)
     log: LOG_DIR + '/prune_degenerateSNP_forPopStructure/{chrom}_{site}_maf{maf}_prune_ld.log'
@@ -59,7 +58,7 @@ rule prune_degenerateSNPs_forPopStructure:
         """
         ( zcat {input} | perl /opt/bin/prune_graph.pl \
             --max_kb_dist 20 \
-            --min_weight 0.2 | sort -v > {output} ) 2> {log}
+            --min_weight 0.2 | sort -V > {output} ) 2> {log}
         """
 
 rule concat_angsd_gl:

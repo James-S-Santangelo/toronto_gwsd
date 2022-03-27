@@ -88,18 +88,18 @@ rule angsd_gl_degenerate_allSamples:
         sites = rules.split_angsd_sites_byChrom.output,
         idx = rules.angsd_index_sites_byChrom.output
     output:
-        gls = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}.beagle.gz'.format(ANGSD_DIR)),
-        mafs = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}.mafs.gz'.format(ANGSD_DIR)),
-    log: LOG_DIR + '/angsd_gl_allSamples_degenerate/{chrom}_{site}_angsd_gl.log'
+        gls = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
+        mafs = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
+    log: LOG_DIR + '/angsd_gl_allSamples_degenerate/{chrom}_{site}_maf{maf}_angsd_gl.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 8
     params:
-        out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}'.format(ANGSD_DIR),
+        out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}'.format(ANGSD_DIR),
         max_dp = ANGSD_MAX_DP,
         min_dp_ind = ANGSD_MIN_DP_IND_GL
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '3:00:00'
+        time = '6:00:00'
     shell:
         """
         NUM_IND=$( wc -l < {input.bams} );
@@ -119,6 +119,7 @@ rule angsd_gl_degenerate_allSamples:
             -minInd $MIN_IND \
             -minQ 20 \
             -minMapQ 30 \
+            -minMaf {wildcards.maf} \
             -sites {input.sites} \
             -r {wildcards.chrom} \
             -bam {input.bams} 2> {log}
@@ -145,7 +146,7 @@ rule extract_sample_angsd:
 
 rule angsd_allSamples_done:
     input:
-        expand(rules.angsd_gl_degenerate_allSamples.output, site='4fold', chrom=CHROMOSOMES),
+        expand(rules.angsd_gl_degenerate_allSamples.output, site='4fold', chrom=CHROMOSOMES, maf='0.05'),
         expand(rules.extract_sample_angsd.output, site='4fold')
     output:
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR)
