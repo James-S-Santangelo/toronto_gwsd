@@ -76,40 +76,16 @@ rule pruneGLs_degenerateSNPs:
                 sed 's/:/_/g' {input.pos} | zgrep -w -f - {input.gls} >> {params.out} &&
                 gzip {params.out} ) 2> {log}
         """
-        
 
 rule concat_angsd_gl:
     """
     Concatenated GLs from all 16 chromosomes into single file. Done separately for each site type.
     """
     input:
-    	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.gls, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
+    	lambda wildcards: expand(rules.pruneGLs_degenerateSNPs.output, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
     output:
         '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/concat_angsd_gl/allSamples_{site}_{maf}_concat.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933' 
-    shell:
-        """
-        first=1
-        for f in {input}; do
-            if [ "$first"  ]; then
-                zcat "$f"
-                first=
-            else
-                zcat "$f"| tail -n +2
-            fi
-        done | bgzip -c > {output} 2> {log}
-        """
-
-rule concat_angsd_mafs:
-    """
-    Concatenate MAF files for each of 16 chromosomes into single file. Done separately for each site type.
-    """
-    input:
-    	lambda wildcards: expand(rules.angsd_gl_degenerate_allSamples.output.mafs, chrom=CHROMOSOMES, site=wildcards.site, maf=wildcards.maf)
-    output:
-        '{0}/gls/allSamples/{{site}}/allChroms_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/concat_angsd_mafs/allSamples_{site}_{maf}_concat.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933' 
     shell:
         """
@@ -220,10 +196,9 @@ rule clumpak_best_k_by_evanno:
 
 rule pop_structure_done:
     input:
-        expand(rules.pruneGLs_degenerateSNPs.output, site='4fold', maf='0.05', chrom=CHROMOSOMES)
-        #expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
-        #expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
-        #expand(rules.clumpak_best_k_by_evanno.output)   
+        expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
+        expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
+        expand(rules.clumpak_best_k_by_evanno.output)   
     output:
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
     shell:
