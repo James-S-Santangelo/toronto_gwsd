@@ -29,7 +29,6 @@ FREEBAYES_DIR = '{0}/freebayes'.format(config['results_prefix'])
 PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
 NGSLD_DIR = '{0}/ngsld'.format(config['results_prefix'])
-NGSRELATE_DIR = '{0}/ngsrelate'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 HCN_LOCI_DIR = '{0}/hcn_loci'.format(config['results_prefix'])
@@ -92,8 +91,6 @@ rule all:
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
         #'{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
-        # NGS relate
-        #'{0}/ngsrelate.done'.format(NGSRELATE_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Demographic modelling
@@ -107,7 +104,6 @@ include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
 include: 'rules/angsd_allSamples.smk'
-#include: 'rules/relatedness.smk'
 #nclude: 'rules/angsd_byHabitat.smk'
 #include: 'rules/angsd_byHabitat_allSites.smk'
 include: 'rules/freebayes.smk'

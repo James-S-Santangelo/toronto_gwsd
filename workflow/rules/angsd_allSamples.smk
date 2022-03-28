@@ -26,7 +26,7 @@ rule subset_bams_degeneracy:
 
 rule create_bam_list_allFinalSamples:
     input:
-        bams = lambda wildcards: expand(rules.subset_bams_degeneracy.output.bam, sample=SAMPLES, site=wildcards.site),
+        bams = lambda wildcards: expand(rules.subset_bams_degeneracy.output.bam, sample=FINAL_SAMPLES, site=wildcards.site),
         ref_flag = rules.ref_done.output 
     output:
         '{0}/bam_lists/allFinalSamples_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
@@ -35,10 +35,7 @@ rule create_bam_list_allFinalSamples:
         import os
         with open(output[0], 'w') as f:
             for bam in input.bams:
-                search = re.search('^(.+)(?=_\w)', os.path.basename(bam))
-                sample = search.group(1) 
-                if sample in FINAL_SAMPLES:
-                    f.write('{0}\n'.format(bam))
+                f.write('{0}\n'.format(bam))
 
 rule convert_sites_for_angsd:
     input:
