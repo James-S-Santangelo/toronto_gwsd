@@ -45,13 +45,13 @@ rule angsd_saf_likelihood_byHabitat:
     input:
         unpack(get_files_for_saf_estimation_byHabitat)
     output:
-        saf = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
-        saf_idx = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
-        saf_pos = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
+        saf = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{habitat}_{site}_saf.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        out = '{0}/sfs/{{habitat}}/{{habitat}}_{{site}}'.format(ANGSD_DIR),
+        out = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     threads: 8
     resources:
@@ -85,15 +85,15 @@ rule angsd_estimate_joint_habitat_sfs:
     """
     input:
         safs = get_habitat_saf_files,
-        sites = rules.select_random_degenerate_sites.output,
-        idx = rules.angsd_index_random_degen_sites.output,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/2dsfs/byHabitat/{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
+        '{0}/sfs/2d/byHabitat/{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{site}_{hab_comb}.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 30000,
+        mem_mb = lambda wildcards, attempt: attempt * 50000,
         time = '03:00:00'
     shell:
         """
@@ -111,17 +111,17 @@ rule angsd_estimate_sfs_byHabitat:
     """
     input:
         saf = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
-        sites = rules.select_random_degenerate_sites.output,
-        idx = rules.angsd_index_random_degen_sites.output,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/1dsfs/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
+        '{0}/sfs/1d/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{site}_{habitat}_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     threads: 6
     wildcard_constraints:
         site='4fold'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 15000,
+        mem_mb = lambda wildcards, attempt: attempt * 25000,
         time = '03:00:00'
     shell:
         """
@@ -182,7 +182,6 @@ rule angsd_habitat_fst_readable:
         """
         realSFS fst print {input} > {output} 2> {log}
         """
-
 
 rule angsd_estimate_thetas_byHabitat:
     """

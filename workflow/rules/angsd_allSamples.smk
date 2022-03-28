@@ -50,6 +50,19 @@ rule convert_sites_for_angsd:
         awk '{{print $1"\t"$2+1}}' {input} > {output} 2> {log}
         """
 
+rule angsd_index_degenerate_sites:
+    input:
+        rules.convert_sites_for_angsd.output
+    output:
+        binary = '{0}/angsd_sites/Trepens_{{site}}.sites.bin'.format(PROGRAM_RESOURCE_DIR),
+        idx = '{0}/angsd_sites/Trepens_{{site}}.sites.idx'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/angsd_index_sites/{site}_index.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        angsd sites index {input} 2> {log}
+        """
+
 rule split_angsd_sites_byChrom:
     input:
         rules.convert_sites_for_angsd.output

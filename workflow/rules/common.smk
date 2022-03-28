@@ -59,8 +59,8 @@ def get_bed_to_subset(wildcards):
 def get_files_for_saf_estimation_byHabitat(wildcards):
     ref = rules.unzip_reference.output
     bams = expand(rules.create_bam_list_byHabitat.output, habitat = wildcards.habitat, site=wildcards.site)
-    sites = rules.select_random_degenerate_sites.output
-    idx = rules.angsd_index_random_degen_sites.output
+    sites = rules.convert_sites_for_angsd.output
+    idx = rules.angsd_index_degenerate_sites.output
     chroms = config['chromosomes']
     return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
 
