@@ -252,6 +252,7 @@ rule angsd_index_prunedSNPs:
         binary = '{0}/angsd_sites/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}_pruned.sites.idx'.format(PROGRAM_RESOURCE_DIR)
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    log: LOG_DIR + '/angsd_index_prunedSNPs/{chrom}_{site}_maf{maf}_prunedIndex.log'
     shell:
         """
         angsd sites index {input} 2> {log}
