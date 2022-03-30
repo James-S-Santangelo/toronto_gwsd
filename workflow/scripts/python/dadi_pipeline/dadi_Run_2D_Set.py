@@ -176,7 +176,7 @@ prefix = '{0}{1}_{2}_{3}'.format(snakemake.params['prefix'], snakemake.wildcards
 
 #**************
 #make sure to define your extrapolation grid size (based on your projections)
-pts = [120,130,140]
+pts = [90,100,110]
 
 #**************
 #Set the number of rounds here

@@ -253,7 +253,7 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
             tb_rep = datetime.now()
             
             #create an extrapolating function 
-            func_exec = dadi.Numerics.make_extrap_func(func) #modified from make_extrap_log_func() because we had a warning of non convergence
+            func_exec = dadi.Numerics.make_extrap_func(func) 
             
             #perturb starting parameters
             params_perturbed = dadi.Misc.perturb_params(best_params, fold=folds_list[r],

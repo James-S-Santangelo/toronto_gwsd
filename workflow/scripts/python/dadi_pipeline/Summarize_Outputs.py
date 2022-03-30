@@ -31,6 +31,7 @@ https://github.com/dportik
 Updated September 2019
 '''
 
+import glob
 import sys
 import os
 
@@ -39,7 +40,8 @@ file_dir = sys.argv[1]
 os.chdir(file_dir)
 
 #check if summary files already exist in output directory
-results = sorted([os.path.abspath(f) for f in os.listdir(file_dir) if f.startswith("Results_Summary")])
+# results = sorted([os.path.abspath(f) for f in os.walk(file_dir) if f.startswith("Results_Summary")])
+results = sorted(glob.glob(file_dir + '/Results_Summary*'))
 if results:
     raise ValueError("\n\n\nWARNING: Summary files are already located in the directory specified."
                          " Please remove them before running this script.\n\n")
@@ -50,7 +52,8 @@ summary_list = []
 simple_list = []
 
 #list comprehension to find output files
-flist = sorted([os.path.abspath(f) for f in os.listdir(file_dir) if f.endswith("optimized.txt")])
+# flist = sorted([os.path.abspath(f) for f in os.walk(file_dir) if f.endswith("optimized.txt")])
+flist = sorted(glob.glob(file_dir + '/**/*.optimized.txt'))
 
 #do tasks depending on whether files located or not
 if flist:

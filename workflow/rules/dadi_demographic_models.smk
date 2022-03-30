@@ -8,7 +8,7 @@ rule dadi_sfs:
     log: LOG_DIR + '/dadi_sfs/{hab_comb}_dadi_sfs.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
         time = '01:00:00'
     threads: 6
     shell:
@@ -39,8 +39,8 @@ rule run_dadi:
     input:
         sfs = rules.format_dadi_sfs.output
     output:
-        logf = '{0}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.log.txt'.format(DADI_DIR),
-        optimf = '{0}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.optimized.txt'.format(DADI_DIR)
+        logf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.log.txt'.format(DADI_DIR),
+        optimf = '{0}/{{model}}/{{hab_comb}}_pop0_pop1_{{rep}}.{{model}}.optimized.txt'.format(DADI_DIR)
     log: LOG_DIR + '/run_dadi/{hab_comb}_{model}_{rep}.log'
     conda: '../envs/dadi.yaml'
     params:
