@@ -62,6 +62,23 @@ NGSADMIX_SEEDS = [x for x in range(1, 11)]
 # Parameters for estimating pi by habitat and Fst between habitats
 HABITAT_COMBOS = ['Urban_Rural', 'Urban_Suburban', 'Rural_Suburban']
 
+# Dadi models
+DADI_MODELS = [
+    'no_div', 
+    'no_div_bot', 
+    'no_div_growth', 
+    'no_div_bot_growth', 
+#     'split_no_mig', 
+#     'split_sym_mig', 
+#     'split_asym_mig',
+      'split_bot_urb_no_mig', 
+#     'split_bot_urb_sym_mig', 
+#     'split_bot_urb_asym_mig', 
+#     'split_bot_rur_no_mig', 
+#     'split_bot_rur_sym_mig', 
+#     'split_bot_rur_asym_mig'
+    ] 
+
 wildcard_constraints:
     chrom='|'.join([x for x in CHROMOSOMES]),
     sample='|'.join([x for x in SAMPLES]),

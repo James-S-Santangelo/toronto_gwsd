@@ -16,7 +16,10 @@ import sys
 import os
 import numpy
 import dadi
+import functools
 from datetime import datetime
+
+print = functools.partial(print, flush = True)
 
 def parse_params(param_number, in_params=None, in_upper=None, in_lower=None):
     """    

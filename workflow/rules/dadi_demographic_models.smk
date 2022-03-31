@@ -53,7 +53,7 @@ rule run_dadi:
 
 rule summarize_dadi_output:
     input:
-        expand(rules.run_dadi.output, hab_comb=['Urban_Rural'], model=['no_div', 'no_div_bot', 'no_div_growth', 'no_div_bot_growth'], rep = ['1', '2', '3', '4', '5'])
+        expand(rules.run_dadi.output, hab_comb=['Urban_Rural'], model=DADI_MODELS, rep = ['1', '2', '3', '4', '5'])
     output:
         short = '{0}/Results_Summary_Short.txt'.format(DADI_DIR),
         exten = '{0}/Results_Summary_Extended.txt'.format(DADI_DIR)
