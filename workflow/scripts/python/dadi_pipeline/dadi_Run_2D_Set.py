@@ -93,6 +93,9 @@ import Models_2D
 # Import data to create joint-site frequency spectrum
 #===========================================================================
 
+# numpy.random.seed(42)
+# dadi.Integration.timescale_factor = 1e-4
+
 # Set up logger and send logs, stdout, and stderr to same file
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -115,7 +118,7 @@ pop_ids=["pop0", "pop1"]
 
 #**************
 #projection sizes, in ALLELES not individuals
-proj = [82, 82]
+proj = [30, 30]
 
 #Convert this dictionary into folded AFS object
 #[polarized = False] creates folded spectrum object
@@ -185,7 +188,7 @@ prefix = '{0}{1}_{2}_{3}'.format(snakemake.params['prefix'], snakemake.wildcards
 
 #**************
 #make sure to define your extrapolation grid size (based on your projections)
-pts = [120,130,140]
+pts = [80,90,100]
 
 #**************
 #Set the number of rounds here
@@ -201,85 +204,75 @@ folds = [3,2,2,1]
 #Indicate whether your frequency spectrum object is folded (True) or unfolded (False)
 fs_folded = True
 
+# Dictionary with parameters for all models
+model_params_dict = {
+        'no_div' : [''],
+        'no_div_bot' : ['nuB', 'nuF', 'TB', 'TF'],
+        'no_div_growth' : ['nu', 'T'],
+        'no_div_bot_growth' : ['nuB', 'nuG', 'TB', 'TG'],
+        'split_no_mig' : ['nu1', 'nu2', 'T'],
+        'split_sym_mig' : ['nu1', 'nu2', 'm', 'T'],
+        'split_asym_mig' : ['nu1', 'nu2', 'm12', 'm21', 'T']
+        }
 
-#### NO SPLIT MODELS ##################################################
+# Setup arguments for optimization routine
+model = snakemake.wildcards.model
+params = model_params_dict[model]
+param_labels = ','.join(params)
+n_params = len(params)
+model_func = getattr(Models_2D, model)
 
-if snakemake.wildcards.model == 'no_div':
-    # No split, no change in size
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div", Models_2D.no_div, rounds, 1, fs_folded=fs_folded,
-                                        reps=reps, maxiters=maxiters, folds=folds)
-elif snakemake.wildcards.model == 'no_div_bot':
-    # No split, bottleneck
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_bot", Models_2D.no_div_bot, rounds, 4, fs_folded=fs_folded,
-                                        reps=reps, maxiters=maxiters, folds=folds, param_labels = "nuB, nuF, TB, TF")
-elif snakemake.wildcards.model == 'no_div_growth':
-    # No split, growth
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_growth", Models_2D.no_div_growth, rounds, 2, fs_folded=fs_folded,
-                                        reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu, T")
-elif snakemake.wildcards.model == 'no_div_bot_growth':                                     
-# No split, bottleneck + growth
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "no_div_bot_growth", Models_2D.no_div_bot_growth, rounds, 4, fs_folded=fs_folded,
-                                        reps=reps, maxiters=maxiters, folds=folds, param_labels = "nuB, nuG, TB, TG")  
+Optimize_Functions.Optimize_Routine(fs, pts, prefix, model, model_func, rounds, n_params, fs_folded=fs_folded,
+                                    reps=reps, maxiters=maxiters, folds=folds, param_labels = param_labels)
 
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
+
+
 # #######################################################################
-
-
-###SPLIT, NO CHANGE IN POP SIZE #####################################
-
-# Split into two populations, no migration.
-elif snakemake.wildcards.model == 'split_no_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_no_mig", Models_2D.split_no_mig, rounds, 3, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, T")
-
-# Split into two populations, with continuous symmetric migration.
-elif snakemake.wildcards.model == 'split_sym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_sym_mig", Models_2D.split_sym_mig, rounds, 4, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, m, T")
-
-
-# Split into two populations, with continuous asymmetric migration.
-elif snakemake.wildcards.model == 'split_asym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_asym_mig", Models_2D.split_asym_mig, rounds, 5, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, m12, m21, T")
-#######################################################################
-
-
-###SPLIT, BOTTLENECK + EXPO RECOVERY IN URBAN POPULATION ############
-# Split into two populations, bottleneck then recovery in urban pop, without migration.
-elif snakemake.wildcards.model == 'split_bot_urb_no_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_no_mig", Models_2D.split_bot_urb_no_mig, rounds, 6, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, Tb, Ts")
-
-# Split into two populations, bottleneck then recovery in urban pop, with symetric migration.
-elif snakemake.wildcards.model == 'split_bot_urb_sym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_sym_mig", Models_2D.split_bot_urb_sym_mig, rounds, 7, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, m, Tb, Ts")
-
-# Split into two populations, bottleneck then recovery in urban pop, with asymetric migration.
-elif snakemake.wildcards.model == 'split_bot_urb_asym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_asym_mig", Models_2D.split_bot_urb_asym_mig, rounds, 8, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, m12, m21, Tb, Ts")
-#######################################################################
-
-
-###SPLIT, BOTTLENECK + EXPO RECOVERY IN RURAL POPULATION ############
-# Split into two populations, bottleneck then recovery in rural pop, without migration.
-elif snakemake.wildcards.model == 'split_bot_rur_no_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_no_mig", Models_2D.split_bot_rur_no_mig, rounds, 6, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, Tb, Ts")
-
-# Split into two populations, bottleneck then recovery in rural pop, with symetric migration.
-elif snakemake.wildcards.model == 'split_bot_rur_sym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_sym_mig", Models_2D.split_bot_rur_sym_mig, rounds, 7, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, m, Tb, Ts")
-
-# Split into two populations, bottleneck then recovery in rural pop, with asymetric migration.
-elif snakemake.wildcards.model == 'split_bot_rur_asym_mig':
-    Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_asym_mig", Models_2D.split_bot_rur_asym_mig, rounds, 8, fs_folded=fs_folded,
-                                            reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, m12, m21, Tb, Ts")
+# 
+# 
+# ###SPLIT, BOTTLENECK + EXPO RECOVERY IN URBAN POPULATION ############
+# # Split into two populations, bottleneck then recovery in urban pop, without migration.
+# elif snakemake.wildcards.model == 'split_bot_urb_no_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_no_mig", Models_2D.split_bot_urb_no_mig, rounds, 6, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, Tb, Ts")
+# 
+# # Split into two populations, bottleneck then recovery in urban pop, with symetric migration.
+# elif snakemake.wildcards.model == 'split_bot_urb_sym_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_sym_mig", Models_2D.split_bot_urb_sym_mig, rounds, 7, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, m, Tb, Ts")
+# 
+# # Split into two populations, bottleneck then recovery in urban pop, with asymetric migration.
+# elif snakemake.wildcards.model == 'split_bot_urb_asym_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_urb_asym_mig", Models_2D.split_bot_urb_asym_mig, rounds, 8, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu1B, nu1F, m12, m21, Tb, Ts")
+# #######################################################################
+# 
+# 
+# ###SPLIT, BOTTLENECK + EXPO RECOVERY IN RURAL POPULATION ############
+# # Split into two populations, bottleneck then recovery in rural pop, without migration.
+# elif snakemake.wildcards.model == 'split_bot_rur_no_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_no_mig", Models_2D.split_bot_rur_no_mig, rounds, 6, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, Tb, Ts")
+# 
+# # Split into two populations, bottleneck then recovery in rural pop, with symetric migration.
+# elif snakemake.wildcards.model == 'split_bot_rur_sym_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_sym_mig", Models_2D.split_bot_rur_sym_mig, rounds, 7, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, m, Tb, Ts")
+# 
+# # Split into two populations, bottleneck then recovery in rural pop, with asymetric migration.
+# elif snakemake.wildcards.model == 'split_bot_rur_asym_mig':
+#     Optimize_Functions.Optimize_Routine(fs, pts, prefix, "split_bot_rur_asym_mig", Models_2D.split_bot_rur_asym_mig, rounds, 8, fs_folded=fs_folded,
+#                                             reps=reps, maxiters=maxiters, folds=folds, param_labels = "nu1, nu2, nu2B, nu2F, m12, m21, Tb, Ts")
 #######################################################################
 
 '''

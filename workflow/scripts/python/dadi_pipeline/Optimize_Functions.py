@@ -169,7 +169,7 @@ def write_log(outfile, model_name, rep_results, roundrep):
     """    
     fh_log = open("{0}.{1}.log.txt".format(outfile, model_name), 'a')
     fh_log.write("\n{}\n".format(roundrep))
-    templogname = "{}.log.txt".format(model_name)
+    templogname = "{0}.{1}_tmp.log.txt".format(outfile, model_name)
     try:
         fh_templog = open(templogname, 'r')
         for line in fh_templog:
@@ -273,22 +273,22 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
                 params_opt = dadi.Inference.optimize_log_fmin(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log":
                 params_opt = dadi.Inference.optimize_log(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log_lbfgsb":
                 params_opt = dadi.Inference.optimize_log_lbfgsb(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             elif optimizer == "log_powell":
                 params_opt = dadi.Inference.optimize_log_powell(params_perturbed, fs, func_exec, pts,
                                                                   lower_bound=lower_bound, upper_bound=upper_bound,
                                                                   verbose=1, maxiter=maxiters_list[r],
-                                                                  output_file = "{}.log.txt".format(model_name))
+                                                                  output_file = "{0}.{1}_tmp.log.txt".format(outfile, model_name))
             else:
                  raise ValueError("\n\nERROR: Unrecognized optimizer option: {}\nPlease select from: log, log_lbfgsb, log_fmin, or log_powell.\n\n".format(optimizer))
                  
@@ -340,4 +340,4 @@ def Optimize_Routine(fs, pts, outfile, model_name, func, rounds, param_number, f
               "============================================================================".format(model_name, tfr - tbr))
 
     #cleanup file
-    os.remove("{}.log.txt".format(model_name))
+    os.remove("{0}.{1}_tmp.log.txt".format(outfile, model_name))

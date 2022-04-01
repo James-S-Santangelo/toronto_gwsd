@@ -168,7 +168,7 @@ def split_bot_urb_no_mig(params, ns, pts):
     phi = Integration.two_pops(phi, xx, Ts, nu1, nu2, m12=0, m21=0)
     # function for bottleneck then exp recov in pop 1
     nu1_func = lambda t: nu1B*(nu1F/nu1B)**(t/Tb)
-    phi = Integration.two_pops(phi, xx, Tb, nu1F=nu1_func, nu2=nu2, 
+    phi = Integration.two_pops(phi, xx, Tb, nu1=nu1_func, nu2=nu2, 
                                     m12=0, m21=0)
     fs = Spectrum.from_phi(phi, ns, (xx,xx))
     return fs
