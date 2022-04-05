@@ -71,12 +71,18 @@ DADI_MODELS = [
     'split_no_mig', 
     'split_sym_mig', 
     'split_asym_mig',
-#     'split_bot_urb_no_mig', 
-#     'split_bot_urb_sym_mig', 
-#     'split_bot_urb_asym_mig', 
-#     'split_bot_rur_no_mig', 
-#     'split_bot_rur_sym_mig', 
-#     'split_bot_rur_asym_mig'
+    'split_bot_urb_no_mig', 
+    'split_bot_urb_sym_mig', 
+    'split_bot_urb_asym_mig', 
+    'split_bot_rur_no_mig', 
+    'split_bot_rur_sym_mig', 
+    'split_bot_rur_asym_mig',
+    'split_growth_urb_no_mig',
+    'split_growth_urb_sym_mig',
+    'split_growth_urb_asym_mig',
+    'split_growth_rur_no_mig',
+    'split_growth_rur_sym_mig',
+    'split_growth_rur_asym_mig'
     ] 
 
 wildcard_constraints:
