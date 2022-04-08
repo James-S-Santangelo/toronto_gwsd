@@ -49,9 +49,58 @@ rule bcftools_splitVCF_byHabitat:
             --output {params.out} && tabix {output.vcf} ) 2> {log}
         """
 
+rule format_genMap_forSelscan:
+    input:
+        rules.split_genMap.output
+    output:
+        '{0}/{{chrom}}_forSelscan.map'.format(GENMAP_RESULTS_DIR)
+    shell:
+        """
+        awk -F"\t" '{{print $2 " " "rs"$1 " " $3 " " $1}}' {input} | tail -n +2 > {output}
+        """
+
+rule selscan_xpehh:
+    input:
+        vcf = lambda w: expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=w.chrom, habitat='Urban'),
+        vcf_ref = lambda w: expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=w.chrom, habitat='Rural'),
+        genMap = rules.format_genMap_forSelscan.output
+    output:
+        temp('{0}/{{chrom}}/{{chrom}}_UR.xpehh.out'.format(SWEEPS_DIR))
+    conda: '../envs/sweeps.yaml'
+    log: LOG_DIR + '/selscan_xpehh/{chrom}_UR_xpehh.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 6
+    params:
+        out = '{0}/{{chrom}}/{{chrom}}_UR'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --xpehh \
+            --vcf {input.vcf} \
+            --vcf-ref {input.vcf_ref} \
+            --map {input.genMap} \
+            --threads {threads} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_xpehh:
+    input:
+        rules.selscan_xpehh.output
+    output:
+        norm = '{0}/{{chrom}}/{{chrom}}_UR.xpehh.out.norm'.format(SWEEPS_DIR),
+        logf = '{0}/{{chrom}}/{{chrom}}_UR.xpehh.out.log'.format(SWEEPS_DIR)
+    log: LOG_DIR + '/norm_xpehh/{chrom}_xpehh_norm.log'
+    conda: '../envs/sweeps.yaml'
+    shell:
+        """
+        norm --xpehh --files {input} --log {output.logf} 2> {log}
+        """
+    
+
 rule sweeps_done:
     input:
-        expand(rules.bcftools_splitVCF_byHabitat.output, chrom = CHROMOSOMES, habitat = HABITATS)
+        expand(rules.norm_xpehh.output, chrom = CHROMOSOMES, habitat = HABITATS)
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
