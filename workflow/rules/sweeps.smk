@@ -1,5 +1,9 @@
 # Rules to scan for signatures of selective sweeps
 
+###############
+#### SETUP ####
+###############
+
 rule samples_byHabitat:
     input:
         samples = config['samples']
@@ -49,31 +53,33 @@ rule bcftools_splitVCF_byHabitat:
             --output {params.out} && tabix {output.vcf} ) 2> {log}
         """
 
-rule format_genMap_forSelscan:
+rule genMap_toPlinkFormat:
     input:
         rules.split_genMap.output
     output:
-        '{0}/{{chrom}}_forSelscan.map'.format(GENMAP_RESULTS_DIR)
+        '{0}/{{chrom}}.map'.format(GENMAP_RESULTS_DIR)
     shell:
         """
-        awk -F"\t" '{{print $2 " " "rs"$1 " " $3 " " $1}}' {input} | tail -n +2 > {output}
+        awk -F"\t" '{{print $2 " " $2"_"$1 " " $3 " " $1}}' {input} | tail -n +2 > {output}
         """
+
+################
+#### XP-EHH ####
+################
 
 rule selscan_xpehh:
     input:
-        vcf = lambda w: expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=w.chrom, habitat='Urban'),
-        vcf_ref = lambda w: expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=w.chrom, habitat='Rural'),
-        genMap = rules.format_genMap_forSelscan.output
+        unpack(selscan_xpehh_input)
     output:
-        temp('{0}/{{chrom}}/{{chrom}}_UR.xpehh.out'.format(SWEEPS_DIR))
+        temp('{0}/xpehh/{{chrom}}/{{chrom}}_{{hab_comb}}.xpehh.out'.format(SWEEPS_DIR))
     conda: '../envs/sweeps.yaml'
-    log: LOG_DIR + '/selscan_xpehh/{chrom}_UR_xpehh.log'
+    log: LOG_DIR + '/selscan_xpehh/{chrom}_{hab_comb}_xpehh.log'
     resources: 
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
     threads: 6
     params:
-        out = '{0}/{{chrom}}/{{chrom}}_UR'.format(SWEEPS_DIR) 
+        out = '{0}/xpehh/{{chrom}}/{{chrom}}_{{hab_comb}}'.format(SWEEPS_DIR) 
     shell:
         """
         selscan --xpehh \
@@ -84,23 +90,32 @@ rule selscan_xpehh:
             --out {params.out} 2> {log}
         """
 
+rule concat_xpehh:
+    input:
+        lambda w: expand(rules.selscan_xpehh.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
+    output:
+        '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out'.format(SWEEPS_DIR)
+    shell:
+        """
+        awk 'FNR>1 || NR==1' {input} > {output} 
+        """
+
 rule norm_xpehh:
     input:
-        rules.selscan_xpehh.output
+        rules.concat_xpehh.output
     output:
-        norm = '{0}/{{chrom}}/{{chrom}}_UR.xpehh.out.norm'.format(SWEEPS_DIR),
-        logf = '{0}/{{chrom}}/{{chrom}}_UR.xpehh.out.log'.format(SWEEPS_DIR)
-    log: LOG_DIR + '/norm_xpehh/{chrom}_xpehh_norm.log'
+        norm = '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out.norm'.format(SWEEPS_DIR),
+        logf = '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out.log'.format(SWEEPS_DIR)
+    log: LOG_DIR + '/norm_xpehh/{hab_comb}_xpehh_norm.log'
     conda: '../envs/sweeps.yaml'
     shell:
         """
         norm --xpehh --files {input} --log {output.logf} 2> {log}
         """
-    
 
 rule sweeps_done:
     input:
-        expand(rules.norm_xpehh.output, chrom = CHROMOSOMES, habitat = HABITATS)
+        expand(rules.norm_xpehh.output, hab_comb=['Urban_Rural', 'Rural_Suburban'])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:

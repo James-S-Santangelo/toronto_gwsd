@@ -98,6 +98,14 @@ def get_dadi_sfs_input_files(wildcards):
     ref = rules.unzip_reference.output
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
+def selscan_xpehh_input(wildcards):
+    if 'Urban' in wildcards.hab_comb:
+        vcf = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Urban')
+    elif 'Suburban' in wildcards.hab_comb:
+        vcf = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Suburban')
+    vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Rural')
+    genMap = rules.genMap_toPlinkFormat.output
+    return { 'vcf' : vcf, 'vcf_ref' : vcf_ref, 'genMap' : genMap } 
 
 
 
