@@ -120,7 +120,9 @@ rule xpclr:
         time = '01:00:00'
     params:
         size = 50000,
-        step = 50000
+        step = 50000,
+        maxsnps = 600,
+        ld = 0.95
     shell:
         """
         POP1_SAMPLES=$( cut -f1 {input.pop1s} )
@@ -132,6 +134,8 @@ rule xpclr:
             --out {output} \
             --size {params.size} \
             --step {params.step} \
+            --maxsnps {params.maxsnps} \
+            --ld {params.ld} \
             --gdistkey CM \
             --phased \
             --chr {wildcards.chrom} 2> {log}
@@ -140,7 +144,7 @@ rule xpclr:
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
-        expand(rules.xpclr.output, hab_comb=['Urban_Rural', 'Rural_Suburban'])
+        expand(rules.xpclr.output, chrom=CHROMOSOMES, hab_comb=['Urban_Rural', 'Rural_Suburban'])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
