@@ -64,58 +64,83 @@ rule genMap_toPlinkFormat:
         """
 
 ################
-#### XP-EHH ####
+#### XP-NSL ####
 ################
 
-rule selscan_xpehh:
+rule selscan_xpnsl:
     input:
-        unpack(selscan_xpehh_input)
+        unpack(selscan_xpnsl_input)
     output:
-        temp('{0}/xpehh/{{chrom}}/{{chrom}}_{{hab_comb}}.xpehh.out'.format(SWEEPS_DIR))
-    conda: '../envs/sweeps.yaml'
-    log: LOG_DIR + '/selscan_xpehh/{chrom}_{hab_comb}_xpehh.log'
+        temp('{0}/xpnsl/{{chrom}}/{{chrom}}_{{hab_comb}}.xpnsl.out'.format(SWEEPS_DIR))
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_xpnsl/{chrom}_{hab_comb}_xpnsl.log'
     resources: 
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
     threads: 6
     params:
-        out = '{0}/xpehh/{{chrom}}/{{chrom}}_{{hab_comb}}'.format(SWEEPS_DIR) 
+        out = '{0}/xpnsl/{{chrom}}/{{chrom}}_{{hab_comb}}'.format(SWEEPS_DIR) 
     shell:
         """
-        selscan --xpehh \
+        selscan --xpnsl \
             --vcf {input.vcf} \
             --vcf-ref {input.vcf_ref} \
-            --map {input.genMap} \
             --threads {threads} \
             --out {params.out} 2> {log}
         """
 
-rule concat_xpehh:
+rule norm_xpnsl:
     input:
-        lambda w: expand(rules.selscan_xpehh.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
+        lambda w: expand(rules.selscan_xpnsl.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
     output:
-        '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out'.format(SWEEPS_DIR)
+        done = '{0}/xpnsl/{{hab_comb}}_normalization.done'.format(SWEEPS_DIR)
+    log: LOG_DIR + '/norm_xpnsl/{hab_comb}_xpnsl_norm.log'
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    params:
+        winsize = 50000
     shell:
         """
-        awk 'FNR>1 || NR==1' {input} > {output} 
+        norm --xpnsl --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
+        touch {output}
         """
 
-rule norm_xpehh:
+################
+#### XP-CLR ####
+################
+
+rule xpclr:
     input:
-        rules.concat_xpehh.output
+       unpack(xpclr_input)
     output:
-        norm = '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out.norm'.format(SWEEPS_DIR),
-        logf = '{0}/xpehh/{{hab_comb}}_xpehh_allChroms.out.log'.format(SWEEPS_DIR)
-    log: LOG_DIR + '/norm_xpehh/{hab_comb}_xpehh_norm.log'
-    conda: '../envs/sweeps.yaml'
+        '{0}/xpclr/{{chrom}}/{{chrom}}_{{hab_comb}}_xpclr.out'.format(SWEEPS_DIR)
+    log: LOG_DIR + '/xpclr/{chrom}_{hab_comb}_xpcl.log'
+    container: 'library://james-s-santangelo/xpclr/xpclr:1.2.1'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    params:
+        size = 50000,
+        step = 50000
     shell:
         """
-        norm --xpehh --files {input} --log {output.logf} 2> {log}
+        POP1_SAMPLES=$( cut -f1 {input.pop1s} )
+        POP2_SAMPLES=$( cut -f1 {input.pop2s} )
+        xpclr --format vcf \
+            --input {input.vcf} \
+            --samplesA $POP1_SAMPLES \
+            --samplesB $POP2_SAMPLES \
+            --out {output} \
+            --size {params.size} \
+            --step {params.step} \
+            --gdistkey CM \
+            --phased \
+            --chr {wildcards.chrom} 2> {log}
         """
 
 rule sweeps_done:
     input:
-        expand(rules.norm_xpehh.output, hab_comb=['Urban_Rural', 'Rural_Suburban'])
+        expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
+        expand(rules.xpclr.output, hab_comb=['Urban_Rural', 'Rural_Suburban'])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
