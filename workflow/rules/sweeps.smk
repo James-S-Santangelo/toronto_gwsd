@@ -77,7 +77,7 @@ rule selscan_xpnsl:
     resources: 
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
-    threads: 6
+    threads: 2
     params:
         out = '{0}/xpnsl/{{chrom}}/{{chrom}}_{{hab_comb}}'.format(SWEEPS_DIR) 
     shell:
@@ -93,7 +93,7 @@ rule norm_xpnsl:
     input:
         lambda w: expand(rules.selscan_xpnsl.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
     output:
-        done = '{0}/xpnsl/{{hab_comb}}_normalization.done'.format(SWEEPS_DIR)
+        done = '{0}/xpnsl/{{hab_comb}}_xpnsl_normalization.done'.format(SWEEPS_DIR)
     log: LOG_DIR + '/norm_xpnsl/{hab_comb}_xpnsl_norm.log'
     container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
     params:
@@ -141,9 +141,52 @@ rule xpclr:
             --chr {wildcards.chrom} 2> {log}
         """
 
+###############
+#### iHH12 ####
+###############
+
+rule ihh_OneTwo:
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
+        genMap = rules.genMap_toPlinkFormat.output
+    output:
+        '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out'.format(SWEEPS_DIR)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_ihh12/{chrom}_{habitat}_ihh12.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 2
+    params:
+        out = '{0}ihh12/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --ihh12 \
+            --vcf {input.vcf} \
+            --map {input.genMap} \
+            --threads {threads} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_ihh_OneTwo:
+    input:
+        lambda w: expand(rules.ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=w.habitat)
+    output:
+        done = '{0}/ihh12/{{habitat}}_ihh12_normalization.done'.format(SWEEPS_DIR)
+    log: LOG_DIR + '/norm_ihh12/{habitat}_ihh12_norm.log'
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    params:
+        winsize = 50000
+    shell:
+        """
+        norm --xpnsl --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
+        touch {output}
+        """
+
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
+        expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.xpclr.output, chrom=CHROMOSOMES, hab_comb=['Urban_Rural', 'Rural_Suburban'])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
