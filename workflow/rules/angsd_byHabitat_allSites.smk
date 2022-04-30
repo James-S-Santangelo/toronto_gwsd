@@ -173,6 +173,21 @@ rule angsd_habitat_fst_index_allSites:
             -fstout {params.fstout} 2> {log}
         """
 
+rule angsd_fst_allSites_readable:
+    """
+    Create readable Fst files. Required due to format of realSFS fst index output files. 
+    """
+    input:
+        rules.angsd_habitat_fst_index_allSites.output.idx
+    output:
+        '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
+    log: 'logs/angsd_fst_allSites_readable/{chrom}_{hab_comb}_readable_fst.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        realSFS fst print {input} > {output} 2> {log}
+        """
+
 rule angsd_estimate_thetas_byHabitat_allSites:
     """
     Generate per-site thetas in each habitat from 1DSFS
@@ -198,6 +213,21 @@ rule angsd_estimate_thetas_byHabitat_allSites:
             -fold 1 \
             -sfs {input.sfs} \
             -outname {params.out} 2> {log}
+        """
+
+rule angsd_thetas_allSites_readable:
+    """
+    Create readable Fst files. Required due to format of realSFS fst index output files. 
+    """
+    input:
+        rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
+    output:
+        '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_readable.thetas'.format(ANGSD_DIR)
+    log: 'logs/angsd_thetas_allSites_readable/{chrom}_{habitat}_readable_thetas.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        thetaState print {input} > {output} 2> {log}
         """
 
 ###########################
@@ -251,7 +281,9 @@ rule angsd_byHabitat_allSites_done:
     """
     input:
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
-        expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS)
+        expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
+        expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
+        expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS)
     output:
         '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR)
     shell:
