@@ -158,7 +158,7 @@ rule ihh_OneTwo:
         time = '01:00:00'
     threads: 2
     params:
-        out = '{0}ihh12/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
+        out = '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
     shell:
         """
         selscan --ihh12 \
@@ -179,14 +179,41 @@ rule norm_ihh_OneTwo:
         winsize = 50000
     shell:
         """
-        norm --xpnsl --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
+        norm --ihh12 --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
         touch {output}
         """
+
+###############
+#### RAiSD ####
+###############
+
+rule raisd:
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf
+    output:
+        info = '{0}/raisd/{{chrom}}/RAiSD_Info.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR),
+        report = '{0}/raisd/{{chrom}}/RAiSD_Report.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR)
+    container: 'library://james-s-santangelo/raisd/raisd:2.9'
+    log: LOG_DIR + '/raisd/{chrom}_{habitat}_raisd.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    params:
+        name = '{0}/raisd/{{chrom}}/RAiSD_Info.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR)
+    shell:
+        """
+        RAiSD -n {wildcards.chrom}_{wildcards.habitat} \
+            -I {input} \
+            -R \
+            -a 42 2> {log}
+        """
+        
 
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
+        #expand(rules.raisd.output, chrom='CM019101.1', habitat=HABITATS),
         expand(rules.xpclr.output, chrom=CHROMOSOMES, hab_comb=['Urban_Rural', 'Rural_Suburban'])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)

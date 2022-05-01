@@ -227,7 +227,7 @@ rule angsd_thetas_allSites_readable:
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     shell:
         """
-        thetaState print {input} > {output} 2> {log}
+        thetaStat print {input} > {output} 2> {log}
         """
 
 ###########################
