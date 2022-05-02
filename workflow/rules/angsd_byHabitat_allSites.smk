@@ -244,7 +244,7 @@ rule windowed_theta:
     params:
         out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz".format(ANGSD_DIR),
         win = 5000,
-        step = 1000
+        step = 5000
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
@@ -262,7 +262,7 @@ rule windowed_fst:
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
         win = 5000,
-        step = 1000
+        step = 5000
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
