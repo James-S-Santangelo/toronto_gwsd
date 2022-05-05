@@ -110,15 +110,15 @@ rule all:
         #'{0}/filtering.done'.format(FREEBAYES_DIR),
         #'{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
-        '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
+        #'{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
         # Population structure
         #'{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
-        '{0}/sweeps.done'.format(SWEEPS_DIR),
+        #'{0}/sweeps.done'.format(SWEEPS_DIR),
         #Demographic modelling
         #'{0}/dadi.done'.format(DADI_DIR),
         # HCN loci
