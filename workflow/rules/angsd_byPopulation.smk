@@ -66,9 +66,92 @@ rule angsd_saf_likelihood_byPopulation:
             -bam {input.bams} 2> {log}
         """
 
+
+rule angsd_estimate_sfs_byPopulation:
+    """
+    Estimate folded SFS separately for each population(i.e., 1D SFS) using realSFS. 
+    """
+    input:
+        saf = rules.angsd_saf_likelihood_byPopulation.output.saf_idx,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
+    output:
+        '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}.sfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{popu}_{site}.sfs.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 6
+    wildcard_constraints:
+        site='4fold'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS {input.saf} \
+            -sites {input.sites} \
+            -P {threads} \
+            -fold 1 \
+            -maxIter 2000 \
+            -seed 42 > {output} 2> {log}
+        """
+
+###############
+#### THETA ####
+###############
+
+
+rule angsd_estimate_thetas_byPopulation:
+    """
+    Generate per-site thetas in each population from 1DSFS
+    """
+    input:
+        saf_idx = rules.angsd_saf_likelihood_byPopulation.output.saf_idx,
+        sfs = rules.angsd_estimate_sfs_byPopulation.output
+    output:
+        idx = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.idx'.format(ANGSD_DIR),
+        thet = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_thetas_by_population/{site}_{popu}_thetas.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 4
+    wildcard_constraints:
+        site='4fold'
+    params:
+        out = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}'.format(ANGSD_DIR)
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS saf2theta {input.saf_idx} \
+            -P {threads} \
+            -fold 1 \
+            -sfs {input.sfs} \
+            -outname {params.out} 2> {log}
+        """
+
+rule angsd_diversity_neutrality_stats_byPopulation:
+    """
+    Estimate pi, Waterson's theta, Tajima's D, etc. in each population 
+    """
+    input:
+        rules.angsd_estimate_thetas_byPopulation.output.idx
+    output:
+       '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_diversity_neutrality_stats_byPopulation/{site}_{popu}_diversity_neutrality.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    wildcard_constraints:
+        site='4fold'
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    shell:
+        """
+        thetaStat do_stat {input} 2> {log}
+        """
+
 rule angsd_byPopulation_done:
     input:
-        expand(rules.angsd_saf_likelihood_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
+        expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold')
     output:
         '{0}/angsd_byPopulation.done'.format(ANGSD_DIR)
     shell:
