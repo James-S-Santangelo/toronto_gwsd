@@ -95,9 +95,9 @@ rule angsd_estimate_sfs_byPopulation:
             -seed 42 > {output} 2> {log}
         """
 
-###############
-#### THETA ####
-###############
+#########################
+#### THETA & FST/PBS ####
+#########################
 
 
 rule angsd_estimate_thetas_byPopulation:
@@ -149,9 +149,40 @@ rule angsd_diversity_neutrality_stats_byPopulation:
         thetaStat do_stat {input} 2> {log}
         """
 
+rule angsd_estimate_joint_population_sfs:
+    """
+    Estimated folded, pairwise population SFS using realSFS. Uses 4fold sites.
+    """
+    input:
+        safs = get_population_saf_files,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
+    output:
+        '{0}/sfs/2d/by_population/{{pop_comb}}_{{site}}.2dsfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_population_2dsfs/{pop_comb}_{site}.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 6
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS {input.safs} \
+            -sites {input.sites} \
+            -maxIter 2000 \
+            -seed 42 \
+            -fold 1 \
+            -P {threads} > {output} 2> {log}
+        """
+
+##############
+#### POST ####
+##############
+
 rule angsd_byPopulation_done:
     input:
-        expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold')
+        expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
+        expand(rules.angsd_estimate_joint_population_sfs.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
     output:
         '{0}/angsd_byPopulation.done'.format(ANGSD_DIR)
     shell:

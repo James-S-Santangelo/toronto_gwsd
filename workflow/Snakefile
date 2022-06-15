@@ -1,5 +1,6 @@
 import os
 import glob
+import itertools
 import pandas as pd
 from snakemake.utils import min_version
 
@@ -87,7 +88,10 @@ DADI_MODELS = [
     ] 
 
 # Populations with multiple individuals for ANGSD Fst and PBS calculations
+# Create list with pairwise combinations of multi-individual populations 
 POPS_MULTI_IND = config['pops_multi_ind']
+POP_COMB_MULTI_IND = list(itertools.combinations(POPS_MULTI_IND, 2))
+POP_COMB_MULTI_IND = ['{0}_{1}'.format(x[0], x[1]) for x in POP_COMB_MULTI_IND]
 
 wildcard_constraints:
     chrom='|'.join([x for x in CHROMOSOMES]),

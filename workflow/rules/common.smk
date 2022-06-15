@@ -64,14 +64,6 @@ def get_files_for_saf_estimation_byHabitat(wildcards):
     chroms = config['chromosomes']
     return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
 
-def get_files_for_saf_estimation_byPopulation(wildcards):
-    ref = rules.unzip_reference.output
-    bams = expand(rules.create_bam_list_byPop_multiInd.output, popu=wildcards.popu, site=wildcards.site)
-    sites = rules.convert_sites_for_angsd.output
-    idx = rules.angsd_index_degenerate_sites.output
-    chroms = config['chromosomes']
-    return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
-
 def get_habitat_saf_files(wildcards):
     all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, habitat=HABITATS, site=wildcards.site)
     first_hab = wildcards.hab_comb.split('_')[0]
@@ -87,6 +79,22 @@ def get_habitat_saf_files_allSites(wildcards):
     saf1 = [x for x in all_saf_files if '{0}'.format(first_hab) in os.path.basename(x)]
     saf2 = [x for x in all_saf_files if '{0}'.format(second_hab) in os.path.basename(x)]
     return saf1 + saf2
+
+def get_files_for_saf_estimation_byPopulation(wildcards):
+    ref = rules.unzip_reference.output
+    bams = expand(rules.create_bam_list_byPop_multiInd.output, popu=wildcards.popu, site=wildcards.site)
+    sites = rules.convert_sites_for_angsd.output
+    idx = rules.angsd_index_degenerate_sites.output
+    chroms = config['chromosomes']
+    return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
+
+def get_population_saf_files(wildcards):
+    all_saf_files = expand(rules.angsd_saf_likelihood_byPopulation.output, popu=POPS_MULTI_IND, site='4fold')
+    pop1 = wildcards.pop_comb.split('_')[0]
+    pop2 = wildcards.pop_comb.split('_')[1]
+    saf1 = [x for x in all_saf_files if x.startswith('{0}_'.format(pop1))]
+    saf2 = [x for x in all_saf_files if x.startswith('{0}_'.format(pop2))]
+    return saf1 + saf2 
 
 def get_whatshap_phase_input(wildcards):
     ref = rules.unzip_reference.output
