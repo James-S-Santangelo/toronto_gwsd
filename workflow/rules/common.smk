@@ -64,6 +64,14 @@ def get_files_for_saf_estimation_byHabitat(wildcards):
     chroms = config['chromosomes']
     return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
 
+def get_files_for_saf_estimation_byPopulation(wildcards):
+    ref = rules.unzip_reference.output
+    bams = expand(rules.create_bam_list_byPop_multiInd.output, popu=wildcards.popu, site=wildcards.site)
+    sites = rules.convert_sites_for_angsd.output
+    idx = rules.angsd_index_degenerate_sites.output
+    chroms = config['chromosomes']
+    return { 'bams' : bams, 'ref' : ref, 'sites' : sites, 'idx' : idx, 'chroms' : chroms }
+
 def get_habitat_saf_files(wildcards):
     all_saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, habitat=HABITATS, site=wildcards.site)
     first_hab = wildcards.hab_comb.split('_')[0]
