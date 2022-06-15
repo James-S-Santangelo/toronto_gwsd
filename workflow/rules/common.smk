@@ -96,7 +96,7 @@ def get_population_saf_files(wildcards):
     saf2 = [x for x in all_saf_files if x.startswith('{0}_'.format(pop2))]
     return saf1 + saf2 
 
-def get_population_saf_and_sfs_files:
+def get_population_saf_and_sfs_files(wildcards):
     all_saf_files = expand(rules.angsd_saf_likelihood_byPopulation.output.saf_idx, popu=POPS_MULTI_IND, site='4fold')
     sfs_files = expand(rules.angsd_estimate_joint_population_sfs.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
     sfs_cmd = '-sfs ' + ' -sfs '.join(sfs_files)

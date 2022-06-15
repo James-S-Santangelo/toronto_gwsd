@@ -180,7 +180,8 @@ rule angsd_population_fst_index:
     Estimate per-site alphas (numerator) and betas (denominator) for population Fst/pbs estimation
     """
     input: 
-        unpack(get_population_saf_and_sfs_files)
+        saf_files = get_population_saf_files, 
+        sfs = rules.angsd_estimate_joint_population_sfs.output
     output:
         fst = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}.fst.idx'.format(ANGSD_DIR)
@@ -191,15 +192,33 @@ rule angsd_population_fst_index:
         mem_mb = 4000,
         time = '02:00:00'
     params:
-        fstout = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}'.format(ANGSD_DIR)
+        fstout = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{pop_comb}}'.format(ANGSD_DIR)
     shell:
         """
         realSFS fst index {input.saf_files} \
-            {input.sfs_cmd} \
+            -sfs {input.sfs} \
             -fold 1 \
             -P {threads} \
             -whichFst 1 \
             -fstout {params.fstout} 2> {log}
+        """
+
+rule angsd_population_fst_readable:
+    """
+    Create readable Fst files. Required due to format of realSFS fst index output files. 
+    """
+    input:
+        rules.angsd_population_fst_index.output.idx
+    output:
+        '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}_readable.fst'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_population_fst_readable/{pop_comb}_{site}_readable.log'
+    resources:
+        mem_mb = 1000,
+        time = '01:00:00'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    shell:
+        """
+        realSFS fst print {input} > {output} 2> {log}
         """
 
 ##############
@@ -209,7 +228,7 @@ rule angsd_population_fst_index:
 rule angsd_byPopulation_done:
     input:
         expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
-        expand(rules.angsd_population_fst_index.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
+        expand(rules.angsd_population_fst_readable.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
     output:
         '{0}/angsd_byPopulation.done'.format(ANGSD_DIR)
     shell:
