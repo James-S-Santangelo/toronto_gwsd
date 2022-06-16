@@ -95,6 +95,32 @@ rule angsd_estimate_sfs_byPopulation:
             -seed 42 > {output} 2> {log}
         """
 
+rule angsd_estimate_joint_population_sfs:
+    """
+    Estimated folded, pairwise population SFS using realSFS. Uses 4fold sites.
+    """
+    input:
+        safs = get_population_saf_files,
+        sites = rules.convert_sites_for_angsd.output,
+        idx = rules.angsd_index_degenerate_sites.output,
+    output:
+        '{0}/sfs/2d/by_population/{{pop_comb}}_{{site}}.2dsfs'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_population_2dsfs/{pop_comb}_{site}.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    threads: 6
+    resources:
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        time = '01:00:00'
+    shell:
+        """
+        realSFS {input.safs} \
+            -sites {input.sites} \
+            -maxIter 2000 \
+            -seed 42 \
+            -fold 1 \
+            -P {threads} > {output} 2> {log}
+        """
+
 #########################
 #### THETA & FST/PBS ####
 #########################
@@ -149,32 +175,6 @@ rule angsd_diversity_neutrality_stats_byPopulation:
         thetaStat do_stat {input} 2> {log}
         """
 
-rule angsd_estimate_joint_population_sfs:
-    """
-    Estimated folded, pairwise population SFS using realSFS. Uses 4fold sites.
-    """
-    input:
-        safs = get_population_saf_files,
-        sites = rules.convert_sites_for_angsd.output,
-        idx = rules.angsd_index_degenerate_sites.output,
-    output:
-        '{0}/sfs/2d/by_population/{{pop_comb}}_{{site}}.2dsfs'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_population_2dsfs/{pop_comb}_{site}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    threads: 6
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 8000,
-        time = '01:00:00'
-    shell:
-        """
-        realSFS {input.safs} \
-            -sites {input.sites} \
-            -maxIter 2000 \
-            -seed 42 \
-            -fold 1 \
-            -P {threads} > {output} 2> {log}
-        """
-
 rule angsd_population_fst_index:
     """
     Estimate per-site alphas (numerator) and betas (denominator) for population Fst/pbs estimation
@@ -192,7 +192,7 @@ rule angsd_population_fst_index:
         mem_mb = 4000,
         time = '02:00:00'
     params:
-        fstout = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{pop_comb}}'.format(ANGSD_DIR)
+        fstout = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}'.format(ANGSD_DIR)
     shell:
         """
         realSFS fst index {input.saf_files} \
