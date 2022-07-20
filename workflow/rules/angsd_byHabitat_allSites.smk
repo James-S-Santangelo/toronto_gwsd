@@ -238,13 +238,13 @@ rule windowed_theta:
     input:
         rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
     output:
-        "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz.pestPG".format(ANGSD_DIR)
+        "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas50.gz.pestPG".format(ANGSD_DIR)
     log: LOG_DIR + '/windowed_theta/{chrom}_{habitat}_windowTheta.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz".format(ANGSD_DIR),
-        win = 5000,
-        step = 5000
+        out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas50.gz".format(ANGSD_DIR),
+        win = 50000,
+        step = 50000
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
@@ -257,12 +257,12 @@ rule windowed_fst:
     input:
         rules.angsd_habitat_fst_index_allSites.output.idx
     output:
-        "{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_windowed.fst".format(ANGSD_DIR)
+        "{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_windowed50.fst".format(ANGSD_DIR)
     log: LOG_DIR + '/windowed_fst/{chrom}_{hab_comb}_windowedFst.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.933'
     params:
-        win = 5000,
-        step = 5000
+        win = 50000,
+        step = 50000
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
@@ -285,7 +285,7 @@ rule angsd_byHabitat_allSites_done:
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
         expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS)
     output:
-        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR)
+        '{0}/angsd_byHabitat_allSites50.done'.format(ANGSD_DIR)
     shell:
         """
         touch {output}
