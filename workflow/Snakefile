@@ -4,7 +4,7 @@ import itertools
 import pandas as pd
 from snakemake.utils import min_version
 
-min_version('6.12.1')
+min_version('7.21.0')
 
 configfile: '../config/hpcnode.yaml'
 
