@@ -2,6 +2,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bwa=0.7.17
-  - samtools=1.10
-  - htslib=1.10
+  - bwa-mem2=2.2.1
+  - samtools=1.16.1
+  - htslib=1.16

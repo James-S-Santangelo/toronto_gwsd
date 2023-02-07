@@ -82,24 +82,6 @@ rule bamtools_stats:
         bamtools stats -in {input.bam} > {output} 2> {log}
         """
 
-rule bamutil_validate:
-    input:
-        bam = rules.samtools_markdup.output,
-        index = rules.index_bam.output
-    output:
-        '{0}/bamutil_validate/{{sample}}_validation.txt'.format(QC_DIR)
-    log: LOG_DIR + '/bamutil_validate/{sample}_validation.log'
-    conda: '../envs/qc.yaml'
-    resources:
-        mem_mb = 4000,
-        time = '01:00:00'
-    shell:
-        """
-        bam validate --in {input.bam} \
-            --so_coord \
-            --verbose 2> {output}
-        """
-
 rule multiqc:
     """
     Generate single HTML report with all QC info for all samples using multiQC.
@@ -110,8 +92,7 @@ rule multiqc:
        fastqc_trim = expand(rules.fastqc_raw_reads.output.zip1, sample=SAMPLES),
        fastp = expand(rules.fastp_trim.output.json, sample=SAMPLES),
        qualimap = expand(rules.qualimap_bam_qc.output, sample=SAMPLES),
-       bamstats = expand(rules.bamtools_stats.output, sample=SAMPLES),
-       bamutil = expand(rules.bamutil_validate.output, sample=SAMPLES)
+       bamstats = expand(rules.bamtools_stats.output, sample=SAMPLES)
     output:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR)
     conda: '../envs/qc.yaml'

@@ -17,7 +17,7 @@ rule bcftools_chloroplast_gene_variants:
     """
     input:
         bams = rules.create_bam_list_allSamples.output,
-        ref = rules.unzip_reference.output
+        ref = REFERENCE_GENOME
     output:
         '{0}/{{gene}}/allSamples_{{gene}}.vcf.gz'.format(SPECIES_ID_DIR)
     log: LOG_DIR + '/chloroplast_gene_variants/chloroplast_{gene}_variants.log'
@@ -49,7 +49,7 @@ rule chloroplast_gene_fasta:
     One FASTA for each gene.
     """
     input:
-       rules.unzip_reference.output
+        REFERENCE_GENOME
     output:
        '{0}/{{gene}}/{{gene}}.fna'.format(SPECIES_ID_DIR)
     log: LOG_DIR + '/chloroplast_gene_fasta/{gene}_fasta.log'

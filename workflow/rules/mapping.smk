@@ -1,7 +1,7 @@
 rule bwa_map_unpaired:
     input:
         unp = rules.fastp_trim.output.unp,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         ref_done = rules.ref_done.output
     output:
         temp('{0}/unpaired/{{sample}}_unpaired_sorted.bam'.format(BAM_DIR))
@@ -15,7 +15,7 @@ rule bwa_map_unpaired:
         time = '01:00:00'
     shell:
         """
-        ( bwa mem -t {threads} {input.ref} {input.unp} {params} |\
+        ( bwa-mem2 -t {threads} {input.ref} {input.unp} {params} |\
             samtools view -hb -o {output} - ) 2> {log}
         """
 
@@ -23,7 +23,7 @@ rule bwa_map_paired:
     input:
         r1 = rules.fastp_trim.output.r1_trim,
         r2 = rules.fastp_trim.output.r2_trim,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         ref_done = rules.ref_done.output
     output:
         temp('{0}/paired/{{sample}}_paired_sorted.bam'.format(BAM_DIR))
@@ -37,7 +37,7 @@ rule bwa_map_paired:
         time = '06:00:00'
     shell:
         """
-        ( bwa mem -t {threads} {input.ref} {input.r1} {input.r2} {params} |\
+        ( bwa-mem2 -t {threads} {input.ref} {input.r1} {input.r2} {params} |\
             samtools view -hb -o {output} - ) 2> {log}
         """
 

@@ -2,6 +2,6 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - samtools=1.10
-  - bcftools=1.10.2
-  - blast=2.10.1
+  - samtools=1.16.1
+  - bcftools=1.16
+  - blast=2.13.0
