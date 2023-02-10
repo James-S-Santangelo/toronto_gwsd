@@ -2,6 +2,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bcftools=1.10.2
-  - vcftools=0.1.16
-  - vcflib=1.0.2
+  - bcftools=1.16
+  - vcflib=1.0.3

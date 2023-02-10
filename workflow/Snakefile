@@ -12,6 +12,8 @@ configfile: '../config/hpcnode.yaml'
 SAMPLES = pd.read_table(config['samples'])['Sample'].tolist()
 CHROMOSOMES = pd.read_table(config['chromosomes'], header=None).iloc[:,0].tolist()
 HABITATS = pd.read_table(config['samples'])['Habitat'].unique().tolist()
+
+# Reference genome
 REFERENCE_GENOME = config['ref']
 
 # External resources
@@ -114,7 +116,7 @@ rule all:
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         '{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        #'{0}/freebayes.done'.format(FREEBAYES_DIR),
+        '{0}/freebayes.done'.format(FREEBAYES_DIR),
         #'{0}/filtering.done'.format(FREEBAYES_DIR),
         #'{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
@@ -140,9 +142,9 @@ include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
 #include: 'rules/angsd_allSamples.smk'
 #include: 'rules/angsd_byHabitat.smk'
-#include: 'rules/angsd_byHabitat_allSites.smk'
+include: 'rules/angsd_byHabitat_allSites.smk'
 #include: 'rules/angsd_byPopulation.smk'
-#include: 'rules/freebayes.smk'
+include: 'rules/freebayes.smk'
 #include: 'rules/filtering.smk'
 #include: 'rules/recombination_map.smk'
 #include: 'rules/phasing.smk'

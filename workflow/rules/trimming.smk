@@ -11,7 +11,7 @@ rule fastp_trim:
     log: LOG_DIR + '/fastp_trim/{sample}_fastp.log'
     threads: 4
     resources:
-        mem_mb = lambda wildcards, input, attempt: attempt * int(input.size_mb / 2),
+        mem_mb = lambda wildcards, input, attempt: attempt * int(input.size_mb),
         time = '01:00:00'
     shell:
         """

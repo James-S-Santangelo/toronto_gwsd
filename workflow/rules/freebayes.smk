@@ -1,7 +1,7 @@
 rule create_region_files_forFreebayes:
     input:
         ref_idx = rules.samtools_index_reference.output,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         bams = rules.create_bam_lists_allFinalSamples_allSites.output
     output:
         expand('{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, i=FREEBAYES_CHUNKS)
@@ -23,13 +23,13 @@ rule freebayes_call_variants:
     input:
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
         region = '{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), 
-        ref = rules.unzip_reference.output
+        ref = REFERENCE_GENOME
     output:
         temp('{0}/vcf/{{chrom}}/{{chrom}}_chunk{{i}}_allSamples.vcf'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/freebayes/{chrom}/{chrom}/{chrom}_chunk{i}_freebayes.log'
     conda: '../envs/freebayes.yaml'
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        mem_mb = lambda wildcards, attempt: attempt * 10000,
         time = lambda wildcards, attempt: str(attempt * 3) + ":00:00"
     shell:
         """
@@ -52,7 +52,7 @@ rule concat_vcfs:
     threads: 8
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '03:00:00'
+        time = lambda wildcards, attempt: str(attempt * 3) + ":00:00" 
     shell:
         """
         ( bcftools concat --threads {threads} {input.vcfs} |\
@@ -108,8 +108,8 @@ rule vcf_to_zarr:
         site_type='snps|invariant'
     threads: 1
     resources:
-        mem_mb = 4000,
-        time = '02:00:00'
+        mem_mb = lambda wildcards, attempt: attempt * 8000,
+        time = lambda wildcards, attempt: str(attempt * 4) + ":00:00"
     shell:
         """
         python3 scripts/python/vcf_to_zarr.py {input} {output} 2> {log}
@@ -119,7 +119,7 @@ rule freebayes_done:
     input:
         expand(rules.bcftools_split_variants.output, chrom=CHROMOSOMES, site_type=['snps','invariant']),
         expand(rules.tabix_vcf.output, chrom=CHROMOSOMES, site_type=['snps','invariant']),
-        expand(rules.vcf_to_zarr.output, chrom=CHROMOSOMES, site_type=['snps','invariant'])
+        expand(rules.vcf_to_zarr.output, chrom='Chr01_Occ', site_type=['snps'])
     output:
         '{0}/freebayes.done'.format(FREEBAYES_DIR)
     shell:

@@ -60,7 +60,7 @@ rule angsd_saf_likelihood_byHabitat_allSites:
     """
     input:
         bams = rules.create_bam_list_byHabitat_allSites.output,
-        ref = rules.unzip_reference.output
+        ref = REFERENCE_GENOME
     output:
         saf = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.gz'.format(ANGSD_DIR),
         saf_idx = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.idx'.format(ANGSD_DIR),

@@ -2,9 +2,9 @@ rule samtools_index_reference:
     input:
         REFERENCE_GENOME
     output:
-        '{0}/GCA_005869975.1_AgR_To_v5_genomic.fna.fai'.format(REF_DIR)
+        f'{REFERENCE_GENOME}.fai'
     conda: '../envs/ref.yaml'
-    log: LOG_DIR + '/samtools_index_reference/samtools/index_reference.log'
+    log: LOG_DIR + '/samtools_index_reference/samtools_index_reference.log'
     shell:
         """
         samtools faidx {input} 2> {log}
@@ -14,11 +14,11 @@ rule bwa_index_ref:
     input:
         REFERENCE_GENOME
     output:
-        multiext('{0}/GCA_005869975.1_AgR_To_v5_genomic.fna'.format(REF_DIR), '.amb', '.ann', '.bwt', '.pac', '.sa')
+        multiext(f'{REFERENCE_GENOME}', '.amb', '.ann', '.pac', '.0123', '.bwt.2bit.64')
     conda: '../envs/ref.yaml'
     log: LOG_DIR + '/bwa_index_ref/bwa_index_ref.log'
     resources:
-        mem_mb = 4000,
+        mem_mb = lambda wildcards, input, attempt: attempt * int(30 * input.size_mb),
         time = '01:00:00'
     shell:
         """
@@ -29,7 +29,7 @@ rule makeblastdb_fromRef:
     input:
         REFERENCE_GENOME
     output:
-        multiext('{0}/GCA_005869975.1_AgR_To_v5_genomic.fna'.format(REF_DIR), '.ndb', '.nhr', '.nin', '.nog', '.nos', '.not', '.nsq', '.ntf', '.nto') 
+        multiext(f'{REFERENCE_GENOME}', '.ndb', '.nhr', '.nin', '.nog', '.nos', '.not', '.nsq', '.ntf', '.nto') 
     conda: '../envs/ref.yaml'
     log: LOG_DIR + '/makeblastdb_fromReb/makeblastdb_fromRef.log'
     shell:

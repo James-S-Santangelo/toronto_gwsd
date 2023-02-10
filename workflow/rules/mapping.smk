@@ -11,11 +11,11 @@ rule bwa_map_unpaired:
     log: LOG_DIR + '/bwa_map_unpaired/{sample}_bwa_map.unpaired.log'
     threads: 2
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 2500,
+        mem_mb = lambda wildcards, threads, attempt: attempt * int(threads * 4000),
         time = '01:00:00'
     shell:
         """
-        ( bwa-mem2 -t {threads} {input.ref} {input.unp} {params} |\
+        ( bwa-mem2 mem -t {threads} {input.ref} {input.unp} {params} |\
             samtools view -hb -o {output} - ) 2> {log}
         """
 
@@ -33,11 +33,11 @@ rule bwa_map_paired:
     log: LOG_DIR + '/bwa_map_paired/{sample}_bwa_map.paired.log'
     threads: 6
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 5000,
+        mem_mb = lambda wildcards, threads, attempt: attempt * int(threads * 4000),
         time = '06:00:00'
     shell:
         """
-        ( bwa-mem2 -t {threads} {input.ref} {input.r1} {input.r2} {params} |\
+        ( bwa-mem2 mem -t {threads} {input.ref} {input.r1} {input.r2} {params} |\
             samtools view -hb -o {output} - ) 2> {log}
         """
 
@@ -52,7 +52,7 @@ rule merge_bams:
     threads: 6
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 2000,
-        time = '01:00:00'
+        time = '02:00:00'
     shell:
         """
         ( samtools cat --threads {threads} {input.pair} {input.unp} |\

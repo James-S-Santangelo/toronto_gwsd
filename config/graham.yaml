@@ -3,13 +3,14 @@ samples: ../resources/sequencedPlants_phenotypesHabitat.txt
 chromosomes: ../resources/chromosome_file.txt
 gff: ../resources/TrR.v5.renamed_reformated.gtf.gz
 genmap_files: ../resources/genMap
-ref: /home/santang3/projects/def-johnso73/reference_assemblies/haploid_reference/TrR_v6_haploid_reference.fasta
+ref: ../resources/reference/TrR_v6_haploid_reference.fasta
 
 results_prefix: /home/santang3/scratch/gwsd/results
 log_prefix: /home/santang3/scratch/gwsd/logs
 raw_read_prefix: /home/santang3/projects/def-johnso73/data/raw_reads/toronto_gwsd
 
-# Samples to exclude based on QC (e.g., different species, low coverage, etc.) 
+# Samples to exclude based on QC (e.g., different species, low coverage, etc.)
+# Based on looking at mapping %, blasting chloroplast sequences, and checking relatedness coefficients
 lowQual_samples_to_exclude: ['s_7_14', 's_54_9', 's_97_4', 's_23_12', 's_23_17']
 related_samples_to_exclude: ['s_97_9', 's_37_18', 's_37_11', 's_42_3', 's_42_1', 's_83_11']
 
