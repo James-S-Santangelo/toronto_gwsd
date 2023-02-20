@@ -49,7 +49,7 @@ rule interpolate_genetic_map:
         genMap_interp = '{0}/genMap_interpolated_allChroms.txt'.format(GENMAP_RESULTS_DIR)
     conda: '../envs/recombination_map.yaml'
     script:
-        "../scripts/r/snakemake/genMap_interpolation.R"
+        "../notebooks/genMap_interpolation.r.ipynb"
 
 rule split_genMap:
     input:
