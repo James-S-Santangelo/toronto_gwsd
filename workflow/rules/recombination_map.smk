@@ -3,9 +3,9 @@
 
 rule blast_markers:
     input:
-        markers = ancient('{0}/{{map_pop}}_tags.fa'.format(GENMAP_RESOURCE_DIR)),
+        markers = '{0}/{{map_pop}}_tags.fa'.format(GENMAP_RESOURCE_DIR),
         db_flag = rules.makeblastdb_fromRef.output,
-        ref = rules.unzip_reference.output
+        ref = REFERENCE_GENOME 
     output:
         '{0}/{{map_pop}}_marker_blast.txt'.format(GENMAP_RESULTS_DIR)
     conda: '../envs/recombination_map.yaml'

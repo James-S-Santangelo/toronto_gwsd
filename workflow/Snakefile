@@ -120,7 +120,7 @@ rule all:
         '{0}/filtering.done'.format(FREEBAYES_DIR),
         #'{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
-        #'{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
+        '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR),
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
@@ -146,7 +146,7 @@ include: 'rules/angsd_byHabitat_allSites.smk'
 #include: 'rules/angsd_byPopulation.smk'
 include: 'rules/freebayes.smk'
 include: 'rules/filtering.smk'
-#include: 'rules/recombination_map.smk'
+include: 'rules/recombination_map.smk'
 #include: 'rules/phasing.smk'
 #include: 'rules/population_structure.smk'
 #include: 'rules/dadi_demographic_models.smk',
