@@ -19,7 +19,6 @@ REFERENCE_GENOME = config['ref']
 # External resources
 # Make ancient to prevent triguring pipeline if time stamp changes
 GFF_FILE = ancient(config['gff'])
-GENMAP_RESOURCE_DIR = config['genmap_files']
 
 # Paths for output files
 LOG_DIR = config['log_prefix']

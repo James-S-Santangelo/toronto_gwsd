@@ -2,9 +2,7 @@ channels:
   - conda-forge
   - bioconda
 deprendencies:
-  - blast=2.12.0
   - r-base=4.1.3
   - r-tidyverse=1.3.1
-  - r-slider=0.2.2
   - r-scam=1.2_12
   - r-patchwork=1.1.1
