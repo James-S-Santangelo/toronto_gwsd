@@ -61,7 +61,7 @@ ggsave(filename = snakemake@output[['scamFits_plot']], plot = scamFits_allChroms
        device = 'pdf', dpi = 600, width = 20, height = 20, units = 'in')
 
 # Write interpolated genetic map for all chromosome to disk
-scamFits_allChroms %>% 
+scamFits_allChroms_off %>% 
     rename('cM' = 'preds') %>% 
     dplyr::select(pos, chrom, cM) %>%
     mutate(cM = as.numeric(cM)) %>%

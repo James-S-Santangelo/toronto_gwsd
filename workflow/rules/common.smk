@@ -97,7 +97,7 @@ def get_population_saf_files(wildcards):
     return saf1 + saf2 
 
 def get_whatshap_phase_input(wildcards):
-    ref = rules.unzip_reference.output
+    ref = REFERENCE_GENOME
     vcf = rules.bcftools_split_samples.output
     bam = expand(rules.samtools_markdup.output.bam, sample = wildcards.sample)
     return { 'ref' : ref, 'vcf' : vcf, 'bam' : bam }
