@@ -16,11 +16,11 @@ rule interpolate_genetic_map:
         linkage_map = config['genmap'],
         sites = expand(rules.sites_toInterpolate_byChrom.output, chrom=CHROMOSOMES)
     output:
-        scamFits_plot = '{0}/genMap/scamFits_allChroms.pdf'.format(GENMAP_RESULTS_DIR),
+        scamFits_plot = '{0}/scamFits_allChroms.pdf'.format(GENMAP_RESULTS_DIR),
         genMap_interp = '{0}/genMap_interpolated_allChroms.txt'.format(GENMAP_RESULTS_DIR)
     conda: '../envs/recombination_map.yaml'
-    notebook:
-        "../scripts/r/snakemake/genMap_interpolation.r"
+    script:
+        "../scripts/r/snakemake/genMap_interpolation.R"
 
 rule split_genMap:
     input:
@@ -37,7 +37,7 @@ rule recombination_map_done:
         expand(rules.sites_toInterpolate_byChrom.output, chrom = CHROMOSOMES),
         expand(rules.split_genMap.output, chrom = CHROMOSOMES)
     output:
-        '{0}/recombination_map_done'.format(GENMAP_RESULTS_DIR)
+        '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR)
     shell:
         """
         touch {output}

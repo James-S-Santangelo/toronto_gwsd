@@ -2,7 +2,7 @@
 # Fits Shape Constrained Cubic P-spline to smoothed genetic maps
 
 ###############
-#### SETUP ####
+###SETUP ####
 ###############
 
 # Load requird packaes
@@ -27,7 +27,7 @@ chroms <- c('Chr01_Occ', 'Chr01_Pall', 'Chr02_Occ', 'Chr02_Pall', 'Chr03_Occ',
 snakemake@source('./functions.R')
 
 #########################
-#### FIT SCAM MODELS ####
+###FIT SCAM MODELS ####
 #########################
 
 # Fit SCAM model separately for each chromosome
