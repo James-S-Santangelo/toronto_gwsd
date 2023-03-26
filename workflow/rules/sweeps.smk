@@ -104,43 +104,6 @@ rule norm_xpnsl:
         touch {output}
         """
 
-################
-#### XP-CLR ####
-################
-
-rule xpclr:
-    input:
-       unpack(xpclr_input)
-    output:
-        '{0}/xpclr/{{chrom}}/{{chrom}}_{{hab_comb}}_xpclr.out'.format(SWEEPS_DIR)
-    log: LOG_DIR + '/xpclr/{chrom}_{hab_comb}_xpcl.log'
-    container: 'library://james-s-santangelo/xpclr/xpclr:1.2.1'
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
-    params:
-        size = 50000,
-        step = 50000,
-        maxsnps = 600,
-        ld = 0.95
-    shell:
-        """
-        POP1_SAMPLES=$( cut -f1 {input.pop1s} )
-        POP2_SAMPLES=$( cut -f1 {input.pop2s} )
-        xpclr --format vcf \
-            --input {input.vcf} \
-            --samplesA $POP1_SAMPLES \
-            --samplesB $POP2_SAMPLES \
-            --out {output} \
-            --size {params.size} \
-            --step {params.step} \
-            --maxsnps {params.maxsnps} \
-            --ld {params.ld} \
-            --gdistkey CM \
-            --phased \
-            --chr {wildcards.chrom} 2> {log}
-        """
-
 ###############
 #### iHH12 ####
 ###############
@@ -183,38 +146,10 @@ rule norm_ihh_OneTwo:
         touch {output}
         """
 
-###############
-#### RAiSD ####
-###############
-
-rule raisd:
-    input:
-        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf
-    output:
-        info = '{0}/raisd/{{chrom}}/RAiSD_Info.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR),
-        report = '{0}/raisd/{{chrom}}/RAiSD_Report.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR)
-    container: 'library://james-s-santangelo/raisd/raisd:2.9'
-    log: LOG_DIR + '/raisd/{chrom}_{habitat}_raisd.log'
-    resources: 
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
-    params:
-        name = '{0}/raisd/{{chrom}}/RAiSD_Info.{{chrom}}_{{habitat}}'.format(SWEEPS_DIR)
-    shell:
-        """
-        RAiSD -n {wildcards.chrom}_{wildcards.habitat} \
-            -I {input} \
-            -R \
-            -a 42 2> {log}
-        """
-        
-
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
-        expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
-        #expand(rules.raisd.output, chrom='CM019101.1', habitat=HABITATS),
-        expand(rules.xpclr.output, chrom=CHROMOSOMES, hab_comb=['Urban_Rural', 'Rural_Suburban'])
+        expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS)
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:

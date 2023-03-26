@@ -128,7 +128,7 @@ rule all:
         # Population structure
         #'{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
-        #'{0}/sweeps.done'.format(SWEEPS_DIR),
+        '{0}/sweeps.done'.format(SWEEPS_DIR),
         #Demographic modelling
         #'{0}/dadi.done'.format(DADI_DIR),
         # HCN loci
@@ -149,6 +149,6 @@ include: 'rules/recombination_map.smk'
 include: 'rules/phasing.smk'
 #include: 'rules/population_structure.smk'
 #include: 'rules/dadi_demographic_models.smk',
-#include: 'rules/sweeps.smk'
+include: 'rules/sweeps.smk'
 #include: 'rules/hcn_loci.smk'
 #include: 'rules/notebooks.smk'
