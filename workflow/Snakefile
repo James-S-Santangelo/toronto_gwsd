@@ -113,7 +113,7 @@ rule all:
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
-        '{0}/species_id.done'.format(SPECIES_ID_DIR), 
+        #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
         '{0}/filtering.done'.format(FREEBAYES_DIR),
@@ -123,7 +123,7 @@ rule all:
         # Angsd
         #'{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
         #'{0}/angsd_byPopulation.done'.format(ANGSD_DIR),
         # Population structure
         #'{0}/population_structure.done'.format(POP_STRUC_DIR),

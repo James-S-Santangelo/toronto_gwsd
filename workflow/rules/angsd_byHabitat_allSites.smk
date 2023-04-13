@@ -66,7 +66,7 @@ rule angsd_saf_likelihood_byHabitat_allSites:
         saf_idx = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.idx'.format(ANGSD_DIR),
         saf_pos = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites.saf.pos.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_saf_likelihood_byHabitat_allSites/{chrom}_{habitat}_allSites_saf.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     params:
         out = '{0}/sfs/{{habitat}}/allSites/{{chrom}}/{{chrom}}_{{habitat}}_allSites'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
@@ -104,16 +104,17 @@ rule angsd_estimate_joint_habitat_sfs_allSites:
     output:
         '{0}/sfs/2dsfs/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_habitat_2dsfs_allSites/{chrom}_allSites_{hab_comb}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    threads: 6
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
+    threads: 8 
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 30000,
-        time = '06:00:00'
+        mem_mb = 10000,
+        time = lambda wildcards, attempt: str(attempt * 24) + ":00:00"
     shell:
         """
         realSFS {input.safs} \
             -maxIter 2000 \
             -seed 42 \
+            -tole 1e-6 \
             -fold 1 \
             -P {threads} > {output} 2> {log}
         """
@@ -127,16 +128,17 @@ rule angsd_estimate_sfs_byHabitat_allSites:
     output:
         '{0}/sfs/1dsfs/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_sfs_byHabitat_allSites/{chrom}_allSites_{habitat}_sfs.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
-    threads: 6
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
+    threads: 8
     resources:
-        mem_mb = lambda wildcards, attempt: attempt * 10000,
-        time = '01:00:00'
+        mem_mb = 10000,
+        time = lambda wildcards, attempt: str(attempt * 4) + ":00:00"
     shell:
         """
         realSFS {input.saf} \
             -P {threads} \
             -fold 1 \
+            -tole 1e-6 \
             -maxIter 2000 \
             -seed 42 > {output} 2> {log}
         """
@@ -156,7 +158,7 @@ rule angsd_habitat_fst_index_allSites:
         fst = '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_habitat_fst_index_allSites/{chrom}_allSites_{hab_comb}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     resources:
         mem_mb = 4000,
@@ -182,7 +184,7 @@ rule angsd_fst_allSites_readable:
     output:
         '{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
     log: 'logs/angsd_fst_allSites_readable/{chrom}_{hab_comb}_readable_fst.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         realSFS fst print {input} > {output} 2> {log}
@@ -199,7 +201,7 @@ rule angsd_estimate_thetas_byHabitat_allSites:
         idx = '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_thetas_byHabitat_allSites/{chrom}_allSites_{habitat}_thetas.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     params:
         out = '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}'.format(ANGSD_DIR)
@@ -224,7 +226,7 @@ rule angsd_thetas_allSites_readable:
     output:
         '{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_readable.thetas'.format(ANGSD_DIR)
     log: 'logs/angsd_thetas_allSites_readable/{chrom}_{habitat}_readable_thetas.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         thetaStat print {input} > {output} 2> {log}
@@ -238,11 +240,11 @@ rule windowed_theta:
     input:
         rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
     output:
-        "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas50.gz.pestPG".format(ANGSD_DIR)
+        "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz.pestPG".format(ANGSD_DIR)
     log: LOG_DIR + '/windowed_theta/{chrom}_{habitat}_windowTheta.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     params:
-        out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas50.gz".format(ANGSD_DIR),
+        out = "{0}/summary_stats/thetas/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{habitat}}_windowedThetas.gz".format(ANGSD_DIR),
         win = 50000,
         step = 50000
     resources:
@@ -257,9 +259,9 @@ rule windowed_fst:
     input:
         rules.angsd_habitat_fst_index_allSites.output.idx
     output:
-        "{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_windowed50.fst".format(ANGSD_DIR)
+        "{0}/summary_stats/hudson_fst/byHabitat/allSites/{{chrom}}/{{chrom}}_allSites_{{hab_comb}}_windowed.fst".format(ANGSD_DIR)
     log: LOG_DIR + '/windowed_fst/{chrom}_{hab_comb}_windowedFst.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     params:
         win = 50000,
         step = 50000
@@ -285,7 +287,7 @@ rule angsd_byHabitat_allSites_done:
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
         expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS)
     output:
-        '{0}/angsd_byHabitat_allSites50.done'.format(ANGSD_DIR)
+        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR)
     shell:
         """
         touch {output}
