@@ -62,7 +62,8 @@ rule get_fourfold_zerofold:
         ref = REFERENCE_GENOME,
         gff = GFF_FILE
     output:
-        expand('{0}/4fold_0fold/Trepens_{{chrom}}_{{site}}.bed'.format(REF_DIR), site=['0fold','4fold'])
+        '{0}/4fold_0fold/Trepens_{{chrom}}_0fold.bed'.format(REF_DIR),
+        '{0}/4fold_0fold/Trepens_{{chrom}}_4fold.bed'.format(REF_DIR)
     log: LOG_DIR + '/4fold_0fold/{{chrom}}_get_fourfold_zerofold.log'
     conda: '../envs/ref.yaml'
     params:
