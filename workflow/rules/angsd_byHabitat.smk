@@ -45,13 +45,13 @@ rule angsd_saf_likelihood_byHabitat:
     input:
         unpack(get_files_for_saf_estimation_byHabitat)
     output:
-        saf = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
-        saf_idx = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
-        saf_pos = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
+        saf = '{0}/saf/{{habitat}}/{{habitat}}_{{site}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/saf/{{habitat}}/{{habitat}}_{{site}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/saf/{{habitat}}/{{habitat}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_saf_likelihood_byHabitat/{habitat}_{site}_saf.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     params:
-        out = '{0}/sfs/1d/{{habitat}}/{{habitat}}_{{site}}'.format(ANGSD_DIR),
+        out = '{0}/saf/{{habitat}}/{{habitat}}_{{site}}'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     threads: 8
     resources:
@@ -88,17 +88,18 @@ rule angsd_estimate_joint_habitat_sfs:
         sites = rules.convert_sites_for_angsd.output,
         idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/2d/byHabitat/{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
+        '{0}/sfs/2dsfs/byHabitat/{{site}}_{{hab_comb}}.2dsfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_habitat_2dsfs/{site}_{hab_comb}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 6
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 8000,
-        time = '01:00:00'
+        time = '03:00:00'
     shell:
         """
         realSFS {input.safs} \
             -sites {input.sites} \
+            -tole 1e-6 \
             -maxIter 2000 \
             -seed 42 \
             -fold 1 \
@@ -114,20 +115,21 @@ rule angsd_estimate_sfs_byHabitat:
         sites = rules.convert_sites_for_angsd.output,
         idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/1d/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
+        '{0}/sfs/1dsfs/byHabitat/{{site}}_{{habitat}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{site}_{habitat}_sfs.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 6
     wildcard_constraints:
         site='4fold'
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
+        time = '03:00:00'
     shell:
         """
         realSFS {input.saf} \
             -sites {input.sites} \
             -P {threads} \
+            -tole 1e-6 \
             -fold 1 \
             -maxIter 2000 \
             -seed 42 > {output} 2> {log}
@@ -148,7 +150,7 @@ rule angsd_habitat_fst_index:
         fst = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
         idx = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_habitat_fst_index/{site}_{hab_comb}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     resources:
         mem_mb = 4000,
@@ -177,7 +179,7 @@ rule angsd_habitat_fst_readable:
     resources:
         mem_mb = 4000,
         time = '01:00:00'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         realSFS fst print {input} > {output} 2> {log}
@@ -194,7 +196,7 @@ rule angsd_estimate_thetas_byHabitat:
         idx = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
         thet = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{site}_{habitat}_thetas.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     wildcard_constraints:
         site='4fold'
@@ -221,7 +223,7 @@ rule angsd_diversity_neutrality_stats_byHabitat:
     output:
        '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{site}_{habitat}_diversity_neutrality.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     wildcard_constraints:
         site='4fold'
     resources:

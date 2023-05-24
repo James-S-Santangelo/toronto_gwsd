@@ -57,7 +57,7 @@ rule angsd_index_degenerate_sites:
         binary = '{0}/angsd_sites/Trepens_{{site}}.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/Trepens_{{site}}.sites.idx'.format(PROGRAM_RESOURCE_DIR)
     log: LOG_DIR + '/angsd_index_sites/{site}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         angsd sites index {input} 2> {log}
@@ -81,7 +81,7 @@ rule angsd_index_sites_byChrom:
         binary = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}.sites.bin'.format(PROGRAM_RESOURCE_DIR),
         idx = '{0}/angsd_sites/{{chrom}}/{{chrom}}_Trepens_{{site}}.sites.idx'.format(PROGRAM_RESOURCE_DIR)
     log: LOG_DIR + '/angsd_index_sites/{chrom}_{site}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         angsd sites index {input} 2> {log}
@@ -101,7 +101,7 @@ rule angsd_gl_degenerate_allSamples:
         gls = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.beagle.gz'.format(ANGSD_DIR)),
         mafs = temp('{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}.mafs.gz'.format(ANGSD_DIR)),
     log: LOG_DIR + '/angsd_gl_allSamples_degenerate/{chrom}_{site}_maf{maf}_angsd_gl.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 8
     params:
         out = '{0}/gls/allSamples/{{site}}/{{chrom}}/{{chrom}}_{{site}}_maf{{maf}}'.format(ANGSD_DIR),

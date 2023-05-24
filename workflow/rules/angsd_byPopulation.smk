@@ -8,7 +8,7 @@ rule create_bam_list_byPop_multiInd:
     input:
         rules.create_bam_list_allFinalSamples.output
     output:
-        '{0}/bam_lists/by_population/{{popu}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
+        '{0}/bam_lists/byPopulation/{{popu}}_{{site}}_bams.list'.format(PROGRAM_RESOURCE_DIR)
     log: 'logs/create_bam_list/{popu}_{site}_bam_list.log'
     run:
         import os
@@ -32,13 +32,13 @@ rule angsd_saf_likelihood_byPopulation:
     input:
         unpack(get_files_for_saf_estimation_byPopulation)
     output:
-        saf = '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}.saf.gz'.format(ANGSD_DIR),
-        saf_idx = '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}.saf.idx'.format(ANGSD_DIR),
-        saf_pos = '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
+        saf = '{0}/saf/byPopulation/{{popu}}/{{popu}}_{{site}}.saf.gz'.format(ANGSD_DIR),
+        saf_idx = '{0}/saf/byPopulation/{{popu}}/{{popu}}_{{site}}.saf.idx'.format(ANGSD_DIR),
+        saf_pos = '{0}/saf/byPopulation/{{popu}}/{{popu}}_{{site}}.saf.pos.gz'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_saf_likelihood_byPopulation/{popu}_{site}_saf.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     params:
-        out = '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}'.format(ANGSD_DIR),
+        out = '{0}/saf/byPopulation/{{popu}}/{{popu}}_{{site}}'.format(ANGSD_DIR),
         min_dp_ind = ANGSD_MIN_DP_IND_SFS
     threads: 8
     resources:
@@ -76,9 +76,9 @@ rule angsd_estimate_sfs_byPopulation:
         sites = rules.convert_sites_for_angsd.output,
         idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/1d/by_population/{{popu}}/{{popu}}_{{site}}.sfs'.format(ANGSD_DIR)
+        '{0}/sfs/1dsfs/byPopulation/{{popu}}/{{popu}}_{{site}}.sfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_sfs_byHabitat/{popu}_{site}.sfs.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 6
     wildcard_constraints:
         site='4fold'
@@ -104,9 +104,9 @@ rule angsd_estimate_joint_population_sfs:
         sites = rules.convert_sites_for_angsd.output,
         idx = rules.angsd_index_degenerate_sites.output,
     output:
-        '{0}/sfs/2d/by_population/{{pop_comb}}_{{site}}.2dsfs'.format(ANGSD_DIR)
+        '{0}/sfs/2dsfs/byPopulation/{{pop_comb}}_{{site}}.2dsfs'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_estimate_population_2dsfs/{pop_comb}_{site}.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 6
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 8000,
@@ -134,15 +134,15 @@ rule angsd_estimate_thetas_byPopulation:
         saf_idx = rules.angsd_saf_likelihood_byPopulation.output.saf_idx,
         sfs = rules.angsd_estimate_sfs_byPopulation.output
     output:
-        idx = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.idx'.format(ANGSD_DIR),
-        thet = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.gz'.format(ANGSD_DIR)
-    log: LOG_DIR + '/angsd_estimate_thetas_by_population/{site}_{popu}_thetas.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+        idx = '{0}/summary_stats/thetas/byPopulation/{{popu}}/{{popu}}_{{site}}.thetas.idx'.format(ANGSD_DIR),
+        thet = '{0}/summary_stats/thetas/byPopulation/{{popu}}/{{popu}}_{{site}}.thetas.gz'.format(ANGSD_DIR)
+    log: LOG_DIR + '/angsd_estimate_thetas_byPopulation/{site}_{popu}_thetas.log'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     wildcard_constraints:
         site='4fold'
     params:
-        out = '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}'.format(ANGSD_DIR)
+        out = '{0}/summary_stats/thetas/byPopulation/{{popu}}/{{popu}}_{{site}}'.format(ANGSD_DIR)
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '01:00:00'
@@ -162,9 +162,9 @@ rule angsd_diversity_neutrality_stats_byPopulation:
     input:
         rules.angsd_estimate_thetas_byPopulation.output.idx
     output:
-       '{0}/summary_stats/thetas/by_population/{{popu}}/{{popu}}_{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR)
+       '{0}/summary_stats/thetas/byPopulation/{{popu}}/{{popu}}_{{site}}.thetas.idx.pestPG'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_diversity_neutrality_stats_byPopulation/{site}_{popu}_diversity_neutrality.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     wildcard_constraints:
         site='4fold'
     resources:
@@ -183,16 +183,16 @@ rule angsd_population_fst_index:
         saf_files = get_population_saf_files, 
         sfs = rules.angsd_estimate_joint_population_sfs.output
     output:
-        fst = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}.fst.gz'.format(ANGSD_DIR),
-        idx = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}.fst.idx'.format(ANGSD_DIR)
+        fst = '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.gz'.format(ANGSD_DIR),
+        idx = '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.idx'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_population_fst_index/{pop_comb}_{site}_index.log'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
     resources:
         mem_mb = 4000,
         time = '02:00:00'
     params:
-        fstout = '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}'.format(ANGSD_DIR)
+        fstout = '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}'.format(ANGSD_DIR)
     shell:
         """
         realSFS fst index {input.saf_files} \
@@ -210,12 +210,12 @@ rule angsd_population_fst_readable:
     input:
         rules.angsd_population_fst_index.output.idx
     output:
-        '{0}/summary_stats/hudson_fst/by_population/{{pop_comb}}_{{site}}_readable.fst'.format(ANGSD_DIR)
+        '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}_readable.fst'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_population_fst_readable/{pop_comb}_{site}_readable.log'
     resources:
         mem_mb = 1000,
         time = '01:00:00'
-    container: 'library://james-s-santangelo/angsd/angsd:0.933'
+    container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
         realSFS fst print {input} > {output} 2> {log}

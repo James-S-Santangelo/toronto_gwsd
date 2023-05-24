@@ -52,8 +52,7 @@ def get_vcfs_by_chrom(wildcards):
     return expand(rules.freebayes_call_variants.output, chrom=wildcards.chrom, i=FREEBAYES_CHUNKS)
 
 def get_bed_to_subset(wildcards):
-    all_bed_files = rules.concat_degenerate_sites.output
-    bed = [bed for bed in all_bed_files if wildcards.site in os.path.basename(bed)]
+    bed = expand(rules.concat_degenerate_sites.output, site=wildcards.site)
     return bed
 
 def get_files_for_saf_estimation_byHabitat(wildcards):
