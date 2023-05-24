@@ -74,7 +74,7 @@ rule get_fourfold_zerofold:
     shell:
         """
         samtools faidx {input.ref} {wildcards.chrom} > {wildcards.chrom}_tmp.fasta
-        grep '{wildcards.chrom}' {input.gff} > {wildcards.chrom}_tmp.fasta
+        grep '{wildcards.chrom}' {input.gff} > {wildcards.chrom}_tmp.gff
 
         OUT_ABS=$( readlink -f {params.outpath} );
         REF_ABS=$( readlink -f {wildcards.chrom}_tmp.fasta );
