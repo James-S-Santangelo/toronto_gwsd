@@ -94,7 +94,7 @@ rule angsd_index_sites_byChrom:
 rule angsd_gl_degenerate_allSamples:
     input:
         bams = rules.create_bam_list_allFinalSamples.output,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         sites = rules.split_angsd_sites_byChrom.output,
         idx = rules.angsd_index_sites_byChrom.output
     output:

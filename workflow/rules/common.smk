@@ -57,7 +57,7 @@ def get_bed_to_subset(wildcards):
     return bed
 
 def get_files_for_saf_estimation_byHabitat(wildcards):
-    ref = rules.unzip_reference.output
+    ref = REFERENCE_GENOME
     bams = expand(rules.create_bam_list_byHabitat.output, habitat = wildcards.habitat, site=wildcards.site)
     sites = rules.convert_sites_for_angsd.output
     idx = rules.angsd_index_degenerate_sites.output
@@ -81,7 +81,7 @@ def get_habitat_saf_files_allSites(wildcards):
     return saf1 + saf2
 
 def get_files_for_saf_estimation_byPopulation(wildcards):
-    ref = rules.unzip_reference.output
+    ref = REFERENCE_GENOME
     bams = expand(rules.create_bam_list_byPop_multiInd.output, popu=wildcards.popu, site=wildcards.site)
     sites = rules.convert_sites_for_angsd.output
     idx = rules.angsd_index_degenerate_sites.output
@@ -111,7 +111,7 @@ def get_dadi_sfs_input_files(wildcards):
     saf_rural = [x for x in saf_files if '{0}'.format(hab2) in os.path.basename(x)]
     sfs_urban = [x for x in sfs_files if '{0}'.format(hab1) in os.path.basename(x)]
     sfs_rural = [x for x in sfs_files if '{0}'.format(hab2) in os.path.basename(x)]
-    ref = rules.unzip_reference.output
+    ref = REFERENCE_GENOME
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 def selscan_xpnsl_input(wildcards):

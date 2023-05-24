@@ -33,7 +33,7 @@ rule create_bam_list_highQualSamples:
 rule angsd_gl_forNGSrelate:
     input:
         bams = rules.create_bam_list_highQualSamples.output,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         sites = rules.split_random_angsd_sites_byChrom.output,
         idx = rules.index_random_chromosomal_angsd_sites.output
     output:

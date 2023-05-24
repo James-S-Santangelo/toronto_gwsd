@@ -261,7 +261,7 @@ rule angsd_index_prunedSNPs:
 rule angsd_gl_forNGSrelate:
     input:
         bams = rules.create_bam_list_highQualSamples.output,
-        ref = rules.unzip_reference.output,
+        ref = REFERENCE_GENOME,
         sites = rules.pruned_degenerate_angsd_format.output,
         idx = rules.angsd_index_prunedSNPs.output
     output:
