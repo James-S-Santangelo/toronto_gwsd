@@ -112,14 +112,14 @@ rule all:
         # Reference genome
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
-        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        # '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        '{0}/filtering.done'.format(FREEBAYES_DIR),
-        '{0}/phasing.done'.format(FREEBAYES_DIR),
+        # '{0}/freebayes.done'.format(FREEBAYES_DIR),
+        # '{0}/filtering.done'.format(FREEBAYES_DIR),
+        # '{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
-        '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
+        # '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
         # Angsd
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
