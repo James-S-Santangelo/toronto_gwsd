@@ -3,6 +3,7 @@ tmp/
 resources/misc/
 .snakemake
 data/
+reference/
 results*
 *log*/
 *.pdf
