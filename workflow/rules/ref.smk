@@ -68,8 +68,8 @@ rule get_fourfold_zerofold:
     params:
         outpath = '{0}/4fold_0fold/'.format(REF_DIR)
     resources:
-        mem_mb = 4000,
-        time = '06:00:00'
+        mem_mb = 2000,
+        time = '03:00:00'
     shell:
         """
         samtools faidx {input.ref} {wildcards.chrom} > {wildcards.chrom}_tmp.fasta
