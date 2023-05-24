@@ -80,7 +80,7 @@ rule get_fourfold_zerofold:
         REF_ABS=$( readlink -f {wildcards.chrom}_tmp.fasta );
         GFF_ABS=$( readlink -f {wildcards.chrom}_tmp.gff )
         ( cd {input.degen} &&
-        bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS ) 2> {log}
+        bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS {wildcards.chrom} ) 2> {log}
 
         rm {wildcards.chrom}_tmp*
         """
