@@ -4,7 +4,7 @@ rule samtools_index_reference:
     output:
         f'{REFERENCE_GENOME}.fai'
     conda: '../envs/ref.yaml'
-j   log: LOG_DIR + '/samtools_index_reference/samtools_index_reference.log'
+    log: LOG_DIR + '/samtools_index_reference/samtools_index_reference.log'
     shell:
         """
         samtools faidx {input} 2> {log}
