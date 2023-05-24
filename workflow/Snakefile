@@ -108,7 +108,7 @@ localrules: download_reference, unzip_reference, samtools_index_reference, clone
 include: 'rules/common.smk'
 
 rule all:
-   input:
+    input:
         # Reference genome
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
@@ -121,12 +121,12 @@ rule all:
         # Recombination map
         '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
         # Angsd
-        #'{0}/angsd_allSamples.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
+        '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
+        '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
         '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
-        #'{0}/angsd_byPopulation.done'.format(ANGSD_DIR),
+        '{0}/angsd_byPopulation.done'.format(ANGSD_DIR),
         # Population structure
-        #'{0}/population_structure.done'.format(POP_STRUC_DIR),
+        '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
         '{0}/sweeps.done'.format(SWEEPS_DIR),
         #Demographic modelling
@@ -139,15 +139,15 @@ include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
-#include: 'rules/angsd_allSamples.smk'
-#include: 'rules/angsd_byHabitat.smk'
+include: 'rules/angsd_allSamples.smk'
+include: 'rules/angsd_byHabitat.smk'
 include: 'rules/angsd_byHabitat_allSites.smk'
-#include: 'rules/angsd_byPopulation.smk'
+include: 'rules/angsd_byPopulation.smk'
 include: 'rules/freebayes.smk'
 include: 'rules/filtering.smk'
 include: 'rules/recombination_map.smk'
 include: 'rules/phasing.smk'
-#include: 'rules/population_structure.smk'
+include: 'rules/population_structure.smk'
 #include: 'rules/dadi_demographic_models.smk',
 include: 'rules/sweeps.smk'
 #include: 'rules/hcn_loci.smk'
