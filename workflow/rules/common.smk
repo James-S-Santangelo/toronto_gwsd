@@ -46,7 +46,7 @@ def get_subset_bams_degeneracy_input(wildcards):
     regions = [x for x in all_degen_bed_files if wildcards.site in os.path.basename(x)]
     bam = expand(rules.samtools_markdup.output.bam, sample=wildcards.sample)
     # idx = expand(rules.index_bam.output, sample = wildcards.sample)
-    return { 'bam' : bam, 'idx' : idx, 'regions' : regions }
+    return { 'bam' : bam, 'regions' : regions }
 
 def get_vcfs_by_chrom(wildcards):
     return expand(rules.freebayes_call_variants.output, chrom=wildcards.chrom, i=FREEBAYES_CHUNKS)
