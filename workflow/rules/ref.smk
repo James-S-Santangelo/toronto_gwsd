@@ -62,8 +62,8 @@ rule get_fourfold_zerofold:
         ref = REFERENCE_GENOME,
         gff = GFF_FILE
     output:
-        expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(REF_DIR), site=['0fold','4fold'])
-    log: LOG_DIR + '/4fold_0fold/get_fourfold_zerofold.log'
+        expand('{0}/4fold_0fold/Trepens_{{chrom}}_{{site}}.bed'.format(REF_DIR), site=['0fold','4fold'])
+    log: LOG_DIR + '/4fold_0fold/{{chrom}}_get_fourfold_zerofold.log'
     conda: '../envs/ref.yaml'
     params:
         outpath = '{0}/4fold_0fold/'.format(REF_DIR)
@@ -72,11 +72,26 @@ rule get_fourfold_zerofold:
         time = '06:00:00'
     shell:
         """
+        samtools faidx {input.ref} {wildcards.chrom} > {wildcards.chrom}_tmp.fasta
+        grep '{wildcards.chrom}' {input.gff} > {wildcards.chrom}_tmp.fasta
+
         OUT_ABS=$( readlink -f {params.outpath} );
-        REF_ABS=$( readlink -f {input.ref} );
-        GFF_ABS=$( readlink -f {input.gff} )
+        REF_ABS=$( readlink -f {wildcards.chrom}_tmp.fasta );
+        GFF_ABS=$( readlink -f {wildcards.chrom}_tmp.gff )
         ( cd {input.degen} &&
         bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS ) 2> {log}
+
+        rm {wildcards.chrom}_tmp*
+        """
+
+rule concat_degenerate_sites:
+    input:
+        lambda w: expand(rules.get_fourfold_zerofold.output, chrom=CHROMOSOMES, site=w.site)
+    output:
+        f"{REF_DIR}/4fold_0fold/Trepens_{{site}}.bed"
+    shell:
+        """
+        cat {input} > {output}
         """
 
 rule ref_done:
