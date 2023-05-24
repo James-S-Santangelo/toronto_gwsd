@@ -40,44 +40,44 @@ rule makeblastdb_fromRef:
             -logfile test.log
         """
 
-# rule clone_degeneracy:
-#     """
-#     Clone Degeneracy GitHub repo for getting 4fold and 0fold sites.
-#     """
-#     output:
-#         temp(directory('Degeneracy'))
-#     log: LOG_DIR + '/clone_degeneracy/clone_degeneracy.log'
-#     shell:
-#         """
-#         git clone https://github.com/James-S-Santangelo/Degeneracy.git
-#         """
+rule clone_degeneracy:
+    """
+    Clone Degeneracy GitHub repo for getting 4fold and 0fold sites.
+    """
+    output:
+        temp(directory('Degeneracy'))
+    log: LOG_DIR + '/clone_degeneracy/clone_degeneracy.log'
+    shell:
+        """
+        git clone https://github.com/James-S-Santangelo/Degeneracy.git
+        """
 
-# rule get_fourfold_zerofold:
-#     """
-#     Uses get_4fold_sites.sh from Degeneracy to get 4fold and 0fold sites across white clover
-#     genome from reference sequence (FASTA) and annotation file (GFF).
-#     """
-#     input:
-#         degen = rules.clone_degeneracy.output,
-#         ref = REFERENCE_GENOME,
-#         gff = GFF_FILE
-#     output:
-#         expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(REF_DIR), site=['0fold','4fold'])
-#     log: LOG_DIR + '/4fold_0fold/get_fourfold_zerofold.log'
-#     conda: '../envs/ref.yaml'
-#     params:
-#         outpath = '{0}/4fold_0fold/'.format(REF_DIR)
-#     resources:
-#         mem_mb = 4000,
-#         time = '06:00:00'
-#     shell:
-#         """
-#         OUT_ABS=$( readlink -f {params.outpath} );
-#         REF_ABS=$( readlink -f {input.ref} );
-#         GFF_ABS=$( readlink -f {input.gff} )
-#         ( cd {input.degen} &&
-#         bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS ) 2> {log}
-#         """
+rule get_fourfold_zerofold:
+    """
+    Uses get_4fold_sites.sh from Degeneracy to get 4fold and 0fold sites across white clover
+    genome from reference sequence (FASTA) and annotation file (GFF).
+    """
+    input:
+        degen = rules.clone_degeneracy.output,
+        ref = REFERENCE_GENOME,
+        gff = GFF_FILE
+    output:
+        expand('{0}/4fold_0fold/Trepens_{{site}}.bed'.format(REF_DIR), site=['0fold','4fold'])
+    log: LOG_DIR + '/4fold_0fold/get_fourfold_zerofold.log'
+    conda: '../envs/ref.yaml'
+    params:
+        outpath = '{0}/4fold_0fold/'.format(REF_DIR)
+    resources:
+        mem_mb = 4000,
+        time = '06:00:00'
+    shell:
+        """
+        OUT_ABS=$( readlink -f {params.outpath} );
+        REF_ABS=$( readlink -f {input.ref} );
+        GFF_ABS=$( readlink -f {input.gff} )
+        ( cd {input.degen} &&
+        bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS ) 2> {log}
+        """
 
 rule ref_done:
     input:
