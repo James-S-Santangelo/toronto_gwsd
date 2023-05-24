@@ -4,7 +4,7 @@ rule samtools_index_reference:
     output:
         f'{REFERENCE_GENOME}.fai'
     conda: '../envs/ref.yaml'
-    log: LOG_DIR + '/samtools_index_reference/samtools_index_reference.log'
+j   log: LOG_DIR + '/samtools_index_reference/samtools_index_reference.log'
     shell:
         """
         samtools faidx {input} 2> {log}
@@ -64,7 +64,7 @@ rule get_fourfold_zerofold:
     output:
         '{0}/4fold_0fold/Trepens_{{chrom}}_0fold.bed'.format(REF_DIR),
         '{0}/4fold_0fold/Trepens_{{chrom}}_4fold.bed'.format(REF_DIR)
-    log: LOG_DIR + '/4fold_0fold/{{chrom}}_get_fourfold_zerofold.log'
+    log: LOG_DIR + '/4fold_0fold/{chrom}_get_fourfold_zerofold.log'
     conda: '../envs/ref.yaml'
     params:
         outpath = '{0}/4fold_0fold/'.format(REF_DIR)
