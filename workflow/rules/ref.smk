@@ -70,15 +70,11 @@ rule create_bed_from_degenotate:
         rules.degenotate.output
     output:
         f'{REF_DIR}/Trepens_{{site}}.bed'
-    run:
-        fold = '0' if wildcards.site == '0fold' else '4'
-        with open(output[0], 'w') as fout:
-            with open(input[0], 'r') as fin:
-                lines = fin.readlines()
-                for line in lines:
-                    if line[4] == fold:
-                        fout.write(f"{line[0]}\t{line[1]}\t{line[2]}\n")
-
+    params: fold = lambda w: '0' if w.site == '0fold' else '4'
+    shell:
+        """
+        awk '$5 == {params.fold}' {input} | cut -f1,2,3 > {output}
+        """
 
 rule ref_done:
     input:
