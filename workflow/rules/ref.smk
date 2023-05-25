@@ -54,7 +54,7 @@ rule degenotate:
     params:
         outpath = f'{REF_DIR}/degenotate/'.format(REF_DIR)
     resources:
-        mem_mb = 2000,
+        mem_mb = 8000,
         time = '03:00:00'
     shell:
         """
