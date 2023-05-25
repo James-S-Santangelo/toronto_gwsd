@@ -54,7 +54,7 @@ rule degenotate:
     params:
         outpath = f'{REF_DIR}/degenotate/'.format(REF_DIR)
     resources:
-        mem_mb = lamda wildcards, attempt: attempt * 16000,
+        mem_mb = lambda wildcards, attempt: attempt * 16000,
         time = '03:00:00'
     shell:
         """
