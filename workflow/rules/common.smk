@@ -42,7 +42,7 @@ def get_subset_bams_degeneracy_input(wildcards):
     """
     Returns the correct GLUE or Toronto BAM file
     """
-    all_degen_bed_files = expand(rules.concat_degenerate_sites.output, site=['0fold', '4fold'])
+    all_degen_bed_files = expand(rules.create_bed_from_degenotate.output, site=['0fold', '4fold'])
     regions = [x for x in all_degen_bed_files if wildcards.site in os.path.basename(x)]
     bam = expand(rules.samtools_markdup.output.bam, sample=wildcards.sample)
     idx = expand(rules.index_bam.output, sample = wildcards.sample)
@@ -52,7 +52,7 @@ def get_vcfs_by_chrom(wildcards):
     return expand(rules.freebayes_call_variants.output, chrom=wildcards.chrom, i=FREEBAYES_CHUNKS)
 
 def get_bed_to_subset(wildcards):
-    bed = expand(rules.concat_degenerate_sites.output, site=wildcards.site)
+    bed = expand(rules.create_bed_from_degenotate.output, site=wildcards.site)
     return bed
 
 def get_files_for_saf_estimation_byHabitat(wildcards):

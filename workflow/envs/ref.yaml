@@ -2,10 +2,8 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bedtools=2.26
   - bwa-mem2=2.2.1
   - samtools=1.16.1
   - htslib=1.16
   - blast=2.13.0
-  - python=2
-  - pandas
+  - degenotate=1.2.1

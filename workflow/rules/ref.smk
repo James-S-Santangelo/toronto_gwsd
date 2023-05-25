@@ -40,60 +40,45 @@ rule makeblastdb_fromRef:
             -logfile test.log
         """
 
-rule clone_degeneracy:
+rule degenotate:
     """
-    Clone Degeneracy GitHub repo for getting 4fold and 0fold sites.
-    """
-    output:
-        temp(directory('Degeneracy'))
-    log: LOG_DIR + '/clone_degeneracy/clone_degeneracy.log'
-    shell:
-        """
-        git clone https://github.com/James-S-Santangelo/Degeneracy.git
-        """
-
-rule get_fourfold_zerofold:
-    """
-    Uses get_4fold_sites.sh from Degeneracy to get 4fold and 0fold sites across white clover
-    genome from reference sequence (FASTA) and annotation file (GFF).
+    Generate text file with degeneracy of every nucleotide in CDSs
     """
     input:
-        degen = rules.clone_degeneracy.output,
         ref = REFERENCE_GENOME,
         gff = GFF_FILE
     output:
-        '{0}/4fold_0fold/Trepens_{{chrom}}_0fold.bed'.format(REF_DIR),
-        '{0}/4fold_0fold/Trepens_{{chrom}}_4fold.bed'.format(REF_DIR)
-    log: LOG_DIR + '/4fold_0fold/{chrom}_get_fourfold_zerofold.log'
+        f'{REF_DIR}/degenotate/degeneracy-all-sites.bed',
+    log: f'{LOG_DIR}/degenotate/degenotate.log'
     conda: '../envs/ref.yaml'
     params:
-        outpath = '{0}/4fold_0fold/'.format(REF_DIR)
+        outpath = f'{REF_DIR}/degenotate/'.format(REF_DIR)
     resources:
         mem_mb = 2000,
         time = '03:00:00'
     shell:
         """
-        samtools faidx {input.ref} {wildcards.chrom} > {wildcards.chrom}_tmp.fasta
-        grep '{wildcards.chrom}' {input.gff} > {wildcards.chrom}_tmp.gff
-
-        OUT_ABS=$( readlink -f {params.outpath} );
-        REF_ABS=$( readlink -f {wildcards.chrom}_tmp.fasta );
-        GFF_ABS=$( readlink -f {wildcards.chrom}_tmp.gff )
-        ( cd {input.degen} &&
-        bash get_4fold_sites.sh $GFF_ABS $REF_ABS $OUT_ABS {wildcards.chrom} ) 2> {log}
-
-        rm {wildcards.chrom}_tmp*
+        sed 's/;$//' {input.gff} > tmp.gff3
+        degenotate.py -a tmp.gff3 \
+                -g {input.ref} \
+                -o {params.outpath} 
+                --overwrite &> {log}
         """
 
-rule concat_degenerate_sites:
+rule create_bed_from_degenotate:
     input:
-        lambda w: expand(rules.get_fourfold_zerofold.output, chrom=CHROMOSOMES, site=w.site)
+        rules.degenotate.output
     output:
-        f"{REF_DIR}/4fold_0fold/Trepens_{{site}}.bed"
-    shell:
-        """
-        cat {input} > {output}
-        """
+        f'{REF_DIR}/Trepens_{{site}}.bed'
+    run:
+        fold = '0' if wildcards.site == '0fold' else '4'
+        with open(output[0], 'w') as fout:
+            with open(input[0], 'r') as fin:
+                lines = fin.readlines()
+                for line in lines:
+                    if line[4] == fold:
+                        fout.write(f"{line[0]}\t{line[1]}\t{line[2]}\n")
+ 
 
 rule ref_done:
     input:
