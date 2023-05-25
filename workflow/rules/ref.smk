@@ -61,7 +61,7 @@ rule degenotate:
         sed 's/;$//' {input.gff} > tmp.gff3
         degenotate.py -a tmp.gff3 \
                 -g {input.ref} \
-                -o {params.outpath} 
+                -o {params.outpath} \
                 --overwrite &> {log}
         """
 
@@ -78,7 +78,7 @@ rule create_bed_from_degenotate:
                 for line in lines:
                     if line[4] == fold:
                         fout.write(f"{line[0]}\t{line[1]}\t{line[2]}\n")
- 
+
 
 rule ref_done:
     input:
