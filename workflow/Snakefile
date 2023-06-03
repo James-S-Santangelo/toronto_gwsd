@@ -17,7 +17,6 @@ HABITATS = pd.read_table(config['samples'])['Habitat'].unique().tolist()
 REFERENCE_GENOME = config['ref']
 
 # External resources
-# Make ancient to prevent triguring pipeline if time stamp changes
 GFF_FILE = config['gff']
 
 # Paths for output files
@@ -36,7 +35,6 @@ POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
 FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
 HCN_LOCI_DIR = '{0}/hcn_loci'.format(config['results_prefix'])
 GENMAP_RESULTS_DIR = '{0}/gen_map'.format(config['results_prefix'])
-DADI_DIR = '{0}/dadi'.format(config['results_prefix'])
 SWEEPS_DIR = '{0}/sweeps'.format(config['results_prefix'])
 
 # Parameters for initial PCA and relatedness analysis post-QC
@@ -66,29 +64,6 @@ NGSADMIX_SEEDS = [x for x in range(1, 11)]
 # Parameters for estimating pi by habitat and Fst between habitats
 HABITAT_COMBOS = ['Urban_Rural', 'Urban_Suburban', 'Rural_Suburban']
 
-# Dadi models
-DADI_MODELS = [
-    'no_div', 
-    'no_div_bot', 
-    'no_div_growth', 
-    'no_div_bot_growth', 
-    'split_no_mig', 
-    'split_sym_mig', 
-    'split_asym_mig',
-    'split_bot_urb_no_mig', 
-    'split_bot_urb_sym_mig', 
-    'split_bot_urb_asym_mig', 
-    'split_bot_rur_no_mig', 
-    'split_bot_rur_sym_mig', 
-    'split_bot_rur_asym_mig',
-    'split_growth_urb_no_mig',
-    'split_growth_urb_sym_mig',
-    'split_growth_urb_asym_mig',
-    'split_growth_rur_no_mig',
-    'split_growth_rur_sym_mig',
-    'split_growth_rur_asym_mig'
-    ] 
-
 # Populations with multiple individuals for ANGSD Fst and PBS calculations
 # Create list with pairwise combinations of multi-individual populations 
 POPS_MULTI_IND = config['pops_multi_ind']
@@ -103,7 +78,7 @@ wildcard_constraints:
     site_type='snps|invariant',
     maf='0.05'
 
-localrules: samtools_index_reference, clone_degeneracy, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites_byChrom, angsd_index_degenerate_sites, concat_angsd_gl, create_pos_file_for_ngsLD, angsd_allSamples_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta,download_nt_database, logfile_for_clumpak, angsd_index_prunedSNPs, pop_structure_done, species_id_done, convert_freq_forNGSrelate, create_bam_list_allFinalSamples, create_bam_list_byHabitat, angsd_byHabitat_done, extract_nt_database, ncbi_db_download_done, bcftools_split_samples, phasing_done, create_bam_lists_allFinalSamples_allSites, create_bam_list_byHabitat_allSites, vcf_filtering_done, makeblastdb_fromRef, blast_markers, interpolate_genetic_map, recombination_map_done, sites_toInterpolate_byChrom, interpolate_genetic_map, split_genMap, format_dadi_sfs, dadi_done, samples_byHabitat, bcftools_splitVCF_byHabitat, genMap_toPlinkFormat, norm_xpnsl, sweeps_done, angsd_thetas_allSites_readable, angsd_fst_allSites_readable, create_bam_list_byPop_multiInd, angsd_population_fst_readable, angsd_byPopulation_done, create_bed_from_degenotate
+localrules: samtools_index_reference, ref_done, create_bam_list_highQualSamples, create_bam_list_allSamples, create_region_files_forFreebayes, freebayes_done, convert_sites_for_angsd, split_angsd_sites_byChrom, angsd_index_sites_byChrom, angsd_index_degenerate_sites, concat_angsd_gl, create_pos_file_for_ngsLD, angsd_allSamples_done, chloroplast_gene_fasta, index_chloroplast_gene_vcf, concat_fasta,download_nt_database, logfile_for_clumpak, angsd_index_prunedSNPs, pop_structure_done, species_id_done, convert_freq_forNGSrelate, create_bam_list_allFinalSamples, create_bam_list_byHabitat, angsd_byHabitat_done, extract_nt_database, ncbi_db_download_done, bcftools_split_samples, phasing_done, create_bam_lists_allFinalSamples_allSites, create_bam_list_byHabitat_allSites, vcf_filtering_done, makeblastdb_fromRef, blast_markers, interpolate_genetic_map, recombination_map_done, sites_toInterpolate_byChrom, interpolate_genetic_map, split_genMap, samples_byHabitat, bcftools_splitVCF_byHabitat, genMap_toPlinkFormat, norm_xpnsl, sweeps_done, angsd_thetas_allSites_readable, angsd_fst_allSites_readable, create_bam_list_byPop_multiInd, angsd_population_fst_readable, angsd_byPopulation_done, create_bed_from_degenotate
 
 include: 'rules/common.smk'
 
@@ -112,14 +87,14 @@ rule all:
         # Reference genome
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
-        # '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
+        '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
-        # '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        # '{0}/filtering.done'.format(FREEBAYES_DIR),
-        # '{0}/phasing.done'.format(FREEBAYES_DIR),
+        '{0}/freebayes.done'.format(FREEBAYES_DIR),
+        '{0}/filtering.done'.format(FREEBAYES_DIR),
+        '{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
-        # '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
+        '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
         # Angsd
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
@@ -129,8 +104,6 @@ rule all:
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
         '{0}/sweeps.done'.format(SWEEPS_DIR),
-        #Demographic modelling
-        #'{0}/dadi.done'.format(DADI_DIR),
         # HCN loci
         #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
 
@@ -148,7 +121,6 @@ include: 'rules/filtering.smk'
 include: 'rules/recombination_map.smk'
 include: 'rules/phasing.smk'
 include: 'rules/population_structure.smk'
-#include: 'rules/dadi_demographic_models.smk',
 include: 'rules/sweeps.smk'
 #include: 'rules/hcn_loci.smk'
 #include: 'rules/notebooks.smk'
