@@ -1,3 +1,18 @@
+rule create_bam_lists_allFinalSamples_allSites:
+    input:
+        bams = expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
+    output:
+        '{0}/bam_lists/allFinalSamples_allSites_bams.list'.format(PROGRAM_RESOURCE_DIR)
+    log: LOG_DIR + '/create_bam_list/allFinalSamples_allSites_bam_list.log'
+    run:
+        import os
+        with open(output[0], 'w') as f:
+            for bam in input.bams:
+                search = re.search('^(s_\d+_\d+)(?=_\w)', os.path.basename(bam))
+                sample = search.group(1) 
+                if sample in FINAL_SAMPLES:
+                    f.write('{0}\n'.format(bam))
+
 rule create_region_files_forFreebayes:
     input:
         ref_idx = rules.samtools_index_reference.output,

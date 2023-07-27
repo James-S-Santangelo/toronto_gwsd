@@ -98,7 +98,6 @@ rule all:
         # Angsd
         '{0}/angsd_allSamples.done'.format(ANGSD_DIR),
         '{0}/angsd_byHabitat.done'.format(ANGSD_DIR),
-        '{0}/angsd_byHabitat_allSites.done'.format(ANGSD_DIR),
         '{0}/angsd_byPopulation.done'.format(ANGSD_DIR),
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
@@ -114,7 +113,6 @@ include: 'rules/qc.smk'
 include: 'rules/species_id.smk'
 include: 'rules/angsd_allSamples.smk'
 include: 'rules/angsd_byHabitat.smk'
-include: 'rules/angsd_byHabitat_allSites.smk'
 include: 'rules/angsd_byPopulation.smk'
 include: 'rules/freebayes.smk'
 include: 'rules/filtering.smk'
