@@ -339,15 +339,11 @@ rule norm_xpnsl:
     input:
         lambda w: expand(rules.selscan_xpnsl.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
     output:
-        done = '{0}/xpnsl/{{hab_comb}}_xpnsl_normalization.done'.format(SWEEPS_DIR)
-    log: LOG_DIR + '/norm_xpnsl/{hab_comb}_xpnsl_norm.log'
+        expand(f'{SWEEPS_DIR}/xpnsl/{{chrom}}/{{chrom}}_{{hab_comb}}.xpnsl.out.norm', chrom=CHROMOSOMES, allow_missing=True)
     container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
-    params:
-        winsize = 50000
     shell:
         """
-        norm --xpnsl --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
-        touch {output}
+        norm --xpnsl --qbins 10 --files {input} 
         """
 
 ###############
@@ -381,20 +377,32 @@ rule norm_ihh_OneTwo:
     input:
         lambda w: expand(rules.ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=w.habitat)
     output:
-        done = '{0}/ihh12/{{habitat}}_ihh12_normalization.done'.format(SWEEPS_DIR)
-    log: LOG_DIR + '/norm_ihh12/{habitat}_ihh12_norm.log'
+        expand(f'{SWEEPS_DIR}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out.norm', chrom=CHROMOSOMES, allow_missing=True)
     container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
-    params:
-        winsize = 50000
     shell:
         """
-        norm --ihh12 --bp-win --winsize {params.winsize} --qbins 10 --files {input} 2> {log} &&
-        touch {output}
+        norm --ihh12 --qbins 10 --files {input} 
         """
+        
+##################
+#### ANALYSES ####
+##################
+
+# rule write_windowed_statistics:
+#     input:
+#         fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban-Rural'),
+#         thetaU = expand(rules.windowed_thetas.output, chrom=CHROMOSOMES, habitat='Urban'),
+#         thetaR = expand(rules.windowed_thetas.output, chrom=CHROMOSOMES, habitat='Rural'),
+#         xpnsl = expand(
+        
+
+##############
+#### POST ####
+##############
 
 rule sweeps_done:
     input:
-        expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Rural_Suburban']),
+        expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural','Rural_Suburban']),
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
