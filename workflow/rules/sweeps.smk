@@ -388,13 +388,20 @@ rule norm_ihh_OneTwo:
 #### ANALYSES ####
 ##################
 
-# rule write_windowed_statistics:
-#     input:
-#         fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban-Rural'),
-#         thetaU = expand(rules.windowed_thetas.output, chrom=CHROMOSOMES, habitat='Urban'),
-#         thetaR = expand(rules.windowed_thetas.output, chrom=CHROMOSOMES, habitat='Rural'),
-#         xpnsl = expand(
-        
+rule write_windowed_statistics:
+    input:
+        fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
+        thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
+        thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
+        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    output:
+        sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
+        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl.txt'
+    params:
+        winsize = 50000
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/snakemake/write_windowed_statistics.R"
 
 ##############
 #### POST ####
