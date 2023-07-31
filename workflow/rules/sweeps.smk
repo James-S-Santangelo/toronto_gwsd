@@ -403,6 +403,16 @@ rule write_windowed_statistics:
     script:
         "../scripts/r/snakemake/write_windowed_statistics.R"
 
+rule write_top_selected_regions:
+    input:
+        fst = rules.write_windowed_statistics.output.sfs_df,
+        xpnsl = rules.write_windowed_statistics.output.xpnsl_df
+    output:
+        sel_tbl = f'{SWEEPS_DIR}/analyses/top10_selected_regions_urban_rural.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/write_top_selected_regions.r.ipynb"
+
 ##############
 #### POST ####
 ##############
