@@ -413,6 +413,30 @@ rule write_top_selected_regions:
     notebook:
         "../notebooks/write_top_selected_regions.r.ipynb"
 
+rule create_geneToGO_mapfile:
+    input:
+        GFF_FILE
+    output:
+        f'{SWEEPS_DIR}/analyses/go/gene2go.map'
+    run:
+        import re
+        with open(output[0], 'w') as fout:
+            with open(input[0], 'r') as fin:
+                lines = fin.readlines()
+                for l in lines:
+                    if not l.startswith('#'):
+                        sline = l.strip().split('\t')
+                        feat = sline[2]
+                        if feat == 'mRNA':
+                            atts = sline[8]
+                            id = re.search('(?<=ID\\=)ACLI19_g\\d+\\.t\\d+(?=;)', atts)[0]
+                            transcript = id.split('.')[1]
+                            if transcript == 't1':
+                                gene = id.split('.')[0]
+                                go = re.findall('(GO:\\d+)', atts)
+                                go_string = ', '.join(go)
+                                fout.write(f'{gene}\t{go_string}\n')
+
 ##############
 #### POST ####
 ##############
