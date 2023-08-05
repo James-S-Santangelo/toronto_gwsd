@@ -440,6 +440,18 @@ rule create_geneToGO_mapfile:
                                 go_string = ', '.join(go)
                                 fout.write(f'{gene}\t{go_string}\n')
 
+
+rule go_enrichment_analysis:
+    input:
+        all_genes = rules.create_geneToGO_mapfile.output,
+        all_sel = rules.write_selected_regions.output.all_xpnsl_sel,
+        top_ten_genes = rules.write_selected_regions.output.top_ten_genes
+    output:
+        all_go_res = f'{SWEEPS_DIR}/analyses/go/all_go_results.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/go_enrichment_analysis.r.ipynb"
+
 ##############
 #### POST ####
 ##############
