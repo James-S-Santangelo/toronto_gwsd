@@ -158,9 +158,27 @@ rule shapeit_phase:
             --output {output.vcf} && tabix {output.vcf}
         """
 
+rule bcftools_concat_phased_vcfs:
+    input:
+        lambda wildcards: expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES)
+    output:
+        vcf = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),
+        idx = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
+    log: LOG_DIR + '/bcftools_concat_filtered_vcfs/bcftools_concat_phased_vcfs.log'
+    conda: '../envs/phasing.yaml'
+    threads: 4 
+    shell:
+        """
+        ( bcftools concat \
+            --output-type z \
+            --threads {threads} \
+            --output {output.vcf} \
+            {input} && tabix {output.vcf} ) 2> {log}
+        """
+
 rule phasing_done:
     input:
-        expand(rules.shapeit_phase.output, chrom=CHROMOSOMES)
+        rules.bcftools_concat_phased_vcfs.output
     output:
         "{0}/phasing.done".format(FREEBAYES_DIR)
     shell:
