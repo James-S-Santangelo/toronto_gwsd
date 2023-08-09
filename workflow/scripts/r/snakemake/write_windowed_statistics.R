@@ -3,6 +3,10 @@
 # Load required packages
 library(tidyverse)
 
+###################
+#### SFS STATS ####
+###################
+
 # Function to load windowed Fst
 load_windowed_fst <- function(path){
     colnames <- c("region", "Chr", "WinCenter", "nSites_fst", "fst")
@@ -43,7 +47,34 @@ sfs_stats_windowed_df <- thetas_df_wide %>%
     mutate(delta_tp_ur = tp_scaled_Urban - tp_scaled_Rural,
            delta_td_ur = Tajima_Urban - Tajima_Rural)
 
-write_delim(sfs_stats_windowed_df, snakemake@output[["sfs_df"]], delim = "\t")
+# Identify outliers across genome
+nSites_thresh <- as.numeric(snakemake@params[['nSites_fst']])
+
+win_sfs_df_filt <- sfs_stats_windowed_df %>%
+    filter_at(vars(starts_with('nSites')), ~ . >= nSites_thresh)
+
+fst_quant_filt <- quantile(win_sfs_df_filt %>% pull(fst), probs = c(0.99))
+tp_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_tp_ur), probs = c(0.01, 0.99))
+td_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_td_ur), probs = c(0.01, 0.99))
+
+win_sfs_df_filt <- win_sfs_df_filt %>%
+    mutate(fst_outlier = ifelse(fst >= fst_quant_filt, 1, 0),
+           tp_outlier = ifelse(delta_tp_ur <= tp_quant_filt[1] | delta_tp_ur >= tp_quant_filt[2], 1, 0),
+           td_outlier = ifelse(delta_td_ur <= td_quant_filt[1] | delta_td_ur >= td_quant_filt[2], 1, 0),
+           all_outlier = ifelse(fst_outlier == 1 & tp_outlier == 1 & td_outlier == 1, 1, 0)) %>%
+    dplyr::select(chrom_pos, Chr, start, end, WinCenter, fst, delta_tp_ur, delta_td_ur, contains('_outlier'))
+
+# Add habitat under selection based on difference in pi and Tajima's D
+win_sfs_df_filt <- win_sfs_df_filt %>% 
+    mutate(direction = case_when(delta_tp_ur < 0 & delta_td_ur < 0 ~ 'Urban sel',
+                                 delta_tp_ur > 0 & delta_td_ur > 0 ~ 'Rural sel',
+                                 TRUE ~ 'Weird'))
+
+write_delim(win_sfs_df_filt, snakemake@output[["sfs_df"]], delim = "\t")
+
+################
+#### XP-nSL ####
+################
 
 #" Calculate mean cM of markers in window
 #"
@@ -99,4 +130,27 @@ thresh <- 2
 xpnsl_windows <- xpnsl_norm_df %>%
     group_split(Chr) %>%
     purrr::map_dfr(., calculate_windowed_stats, window_size = window_size, step = step, thresh = thresh)
-write_delim(xpnsl_windows, snakemake@output[["xpnsl_df"]], delim = "\t")
+
+nSites_thresh <- as.numeric(snakemake@params[['nSites_xpnsl']]) # Require at least this many site in a window
+win_xpnsl_df_filt <- xpnsl_windows %>%
+    mutate_at(vars(-("Chr")), as.numeric) %>% 
+    filter(n >= nSites_thresh)
+
+# Get critical values for mean XP-nSL score and proportions greater or lesser than 2 and -2, respectively
+xpnsl_score_quant_filt <- quantile(win_xpnsl_df_filt %>% pull(mean), probs = c(0.01, 0.99))
+xpnsl_gtprop_quant_filt <- quantile(win_xpnsl_df_filt %>% pull(gt_frac), probs = 0.99)
+xpnsl_ltprop_quant_filt <- quantile(win_xpnsl_df_filt %>% pull(lt_frac), probs = 0.99)
+
+# Identify outliers and add as categorical variable to windows dataframe
+win_xpnsl_df_filt <- win_xpnsl_df_filt %>%
+    mutate(xpnsl_score_outlier = ifelse(mean <= xpnsl_score_quant_filt[1] | mean >= xpnsl_score_quant_filt[2], 1, 0),
+           xpnsl_gtprop_outlier = ifelse(gt_frac >= xpnsl_gtprop_quant_filt, 1, 0),
+           xpnsl_ltprop_outlier = ifelse(lt_frac >= xpnsl_ltprop_quant_filt, 1, 0),
+           direction = case_when(xpnsl_score_outlier == 1 & mean > 0 & xpnsl_gtprop_outlier == 1 ~ 'Urban sel',
+                                 xpnsl_score_outlier == 1 & mean < 0 & xpnsl_ltprop_outlier == 1 ~ 'Rural sel',
+                                 TRUE ~ 'Not outlier')) %>% 
+    mutate(prop_outlier = case_when(direction == 'Urban sel' ~ gt_frac,
+                                    direction == 'Rural sel' ~ lt_frac,
+                                    TRUE ~ NA))
+
+write_delim(win_xpnsl_df_filt, snakemake@output[["xpnsl_df"]], delim = "\t")

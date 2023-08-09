@@ -398,7 +398,9 @@ rule write_windowed_statistics:
         sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
         xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl.txt'
     params:
-        winsize = 50000
+        winsize = 50000,
+        nSites_fst = 1500,
+        nSites_xpnsl = 10
     conda: '../envs/sweeps.yaml'
     script:
         "../scripts/r/snakemake/write_windowed_statistics.R"
