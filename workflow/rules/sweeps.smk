@@ -454,6 +454,18 @@ rule go_enrichment_analysis:
     notebook:
         "../notebooks/go_enrichment_analysis.r.ipynb"
 
+rule manhattan_plots:
+    input:
+        fst_win = rules.write_windowed_statistics.output.sfs_df,
+        xpnsl_win = rules.write_windowed_statistics.output.xpnsl_df,
+        xpnsl_raw = expand(rules.norm_xpnsl.output, hab_comb='Urban_Rural'),
+        top_ten = rules.write_selected_regions.output.top_ten_tbl
+    output:
+        'test.manhat'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/manhattan_plots.r.ipynb"
+
 ##############
 #### POST ####
 ##############
