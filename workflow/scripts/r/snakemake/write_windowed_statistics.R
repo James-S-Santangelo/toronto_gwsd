@@ -53,6 +53,8 @@ nSites_thresh <- as.numeric(snakemake@params[['nSites_fst']])
 win_sfs_df_filt <- sfs_stats_windowed_df %>%
     filter_at(vars(starts_with('nSites')), ~ . >= nSites_thresh)
 
+sprintf("%s of %s Fst windows remaining", nrow(win_sfs_df_filt), nrow(sfs_stats_windowed_df))
+
 fst_quant_filt <- quantile(win_sfs_df_filt %>% pull(fst), probs = c(0.99))
 tp_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_tp_ur), probs = c(0.01, 0.99))
 td_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_td_ur), probs = c(0.01, 0.99))
@@ -135,6 +137,8 @@ nSites_thresh <- as.numeric(snakemake@params[['nSites_xpnsl']]) # Require at lea
 win_xpnsl_df_filt <- xpnsl_windows %>%
     mutate_at(vars(-("Chr")), as.numeric) %>% 
     filter(n >= nSites_thresh)
+
+sprintf("%s of %s XP-nSL windows remaining", nrow(win_xpnsl_df_filt), nrow(xpnsl_windows))
 
 # Get critical values for mean XP-nSL score and proportions greater or lesser than 2 and -2, respectively
 xpnsl_score_quant_filt <- quantile(win_xpnsl_df_filt %>% pull(mean), probs = c(0.01, 0.99))

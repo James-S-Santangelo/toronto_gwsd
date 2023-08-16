@@ -400,7 +400,7 @@ rule write_windowed_statistics:
     params:
         winsize = 50000,
         nSites_fst = 1500,
-        nSites_xpnsl = 10
+        nSites_xpnsl = 40 
     conda: '../envs/sweeps.yaml'
     script:
         "../scripts/r/snakemake/write_windowed_statistics.R"
