@@ -466,6 +466,100 @@ rule manhattan_plots:
     notebook:
         "../notebooks/manhattan_plots.r.ipynb"
 
+#############################
+#### XP-nSL PERMUTATIONS ####
+#############################
+
+rule permuted_samples_byHabitat:
+    input:
+        samples = config['samples']
+    output:
+        urb = expand('{0}/selscan/permuted/{{chrom}}/{{chrom}}_Urban_{{n}}.samples'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, allow_missing=True),
+        rur = expand('{0}/selscan/permuted/{{chrom}}/{{chrom}}_Rural_{{n}}.samples'.format(PROGRAM_RESOURCE_DIR), chrom=CHROMOSOMES, allow_missing=True)
+    log: LOG_DIR + '/permuted_samples_byHabitat/samples_{{n}}.log'
+    params:
+        samples = FINAL_SAMPLES,
+        chroms = CHROMOSOMES
+    run:
+        import os
+        import logging
+        import random
+        logging.basicConfig(filename=log[0], level=logging.DEBUG)
+        try:
+            df = pd.read_table(input.samples, sep = '\t')
+            samples = df[(df['Habitat'].isin(["Rural", "Urban"]))]["Sample"].tolist()
+            samples_toKeep = [x for x in samples if x in params.samples]
+            rur_samples = random.sample(samples_toKeep, k=41)
+            urb_samples = [x for x in samples_toKeep if x not in rur_samples]
+            for chr in params.chroms:
+                urban_out = [x for x in output.urb if chr in x][0]
+                with open(urban_out, 'w') as f:
+                    outname = f"{chr}_Urban_{wildcards.n}_permuted" 
+                    for sample in urb_samples:
+                        if sample == urb_samples[-1]:
+                            f.write('{0}\t-\t{1}'.format(sample, outname))
+                        else:
+                            f.write('{0},'.format(sample))
+                rural_out = [x for x in output.rur if chr in x][0]
+                with open(rural_out, 'w') as f:
+                    outname = f"{chr}_Rural_{wildcards.n}_permuted" 
+                    for sample in rur_samples:
+                        if sample == rur_samples[-1]:
+                            f.write('{0}\t-\t{1}'.format(sample, outname))
+                        else:
+                            f.write('{0},'.format(sample))
+        except:
+            logging.exception("An error occured!") 
+            raise
+       
+rule bcftools_splitVCF_byHabitat_permuted:
+    input:
+        vcf = rules.shapeit_phase.output.vcf,
+        samples = bcftools_splitVCF_permuted_input 
+    output:
+        vcf = '{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz'.format(FREEBAYES_DIR),
+        idx = '{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz.tbi'.format(FREEBAYES_DIR)
+    log: LOG_DIR + '/bcftools_splitVCF_byHabitat_permuted/{chrom}_{habitat}_{n}_split.log'
+    conda: '../envs/sweeps.yaml',
+    params:
+        out =  '{0}/vcf/permuted/{{chrom}}/'.format(FREEBAYES_DIR)
+    shell:
+        """
+        ( bcftools +split {input.vcf} \
+            --samples-file {input.samples} \
+            --output-type z \
+            --output {params.out} && tabix {output.vcf} ) 2> {log}
+        """
+
+rule selscan_xpnsl_permuted:
+    input:
+        vcf_ref = lambda w: expand(rules.bcftools_splitVCF_byHabitat_permuted.output.vcf, chrom=w.chrom, habitat="Rural", n=w.n),
+        vcf = lambda w: expand(rules.bcftools_splitVCF_byHabitat_permuted.output.vcf, chrom=w.chrom, habitat="Urban", n=w.n)
+    output:
+        temp('{0}/xpnsl/permuted/{{chrom}}/{{chrom}}_{{hab_comb}}_{{n}}_permuted.xpnsl.out'.format(SWEEPS_DIR))
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_xpnsl_permuted/{chrom}_{hab_comb}_{{n}}_xpnsl.log'
+    params:
+        out = '{0}/xpnsl/permuted/{{chrom}}/{{chrom}}_{{hab_comb}}_{{n}}_permuted'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --xpnsl \
+            --vcf {input.vcf} \
+            --vcf-ref {input.vcf_ref} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_xpnsl_permuted:
+    input:
+        lambda w: expand(rules.selscan_xpnsl_permuted.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb, n=w.n)
+    output:
+        expand(f'{SWEEPS_DIR}/xpnsl/permuted/{{chrom}}/{{chrom}}_{{hab_comb}}_{{n}}_permuted.xpnsl.out.norm', chrom=CHROMOSOMES, allow_missing=True)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    shell:
+        """
+        norm --xpnsl --qbins 10 --files {input} 
+        """
+
 ##############
 #### POST ####
 ##############
@@ -473,6 +567,7 @@ rule manhattan_plots:
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural','Rural_Suburban']),
+        expand(rules.norm_xpnsl_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,101)]),
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),

@@ -121,13 +121,12 @@ def selscan_xpnsl_input(wildcards):
     vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Rural')
     return { 'vcf' : vcf, 'vcf_ref' : vcf_ref } 
 
-def xpclr_input(wildcards):
-    if 'Urban' in wildcards.hab_comb:
-        pop1s = expand(rules.samples_byHabitat.output, chrom=wildcards.chrom, habitat='Urban')
-    elif 'Suburban' in wildcards.hab_comb:
-        pop1s = expand(rules.samples_byHabitat.output, chrom=wildcards.chrom, habitat='Suburban')
-    pop2s = expand(rules.samples_byHabitat.output, chrom=wildcards.chrom, habitat='Rural')
-    vcf = expand(rules.shapeit_phase.output.vcf, chrom=wildcards.chrom)
-    return { 'vcf' : vcf, 'pop1s' : pop1s, 'pop2s' : pop2s } 
-
+def bcftools_splitVCF_permuted_input(wildcards):
+    if wildcards.habitat == "Urban":
+       samples_allChroms = expand(rules.permuted_samples_byHabitat.output.urb, n=wildcards.n)
+       samples = [x for x in samples_allChroms if wildcards.chrom in x]
+    if wildcards.habitat == "Rural":
+       samples_allChroms = expand(rules.permuted_samples_byHabitat.output.rur, n=wildcards.n)
+       samples = [x for x in samples_allChroms if wildcards.chrom in x]
+    return(samples)
 
