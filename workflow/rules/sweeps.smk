@@ -560,6 +560,18 @@ rule norm_xpnsl_permuted:
         norm --xpnsl --qbins 10 --files {input} 
         """
 
+rule write_windowed_statistics_permuted:
+    input:
+        xpnsl = expand(rules.norm_xpnsl_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,101)])
+    output:
+        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl_permuted.txt'
+    params:
+        winsize = 50000,
+        nSites_xpnsl = 40 
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/snakemake/write_windowed_statistics_permuted.R"
+
 ##############
 #### POST ####
 ##############
