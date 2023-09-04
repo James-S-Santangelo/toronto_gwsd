@@ -409,7 +409,7 @@ rule write_selected_regions:
     input:
         fst = rules.write_windowed_statistics.output.sfs_df,
         xpnsl = rules.write_windowed_statistics.output.xpnsl_df,
-        gff = GFF_FILE
+        gff = GFF_FILE 
     output:
         top_ten_genes = f'{SWEEPS_DIR}/analyses/go/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{SWEEPS_DIR}/analyses/top10_selected_regions_urban_rural_table.txt',
@@ -517,8 +517,8 @@ rule bcftools_splitVCF_byHabitat_permuted:
         vcf = rules.shapeit_phase.output.vcf,
         samples = bcftools_splitVCF_permuted_input 
     output:
-        vcf = '{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz'.format(FREEBAYES_DIR),
-        idx = '{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz.tbi'.format(FREEBAYES_DIR)
+        vcf = temp('{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz'.format(FREEBAYES_DIR)),
+        idx = temp('{0}/vcf/permuted/{{chrom}}/{{chrom}}_{{habitat}}_{{n}}_permuted.vcf.gz.tbi'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/bcftools_splitVCF_byHabitat_permuted/{chrom}_{habitat}_{n}_split.log'
     conda: '../envs/sweeps.yaml',
     params:
@@ -554,23 +554,35 @@ rule norm_xpnsl_permuted:
         lambda w: expand(rules.selscan_xpnsl_permuted.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb, n=w.n)
     output:
         expand(f'{SWEEPS_DIR}/xpnsl/permuted/{{chrom}}/{{chrom}}_{{hab_comb}}_{{n}}_permuted.xpnsl.out.norm', chrom=CHROMOSOMES, allow_missing=True)
+    log: f"{LOG_DIR}/norm_xpnsl_permuted/{{hab_comb}}_{{n}}.log"
     container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
     shell:
         """
-        norm --xpnsl --qbins 10 --files {input} 
+        norm --xpnsl --qbins 10 --files {input} 2> {log} 
         """
 
 rule write_windowed_statistics_permuted:
     input:
-        xpnsl = expand(rules.norm_xpnsl_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,101)])
+        xpnsl = rules.norm_xpnsl_permuted.output
     output:
-        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl_permuted.txt'
+        xpnsl_df = f'{SWEEPS_DIR}/permuted/windowed_stats/{{hab_comb}}_{{n}}_windowed_xpnsl_permuted.txt'
     params:
         winsize = 50000,
         nSites_xpnsl = 40 
     conda: '../envs/sweeps.yaml'
     script:
         "../scripts/r/snakemake/write_windowed_statistics_permuted.R"
+
+rule compare_observed_permuted_xpnsl:
+    input:
+        obs = rules.write_windowed_statistics.output.xpnsl_df,
+        perm = rules.write_windowed_statistics_permuted.output
+    output:
+        'test.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
+
 
 ##############
 #### POST ####
@@ -579,7 +591,7 @@ rule write_windowed_statistics_permuted:
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural','Rural_Suburban']),
-        expand(rules.norm_xpnsl_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,101)]),
+        expand(rules.write_windowed_statistics_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,1001)]),
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),

@@ -52,7 +52,7 @@ load_xpnsl_norm <- function(path){
 
 # Load raw xpnsl data
 xpnsl_norm_df <- snakemake@input[["xpnsl"]] %>%
-    purrr::map_dfr(., load_xpnsl_norm, .progress=TRUE) %>%
+    purrr::map_dfr(., load_xpnsl_norm) %>%
     rename("normxpnsl" = "normxpehh") %>%
     dplyr::select(-id)
 
@@ -91,7 +91,7 @@ step <- as.numeric(snakemake@params["winsize"])
 thresh <- 2
 xpnsl_windows <- xpnsl_norm_df %>%
     group_split(Chr, iter) %>%
-    purrr::map(., calculate_windowed_stats, window_size = window_size, step = step, thresh = thresh, .progress=TRUE) %>%
-    purrr::map_dfr(., assign_outliers, .progress=TRUE)
+    purrr::map(., calculate_windowed_stats, window_size = window_size, step = step, thresh = thresh) %>%
+    purrr::map_dfr(., assign_outliers)
 
 write_delim(xpnsl_windows, snakemake@output[["xpnsl_df"]], delim = "\t")
