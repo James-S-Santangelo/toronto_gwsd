@@ -346,126 +346,6 @@ rule norm_xpnsl:
         norm --xpnsl --qbins 10 --files {input} 
         """
 
-###############
-#### iHH12 ####
-###############
-
-rule ihh_OneTwo:
-    input:
-        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
-        genMap = rules.genMap_toPlinkFormat.output
-    output:
-        '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out'.format(SWEEPS_DIR)
-    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
-    log: LOG_DIR + '/selscan_ihh12/{chrom}_{habitat}_ihh12.log'
-    resources: 
-        mem_mb = lambda wildcards, attempt: attempt * 4000,
-        time = '01:00:00'
-    threads: 2
-    params:
-        out = '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
-    shell:
-        """
-        selscan --ihh12 \
-            --vcf {input.vcf} \
-            --map {input.genMap} \
-            --threads {threads} \
-            --out {params.out} 2> {log}
-        """
-
-rule norm_ihh_OneTwo:
-    input:
-        lambda w: expand(rules.ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=w.habitat)
-    output:
-        expand(f'{SWEEPS_DIR}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out.norm', chrom=CHROMOSOMES, allow_missing=True)
-    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
-    shell:
-        """
-        norm --ihh12 --qbins 10 --files {input} 
-        """
-        
-##################
-#### ANALYSES ####
-##################
-
-rule write_windowed_statistics:
-    input:
-        fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
-        thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
-        thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
-        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
-    output:
-        sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
-        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl.txt'
-    params:
-        winsize = 50000,
-        nSites_fst = 1500,
-        nSites_xpnsl = 40 
-    conda: '../envs/sweeps.yaml'
-    script:
-        "../scripts/r/snakemake/write_windowed_statistics.R"
-
-rule write_selected_regions:
-    input:
-        fst = rules.write_windowed_statistics.output.sfs_df,
-        xpnsl = rules.write_windowed_statistics.output.xpnsl_df,
-        gff = GFF_FILE 
-    output:
-        top_ten_genes = f'{SWEEPS_DIR}/analyses/go/top10_selected_regions_genes.txt', 
-        top_ten_tbl = f'{SWEEPS_DIR}/analyses/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{SWEEPS_DIR}/analyses/go/all_selected_regions_genes.txt'
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/write_top_selected_regions.r.ipynb"
-
-rule create_geneToGO_mapfile:
-    input:
-        GFF_FILE
-    output:
-        f'{SWEEPS_DIR}/analyses/go/gene2go.map'
-    run:
-        import re
-        with open(output[0], 'w') as fout:
-            with open(input[0], 'r') as fin:
-                lines = fin.readlines()
-                for l in lines:
-                    if not l.startswith('#'):
-                        sline = l.strip().split('\t')
-                        feat = sline[2]
-                        if feat == 'mRNA':
-                            atts = sline[8]
-                            id = re.search('(?<=ID\\=)ACLI19_g\\d+\\.t\\d+(?=;)', atts)[0]
-                            transcript = id.split('.')[1]
-                            if transcript == 't1':
-                                gene = id.split('.')[0]
-                                go = re.findall('(GO:\\d+)', atts)
-                                go_string = ', '.join(go)
-                                fout.write(f'{gene}\t{go_string}\n')
-
-
-rule go_enrichment_analysis:
-    input:
-        all_genes = rules.create_geneToGO_mapfile.output,
-        all_sel = rules.write_selected_regions.output.all_xpnsl_sel,
-        top_ten_genes = rules.write_selected_regions.output.top_ten_genes
-    output:
-        all_go_res = f'{SWEEPS_DIR}/analyses/go/all_go_results.txt'
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/go_enrichment_analysis.r.ipynb"
-
-rule manhattan_plots:
-    input:
-        fst_win = rules.write_windowed_statistics.output.sfs_df,
-        xpnsl_win = rules.write_windowed_statistics.output.xpnsl_df,
-        xpnsl_raw = expand(rules.norm_xpnsl.output, hab_comb='Urban_Rural'),
-        top_ten = rules.write_selected_regions.output.top_ten_tbl
-    output:
-        'test.manhat'
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/manhattan_plots.r.ipynb"
-
 #############################
 #### XP-nSL PERMUTATIONS ####
 #############################
@@ -573,16 +453,143 @@ rule write_windowed_statistics_permuted:
     script:
         "../scripts/r/snakemake/write_windowed_statistics_permuted.R"
 
+###############
+#### iHH12 ####
+###############
+
+rule ihh_OneTwo:
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
+        genMap = rules.genMap_toPlinkFormat.output
+    output:
+        '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out'.format(SWEEPS_DIR)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_ihh12/{chrom}_{habitat}_ihh12.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 2
+    params:
+        out = '{0}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --ihh12 \
+            --vcf {input.vcf} \
+            --map {input.genMap} \
+            --threads {threads} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_ihh_OneTwo:
+    input:
+        lambda w: expand(rules.ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=w.habitat)
+    output:
+        expand(f'{SWEEPS_DIR}/ihh12/{{chrom}}/{{chrom}}_{{habitat}}.ihh12.out.norm', chrom=CHROMOSOMES, allow_missing=True)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    shell:
+        """
+        norm --ihh12 --qbins 10 --files {input} 
+        """
+        
+##################
+#### ANALYSES ####
+##################
+
+rule write_windowed_statistics:
+    input:
+        fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
+        thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
+        thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
+        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    output:
+        sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
+        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl.txt'
+    params:
+        winsize = 50000,
+        nSites_fst = 1500,
+        nSites_xpnsl = 40 
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/snakemake/write_windowed_statistics.R"
+
 rule compare_observed_permuted_xpnsl:
     input:
         obs = rules.write_windowed_statistics.output.xpnsl_df,
-        perm = rules.write_windowed_statistics_permuted.output
+        perm = expand(rules.write_windowed_statistics_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
     output:
-        'test.txt'
+        cor_plot = f"{FIGURES_DIR}/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
+        urb_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_mean.pdf",
+        urb_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_prop.pdf",
+        rur_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_mean.pdf",
+        rur_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_prop.pdf",
+        urb_perc = f"{FIGURES_DIR}/xpnsl_perm/urban_percentiles.txt",
+        rur_perc = f"{FIGURES_DIR}/xpnsl_perm/rural_percentiles.txt",
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
 
+rule write_selected_regions:
+    input:
+        fst = rules.write_windowed_statistics.output.sfs_df,
+        xpnsl = rules.write_windowed_statistics.output.xpnsl_df,
+        urb_perc = rules.compare_observed_permuted_xpnsl.output.urb_perc,
+        rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
+        gff = GFF_FILE 
+    output:
+        top_ten_genes = f'{SWEEPS_DIR}/analyses/go/top10_selected_regions_genes.txt', 
+        top_ten_tbl = f'{SWEEPS_DIR}/analyses/top10_selected_regions_urban_rural_table.txt',
+        all_xpnsl_sel = f'{SWEEPS_DIR}/analyses/go/all_selected_regions_genes.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/write_top_selected_regions.r.ipynb"
+
+rule create_geneToGO_mapfile:
+    input:
+        GFF_FILE
+    output:
+        f'{SWEEPS_DIR}/analyses/go/gene2go.map'
+    run:
+        import re
+        with open(output[0], 'w') as fout:
+            with open(input[0], 'r') as fin:
+                lines = fin.readlines()
+                for l in lines:
+                    if not l.startswith('#'):
+                        sline = l.strip().split('\t')
+                        feat = sline[2]
+                        if feat == 'mRNA':
+                            atts = sline[8]
+                            id = re.search('(?<=ID\\=)ACLI19_g\\d+\\.t\\d+(?=;)', atts)[0]
+                            transcript = id.split('.')[1]
+                            if transcript == 't1':
+                                gene = id.split('.')[0]
+                                go = re.findall('(GO:\\d+)', atts)
+                                go_string = ', '.join(go)
+                                fout.write(f'{gene}\t{go_string}\n')
+
+
+rule go_enrichment_analysis:
+    input:
+        all_genes = rules.create_geneToGO_mapfile.output,
+        all_sel = rules.write_selected_regions.output.all_xpnsl_sel,
+        top_ten_genes = rules.write_selected_regions.output.top_ten_genes
+    output:
+        all_go_res = f'{SWEEPS_DIR}/analyses/go/all_go_results.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/go_enrichment_analysis.r.ipynb"
+
+rule manhattan_plots:
+    input:
+        fst_win = rules.write_windowed_statistics.output.sfs_df,
+        xpnsl_win = rules.write_windowed_statistics.output.xpnsl_df,
+        xpnsl_raw = expand(rules.norm_xpnsl.output, hab_comb='Urban_Rural'),
+        top_ten = rules.write_selected_regions.output.top_ten_tbl
+    output:
+        'test.manhat'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/manhattan_plots.r.ipynb"
 
 ##############
 #### POST ####
@@ -591,7 +598,7 @@ rule compare_observed_permuted_xpnsl:
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural','Rural_Suburban']),
-        expand(rules.write_windowed_statistics_permuted.output, hab_comb=['Urban_Rural'], n = [x for x in range(1,1001)]),
+        rules.compare_observed_permuted_xpnsl.output,
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
