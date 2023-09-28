@@ -102,9 +102,7 @@ rule all:
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
-        '{0}/sweeps.done'.format(SWEEPS_DIR),
-        # HCN loci
-        #'{0}/hnc_loci.done'.format(HCN_LOCI_DIR)
+        '{0}/sweeps.done'.format(SWEEPS_DIR)
 
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
