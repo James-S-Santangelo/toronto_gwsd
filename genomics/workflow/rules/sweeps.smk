@@ -451,7 +451,7 @@ rule write_windowed_statistics_permuted:
         nSites_xpnsl = 40 
     conda: '../envs/sweeps.yaml'
     script:
-        "../scripts/r/snakemake/write_windowed_statistics_permuted.R"
+        "../scripts/r/write_windowed_statistics_permuted.R"
 
 ###############
 #### iHH12 ####
@@ -510,7 +510,7 @@ rule write_windowed_statistics:
         nSites_xpnsl = 40 
     conda: '../envs/sweeps.yaml'
     script:
-        "../scripts/r/snakemake/write_windowed_statistics.R"
+        "../scripts/r/write_windowed_statistics.R"
 
 rule compare_observed_permuted_xpnsl:
     input:
