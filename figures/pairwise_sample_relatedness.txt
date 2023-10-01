@@ -1,0 +1,11 @@
+sample_a	sample_b	mean_rab_acrossChroms	n	pop_a	pop_b	Habitat_a	Habitat_b
+s_97_9	s_97_14	0.7928899375	16	97	97	Rural	Rural
+s_37_6	s_37_18	0.791901	16	37	37	Urban	Urban
+s_42_3	s_42_9	0.77601825	16	42	42	Urban	Urban
+s_83_5	s_83_11	0.7508915	16	83	83	Rural	Rural
+s_42_1	s_42_20	0.7404613125	16	42	42	Urban	Urban
+s_37_11	s_37_18	0.420740875	16	37	37	Urban	Urban
+s_37_6	s_37_11	0.414783375	16	37	37	Urban	Urban
+s_37_8	s_37_12	0.2821021875	16	37	37	Urban	Urban
+s_7_6	s_7_13	0.2327081875	16	7	7	Rural	Rural
+s_37_13	s_37_15	0.1916153125	16	37	37	Urban	Urban
