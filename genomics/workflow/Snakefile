@@ -32,7 +32,7 @@ PROGRAM_RESOURCE_DIR = '{0}/program_resources'.format(config['results_prefix'])
 ANGSD_DIR = '{0}/angsd'.format(config['results_prefix'])
 NGSLD_DIR = '{0}/ngsld'.format(config['results_prefix'])
 POP_STRUC_DIR = '{0}/population_structure'.format(config['results_prefix'])
-FIGURES_DIR = '{0}/figures'.format(config['results_prefix'])
+FIGURES_DIR = config['figures']
 HCN_LOCI_DIR = '{0}/hcn_loci'.format(config['results_prefix'])
 GENMAP_RESULTS_DIR = '{0}/gen_map'.format(config['results_prefix'])
 SWEEPS_DIR = '{0}/sweeps'.format(config['results_prefix'])
@@ -103,8 +103,6 @@ rule all:
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
         '{0}/sweeps.done'.format(SWEEPS_DIR),
-        # Figures 
-        '{0}/figures.done'.format(FIGURES_DIR)
 
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'

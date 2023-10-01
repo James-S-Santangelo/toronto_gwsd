@@ -29,7 +29,7 @@ rule manhattan_plots:
     notebook:
         "../notebooks/manhattan_plots.r.ipynb"
 
-rule population_structure:
+rule population_structure_figures:
     input:
         order = expand(rules.extract_sample_angsd.output, site="4fold"),
         cov = expand(rules.pcangsd.output, site="4fold", maf="0.05"),
