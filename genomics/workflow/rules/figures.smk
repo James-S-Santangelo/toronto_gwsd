@@ -49,7 +49,11 @@ rule population_structure:
         admix_optimal = f"{FIGURES_DIR}/admix_optimal.pdf",
         admix_optimal_minus = f"{FIGURES_DIR}/admix_optimal_minus.pdf",
         admix_optimal_plus = f"{FIGURES_DIR}/admix_optimal_plus.pdf",
-
+        pi_byHab_df = f"{FIGURES_DIR}/pi_byHab.txt",
+        fst_byHab_df = f"{FIGURES_DIR}/fst_byHab.txt",
+        relate_byHabComb_df = f"{FIGURES_DIR}/pairwise_habitat_relatedness.txt",
+        relate_bySampleComb_df = f"{FIGURES_DIR}/pairwise_sample_relatedness.txt",
+        relate_byHabComb = f"{FIGURES_DIR}/relatedness_byHabitatCombination.pdf"
     conda:'../envs/figures.yaml'
     notebook:
         "../notebooks/population_structure.r.ipynb"
