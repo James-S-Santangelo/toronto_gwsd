@@ -102,7 +102,9 @@ rule all:
         # Population structure
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
-        '{0}/sweeps.done'.format(SWEEPS_DIR)
+        '{0}/sweeps.done'.format(SWEEPS_DIR),
+        # Figures 
+        '{0}/figures.done'.format(FIGURES_DIR)
 
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
@@ -118,4 +120,4 @@ include: 'rules/recombination_map.smk'
 include: 'rules/phasing.smk'
 include: 'rules/population_structure.smk'
 include: 'rules/sweeps.smk'
-#include: 'rules/notebooks.smk'
+include: 'rules/figures.smk'
