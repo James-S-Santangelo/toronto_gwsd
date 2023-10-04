@@ -512,37 +512,6 @@ rule write_windowed_statistics:
     script:
         "../scripts/r/write_windowed_statistics.R"
 
-rule compare_observed_permuted_xpnsl:
-    input:
-        obs = rules.write_windowed_statistics.output.xpnsl_df,
-        perm = expand(rules.write_windowed_statistics_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
-    output:
-        cor_plot = f"{FIGURES_DIR}/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
-        urb_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_mean.pdf",
-        urb_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_prop.pdf",
-        rur_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_mean.pdf",
-        rur_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_prop.pdf",
-        urb_perc = f"{FIGURES_DIR}/xpnsl_perm/urban_percentiles.txt",
-        rur_perc = f"{FIGURES_DIR}/xpnsl_perm/rural_percentiles.txt",
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
-
-rule write_selected_regions:
-    input:
-        fst = rules.write_windowed_statistics.output.sfs_df,
-        xpnsl = rules.write_windowed_statistics.output.xpnsl_df,
-        urb_perc = rules.compare_observed_permuted_xpnsl.output.urb_perc,
-        rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
-        gff = GFF_FILE 
-    output:
-        top_ten_genes = f'{SWEEPS_DIR}/analyses/go/top10_selected_regions_genes.txt', 
-        top_ten_tbl = f'{SWEEPS_DIR}/analyses/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{SWEEPS_DIR}/analyses/go/all_selected_regions_genes.txt'
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/write_top_selected_regions.r.ipynb"
-
 rule create_geneToGO_mapfile:
     input:
         GFF_FILE
@@ -568,17 +537,6 @@ rule create_geneToGO_mapfile:
                                 fout.write(f'{gene}\t{go_string}\n')
 
 
-rule go_enrichment_analysis:
-    input:
-        all_genes = rules.create_geneToGO_mapfile.output,
-        all_sel = rules.write_selected_regions.output.all_xpnsl_sel,
-        top_ten_genes = rules.write_selected_regions.output.top_ten_genes
-    output:
-        all_go_res = f'{SWEEPS_DIR}/analyses/go/all_go_results.txt'
-    conda: '../envs/sweeps.yaml'
-    notebook:
-        "../notebooks/go_enrichment_analysis.r.ipynb"
-
 ##############
 #### POST ####
 ##############
@@ -586,7 +544,6 @@ rule go_enrichment_analysis:
 rule sweeps_done:
     input:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural','Rural_Suburban']),
-        rules.compare_observed_permuted_xpnsl.output,
         expand(rules.norm_ihh_OneTwo.output, habitat=HABITATS),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
