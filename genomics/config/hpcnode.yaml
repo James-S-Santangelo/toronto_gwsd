@@ -6,7 +6,7 @@ genmap: ../resources/reference/TrR_v6_linkageMap.csv
 ref: ../resources/reference/UTM_Trep_v1.0_haploid_reference_softmasked.fasta
 
 results_prefix: /scratch/projects/trifolium/gwsd/results 
-figures: /home/santang3/github-repos/toronto_gwsd/figures
+figures: /home/santang3/github-repos/toronto_gwsd/figures_tables
 log_prefix: /scratch/projects/trifolium/gwsd/logs
 raw_read_prefix: /node1nfs/archive/data/trifolium/toronto_gwsd
 

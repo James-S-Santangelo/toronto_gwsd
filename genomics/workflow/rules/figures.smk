@@ -1,27 +1,17 @@
-# rule multiqc_stats_notebook:
-#     input:
-#         rules.multiqc.output
-#     output:
-#         '{0}/supplemental/qc/qualimap_general_error_rate_histogram.pdf'.format(FIGURES_DIR),
-#         '{0}/supplemental/qc/qualimap_aligned_vs_coverage_by_category.pdf'.format(FIGURES_DIR)
-#     conda: '../envs/notebooks.yaml'
-#     log: notebook = 'logs/notebooks/multiqc_stats_notebook.r.ipynb'
-#     notebook:
-#         "../notebooks/multiqc_stats_notebook.r.ipynb"
-
+# Snakefile with rules to generate figures and some summary text files
 
 rule compare_observed_permuted_xpnsl:
     input:
         obs = rules.write_windowed_statistics.output.xpnsl_df,
         perm = expand(rules.write_windowed_statistics_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
     output:
-        cor_plot = f"{FIGURES_DIR}/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
-        urb_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_mean.pdf",
-        urb_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/urbanSel_prop.pdf",
-        rur_mean_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_mean.pdf",
-        rur_prop_plot = f"{FIGURES_DIR}/xpnsl_perm/ruralSel_prop.pdf",
-        urb_perc = f"{FIGURES_DIR}/xpnsl_perm/urban_percentiles.txt",
-        rur_perc = f"{FIGURES_DIR}/xpnsl_perm/rural_percentiles.txt",
+        cor_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
+        urb_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/urbanSel_mean.pdf",
+        urb_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/urbanSel_prop.pdf",
+        rur_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_mean.pdf",
+        rur_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_prop.pdf",
+        urb_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/urban_percentiles.txt",
+        rur_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/rural_percentiles.txt",
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
@@ -34,9 +24,9 @@ rule write_selected_regions:
         rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
         gff = GFF_FILE 
     output:
-        top_ten_genes = f'{FIGURES_DIR}/top10_selected_regions_genes.txt', 
-        top_ten_tbl = f'{FIGURES_DIR}/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{FIGURES_DIR}/all_selected_regions_genes.txt'
+        top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
+        top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
+        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/write_top_selected_regions.r.ipynb"
@@ -47,7 +37,7 @@ rule go_enrichment_analysis:
         all_sel = rules.write_selected_regions.output.all_xpnsl_sel,
         top_ten_genes = rules.write_selected_regions.output.top_ten_genes
     output:
-        all_go_res = f'{FIGURES_DIR}/all_go_results.txt'
+        all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/go_enrichment_analysis.r.ipynb"
@@ -59,15 +49,15 @@ rule manhattan_plots:
         xpnsl_raw = expand(rules.norm_xpnsl.output, hab_comb='Urban_Rural'),
         top_ten = rules.write_selected_regions.output.top_ten_tbl
     output:
-        fst_manhat= f"{FIGURES_DIR}/manhattan/fst_allChroms.pdf",
-        xpnsl_manhat= f"{FIGURES_DIR}/manhattan/xpnsl_allChroms.pdf",
-        chr04_Occ_urb =f"{FIGURES_DIR}/manhattan/chr04_Occ_urb.pdf",
-        chr05_Occ_urb =f"{FIGURES_DIR}/manhattan/chr05_Occ_urb.pdf",
-        chr04_Occ_rur =f"{FIGURES_DIR}/manhattan/chr04_Occ_rur.pdf",
-        chr05_Pall_rur =f"{FIGURES_DIR}/manhattan/chr05_Pall_rur.pdf",
-        chr07_Occ_rur =f"{FIGURES_DIR}/manhattan/chr07_Occ_rur.pdf",
-        chr08_Pall_rur1 =f"{FIGURES_DIR}/manhattan/chr08_Pall_rur1.pdf",
-        chr08_Pall_rur2 =f"{FIGURES_DIR}/manhattan/chr08_Pall_rur2.pdf",
+        fst_manhat= f"{FIGURES_DIR}/selection/manhattan/fst_allChroms.pdf",
+        xpnsl_manhat= f"{FIGURES_DIR}/selection/manhattan/xpnsl_allChroms.pdf",
+        chr04_Occ_urb =f"{FIGURES_DIR}/selection/manhattan/chr04_Occ_urb.pdf",
+        chr05_Occ_urb =f"{FIGURES_DIR}/selection/manhattan/chr05_Occ_urb.pdf",
+        chr04_Occ_rur =f"{FIGURES_DIR}/selection/manhattan/chr04_Occ_rur.pdf",
+        chr05_Pall_rur =f"{FIGURES_DIR}/selection/manhattan/chr05_Pall_rur.pdf",
+        chr07_Occ_rur =f"{FIGURES_DIR}/selection/manhattan/chr07_Occ_rur.pdf",
+        chr08_Pall_rur1 =f"{FIGURES_DIR}/selection/manhattan/chr08_Pall_rur1.pdf",
+        chr08_Pall_rur2 =f"{FIGURES_DIR}/selection/manhattan/chr08_Pall_rur2.pdf",
     conda: '../envs/figures.yaml'
     notebook:
         "../notebooks/manhattan_plots.r.ipynb"
