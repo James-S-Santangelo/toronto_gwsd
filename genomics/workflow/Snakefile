@@ -103,6 +103,8 @@ rule all:
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
         '{0}/sweeps.done'.format(SWEEPS_DIR),
+        # Figures
+        '{0}/figures.done'.format(FIGURES_DIR),
 
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'

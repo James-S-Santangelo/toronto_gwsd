@@ -89,3 +89,16 @@ rule population_structure_figures:
     conda:'../envs/figures.yaml'
     notebook:
         "../notebooks/population_structure.r.ipynb"
+
+rule figures_done:
+    input:
+        rules.population_structure_figures.output,
+        rules.manhattan_plots.output,
+        rules.go_enrichment_analysis.output,
+        rules.compare_observed_permuted_xpnsl.output
+    output:
+        f"{FIGURES_DIR}/figures.done"
+    shell:
+        """
+        touch {output}
+        """
