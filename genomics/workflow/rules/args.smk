@@ -73,7 +73,6 @@ rule singer_infer_arg:
             touch {output.done} ) &> {log}
             """
 
-FAILED_SAMPLES = [250, 360]
 rule calculate_fsts_fromARGs:
     input:
         trees = lambda w: expand(rules.singer_infer_arg.output.done, n=w.n),
@@ -89,8 +88,7 @@ rule calculate_fsts_fromARGs:
 
 rule fst_from_genotypes:
     input:
-        vcf = rules.split_vcf_forARGs.output,
-        samples = config["samples"]
+        vcf = rules.split_vcf_forARGs.output, samples = config["samples"]
     output:
         fst = f"{ARG_DIR}/vcftools/region{{n}}.weir.fst",
         log = f"{ARG_DIR}/vcftools/region{{n}}.log"
@@ -111,7 +109,7 @@ rule fst_from_genotypes:
 
 rule extract_gt_fst:
     input:
-        expand(rules.fst_from_genotypes.output.log, n = [x for x in range(1, 363) if x not in FAILED_SAMPLES])
+        expand(rules.fst_from_genotypes.output.log, n = [x for x in range(1, 363)])
     output:
         f"{ARG_DIR}/gt_fst.txt"
     run:
@@ -132,8 +130,8 @@ rule extract_gt_fst:
 
 rule analyse_args:
     input:
-        arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363) if x not in FAILED_SAMPLES]),
-        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363) if x not in FAILED_SAMPLES]),
+        arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
+        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
         gt_fst = rules.extract_gt_fst.output, 
         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
