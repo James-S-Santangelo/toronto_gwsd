@@ -26,7 +26,7 @@ rule split_vcf_forARGs:
         vcf = rules.bcftools_concat_phased_vcfs.output.vcf,
         region = rules.split_arg_regions.output
     output:
-        f"{ARG_DIR}/vcfs/region{{n}}.vcf"
+        temp(f"{ARG_DIR}/vcfs/region{{n}}.vcf")
     log: f"{LOG_DIR}/split_vcf_forARGs/region{{n}}_vcf.log"
     conda: "../envs/args.yaml"
     shell:
@@ -34,23 +34,22 @@ rule split_vcf_forARGs:
         tabix -h -R {input.region} {input.vcf} > {output} 2> {log}
         """
 
-ITERS = [i for i in range(0, 500)]
 rule singer_infer_arg:
     input:
         vcf = rules.split_vcf_forARGs.output,
         region = rules.split_arg_regions.output
     output:
         log = f"{ARG_DIR}/trees/region{{n}}/region{{n}}.log",
-        recombs = expand(f"{ARG_DIR}/trees/region{{n}}/region{{n}}_recombs_{{i}}.txt", i=ITERS, allow_missing=True),
-        muts = expand(f"{ARG_DIR}/trees/region{{n}}/region{{n}}_muts_{{i}}.txt", i=ITERS, allow_missing=True),
-        nodes = expand(f"{ARG_DIR}/trees/region{{n}}/region{{n}}_nodes_{{i}}.txt", i=ITERS, allow_missing=True),
+        done = f"{ARG_DIR}/trees/region{{n}}/region{{n}}.done"
     log: f"{LOG_DIR}/singer_infer_arg/region{{n}}_singer.log"
+    conda: "../envs/args.yaml"
     params:
         out_prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}",
-        vcf_prefix = f"{ARG_DIR}/vcfs/region{{n}}"
+        vcf_prefix = f"{ARG_DIR}/vcfs/region{{n}}",
+        n_samples = 1000
     shell:
         """
-        START=$( cut -f2 {input.region} | cat );
+        ( START=$( cut -f2 {input.region} | cat );
         END=$( cut -f3 {input.region} | cat )
         ~/github-repos/SINGER/previous_releases/singer_master \
             -vcf {params.vcf_prefix} \
@@ -60,33 +59,31 @@ rule singer_infer_arg:
             -start $START \
             -end $END \
             -thin 1 \
-            -n 500 &> {log}
-        """
-
-rule convert_singer_arg_to_tskit:
-    input:
-        rules.singer_infer_arg.output.log
-    output:
-        trees = expand(f"{ARG_DIR}/trees/region{{n}}/region{{n}}_{{i}}.trees", i=ITERS, allow_missing=True),
-    log: f"{LOG_DIR}/convert_singer_arg_to_tskit/region{{n}}_convert.log"
-    conda: "../envs/args.yaml"
-    params:
-        prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}"
-    shell:
-        """
+            -n {params.n_samples} && 
+    
         ~/github-repos/SINGER/previous_releases/convert_to_tskit \
-            -log {params.prefix} \
-            -output {params.prefix} 2> {log}
-        """
-                
-FAILED_SAMPLES = [37, 145, 317, 38, 146, 362, 69, 35, 343, 270]
+            -log {params.out_prefix} \
+            -output {params.out_prefix} &&
+
+            rm {params.out_prefix}_muts*.txt &&
+            rm {params.out_prefix}_branches*.txt &&
+            rm {params.out_prefix}_nodes*.txt &&
+            rm {params.out_prefix}_recombs*.txt &&
+
+            touch {output.done} ) &> {log}
+            """
+
+FAILED_SAMPLES = [250, 360]
 rule calculate_fsts_fromARGs:
     input:
-        trees = lambda w: expand(rules.convert_singer_arg_to_tskit.output, n=w.n),
+        trees = lambda w: expand(rules.singer_infer_arg.output.done, n=w.n),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
     output:
         f"{ARG_DIR}/fst/region{{n}}.fst"
     conda: "../envs/args.yaml"
+    params:
+        prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}",
+        n_samples = 1000
     script:
         "../scripts/python/calculate_fsts_fromARGs.py"
 
@@ -122,7 +119,6 @@ rule extract_gt_fst:
         means = []
         weighted = []
         for f in input:
-            print(f)
             region = re.search("(\\d+)", os.path.basename(f)).group()
             regions.append(region)
             with open(f, "r") as fin:
@@ -150,7 +146,7 @@ rule analyse_args:
 
 rule args_done:
     input:
-        expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363) if x not in FAILED_SAMPLES]),
+        expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
     output:
         f"{ARG_DIR}/args.done"
     shell:

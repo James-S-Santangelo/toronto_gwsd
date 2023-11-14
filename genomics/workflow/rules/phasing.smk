@@ -160,7 +160,7 @@ rule shapeit_phase:
 
 rule bcftools_concat_phased_vcfs:
     input:
-        lambda wildcards: expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES)
+        expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES)
     output:
         vcf = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),
         idx = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)

@@ -30,11 +30,10 @@ for i in rural_sample_indices:
 iter_list = []
 site_fsts = []
 branch_fsts = []
-for tree in snakemake.input["trees"]:
-    region = tree.split("/")[8]
-    iter = tree.split("/")[9].split("_")[1].split(".")[0]
-    iter_list.append(iter)
-    ts = tskit.load(tree)
+for s in range(snakemake.params["n_samples"]):
+    region = snakemake.wildcards["n"] 
+    iter_list.append(s)
+    ts = tskit.load(f"{snakemake.params['prefix']}_{s}.trees")
     urban_haps = ts.samples()[urban_hap_indices]
     rural_haps = ts.samples()[rural_hap_indices]
     site_fst = ts.Fst([urban_haps, rural_haps], mode="site")
