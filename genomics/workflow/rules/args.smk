@@ -26,7 +26,7 @@ rule split_vcf_forARGs:
         vcf = rules.bcftools_concat_phased_vcfs.output.vcf,
         region = rules.split_arg_regions.output
     output:
-        temp(f"{ARG_DIR}/vcfs/region{{n}}.vcf")
+        f"{ARG_DIR}/vcfs/region{{n}}.vcf"
     log: f"{LOG_DIR}/split_vcf_forARGs/region{{n}}_vcf.log"
     conda: "../envs/args.yaml"
     shell:
