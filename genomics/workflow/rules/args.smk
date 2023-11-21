@@ -137,7 +137,7 @@ rule analyse_args:
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
         regions = rules.create_regions_file_forARGs.output
     output:
-        "test.txt"
+        "text.txt"
     conda: "../envs/args.yaml"
     notebook:
         "../notebooks/analyse_args.r.ipynb"

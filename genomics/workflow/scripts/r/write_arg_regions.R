@@ -15,6 +15,6 @@ all_regions <- bind_rows(urban_rural_windows, unselected_window) %>%
     mutate(region = paste0(Chr, ":", start, "-", end),
            regionID = 1:n(),
            start = start - buffer, end = end + buffer) %>% 
-    dplyr::select(Chr, start, end, winID, region, regionID, direction)
+    dplyr::select(Chr, start, end, winID, region, regionID, direction, pos_most_diff)
 
 write_delim(x = all_regions, file = snakemake@output[["arg_regions"]], delim = "\t")

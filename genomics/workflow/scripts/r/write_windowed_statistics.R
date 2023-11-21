@@ -78,18 +78,18 @@ write_delim(win_sfs_df_filt, snakemake@output[["sfs_df"]], delim = "\t")
 #### XP-nSL ####
 ################
 
-#" Calculate mean cM of markers in window
+#" Calculate mean XP-nSL in window
 #"
-#" @param chrom_name Character vector with name of chromosome
+#" @param thresh Threshold for raw XP-nSL 
 #" @param window_size Size of window in bp
-#" @param step Number of base pairs to shift window
-#" @param df Dataframe with windowed markers
+#" @param step Number of base pairs to shift  raw XP-nSL valueswindow
+#" @param df Dataframe with raw XP-nSL values 
 #"
 #" @return Dataframe with mean cM in windows
 calculate_windowed_stats <- function(df, window_size, step, thresh){
     chrom <- df %>% pull(Chr) %>% unique()
     winStarts <- seq(from = min(df$pos), to = max(df$pos), by = step)
-    mat <- matrix(0, nrow = length(winStarts), ncol = 13)
+    mat <- matrix(0, nrow = length(winStarts), ncol = 14)
     for(i in 1:length(winStarts)){
         start <- winStarts[i]
         end <- start + step
@@ -99,16 +99,22 @@ calculate_windowed_stats <- function(df, window_size, step, thresh){
         mean <- suppressWarnings(mean(df_filt$normxpnsl))
         max <- suppressWarnings(max(df_filt$normxpnsl))
         min <- suppressWarnings(min(df_filt$normxpnsl))
+        max_abs_xpnsl <- max(abs(df_filt$normxpnsl), na.rm=T)
+        if(max_abs_xpnsl == -Inf){
+            pos_most_diff <- NA
+        }else{
+            pos_most_diff <- df_filt %>% filter(abs(normxpnsl) == max_abs_xpnsl) %>% sample_n(1) %>% pull(pos)
+        }
         n <- nrow(df_filt)
         num_gt_thresh <- sum(df_filt$normxpnsl > thresh)
         num_lt_thresh <- sum(df_filt$normxpnsl < -thresh)
         gt_frac <- sum(num_gt_thresh) / n
         lt_frac <- sum(num_lt_thresh) / n
-        stats <- c(chrom, winID, start, end, winCenter, mean, max, min, n, num_gt_thresh, num_lt_thresh, gt_frac, lt_frac)
+        stats <- c(chrom, winID, start, end, winCenter, mean, max, min, n, num_gt_thresh, num_lt_thresh, gt_frac, lt_frac, pos_most_diff)
         mat[i, ] <- stats
     }
     stats_df <- as.data.frame(mat)
-    names(stats_df) <- c("Chr", "winID", "start", "end", "winCenter", "mean", "max", "min", "n", "num_gt_thresh", "num_lt_thresh", "gt_frac", "lt_frac")
+    names(stats_df) <- c("Chr", "winID", "start", "end", "winCenter", "mean", "max", "min", "n", "num_gt_thresh", "num_lt_thresh", "gt_frac", "lt_frac", "pos_most_diff")
     return(stats_df)
 }
 

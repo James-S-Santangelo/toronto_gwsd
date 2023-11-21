@@ -497,9 +497,9 @@ rule norm_ihh_OneTwo:
 
 rule write_windowed_statistics:
     input:
-        fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
         thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
         thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
+        fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
         xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
     output:
         sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
