@@ -27,7 +27,7 @@ rule remove_duplicate_sites:
     input:
         rules.bcftools_filter_vcfs.output.vcf
     output:
-        '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered_noDups.vcf'.format(FREEBAYES_DIR)
+        temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_{{site_type}}_miss{{miss}}_filtered_noDups.vcf'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/remove_duplicate_sites/{chrom}_{site_type}_miss{miss}_removeDups.log'
     conda: '../envs/filtering.yaml'
     resources:

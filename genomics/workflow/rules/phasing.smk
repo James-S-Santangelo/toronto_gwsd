@@ -112,8 +112,8 @@ rule split_phased_vcf_byChrom:
     input:
         rules.bcftools_merge_phased.output.vcf
     output:
-        vcf = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR),
-        idx = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
+        vcf = temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
+        idx = temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
     log: LOG_DIR + '/split_phased_vcf_byChrom/{chrom}_phased_vcf_split.log'
     conda: '../envs/phasing.yaml'
     threads: 4
@@ -137,6 +137,7 @@ rule split_phased_vcf_byChrom:
 rule shapeit_phase:
     input:
         vcf = rules.split_phased_vcf_byChrom.output.vcf,
+        idx = rules.split_phased_vcf_byChrom.output.idx,
         genMap = rules.split_genMap.output
     output:
         vcf = '{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),

@@ -183,8 +183,8 @@ rule angsd_population_fst_index:
         saf_files = get_population_saf_files, 
         sfs = rules.angsd_estimate_joint_population_sfs.output
     output:
-        fst = '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.gz'.format(ANGSD_DIR),
-        idx = '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.idx'.format(ANGSD_DIR)
+        fst = temp('{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.gz'.format(ANGSD_DIR)),
+        idx = temp('{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}.fst.idx'.format(ANGSD_DIR))
     log: LOG_DIR + '/angsd_population_fst_index/{pop_comb}_{site}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
@@ -208,7 +208,8 @@ rule angsd_population_fst_readable:
     Create readable Fst files. Required due to format of realSFS fst index output files. 
     """
     input:
-        rules.angsd_population_fst_index.output.idx
+        idx = rules.angsd_population_fst_index.output.idx,
+        fst = rules.angsd_population_fst_index.output.fst
     output:
         '{0}/summary_stats/hudson_fst/byPopulation/{{pop_comb}}_{{site}}_readable.fst'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_population_fst_readable/{pop_comb}_{site}_readable.log'
@@ -218,7 +219,7 @@ rule angsd_population_fst_readable:
     container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
-        realSFS fst print {input} > {output} 2> {log}
+        realSFS fst print {input.idx} > {output} 2> {log}
         """
 
 ##############

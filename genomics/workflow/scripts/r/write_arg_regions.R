@@ -4,7 +4,7 @@ library(tidyverse)
 win_xpnsl_df <- read_delim(snakemake@input[['xpnsl']], delim = '\t')
 
 set.seed(42)
-buffer <- 425000
+buffer <- 475000
 
 urban_rural_windows <- win_xpnsl_df %>% 
     filter(direction %in% c('Urban sel', 'Rural sel'))

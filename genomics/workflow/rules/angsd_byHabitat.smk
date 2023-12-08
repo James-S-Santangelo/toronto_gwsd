@@ -147,8 +147,8 @@ rule angsd_habitat_fst_index:
         saf_idx = get_habitat_saf_files,
         joint_sfs = rules.angsd_estimate_joint_habitat_sfs.output
     output:
-        fst = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR),
-        idx = '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR)
+        fst = temp('{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.gz'.format(ANGSD_DIR)),
+        idx = temp('{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}.fst.idx'.format(ANGSD_DIR))
     log: LOG_DIR + '/angsd_habitat_fst_index/{site}_{hab_comb}_index.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
@@ -172,7 +172,8 @@ rule angsd_habitat_fst_readable:
     Create readable Fst files. Required due to format of realSFS fst index output files. 
     """
     input:
-        rules.angsd_habitat_fst_index.output.idx
+        idx = rules.angsd_habitat_fst_index.output.idx,
+        fst = rules.angsd_habitat_fst_index.output.fst
     output:
         '{0}/summary_stats/hudson_fst/byHabitat/{{site}}_{{hab_comb}}_readable.fst'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_habitat_fst_readable/{site}_{hab_comb}_readable.log'
@@ -182,7 +183,7 @@ rule angsd_habitat_fst_readable:
     container: 'library://james-s-santangelo/angsd/angsd:0.938'
     shell:
         """
-        realSFS fst print {input} > {output} 2> {log}
+        realSFS fst print {input.idx} > {output} 2> {log}
         """
 
 rule angsd_estimate_thetas_byHabitat:
@@ -193,8 +194,8 @@ rule angsd_estimate_thetas_byHabitat:
         saf_idx = rules.angsd_saf_likelihood_byHabitat.output.saf_idx,
         sfs = rules.angsd_estimate_sfs_byHabitat.output
     output:
-        idx = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR),
-        thet = '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR)
+        idx = temp('{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx'.format(ANGSD_DIR)),
+        thet = temp('{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.gz'.format(ANGSD_DIR))
     log: LOG_DIR + '/angsd_estimate_thetas_byHabitat/{site}_{habitat}_thetas.log'
     container: 'library://james-s-santangelo/angsd/angsd:0.938'
     threads: 4
@@ -219,7 +220,8 @@ rule angsd_diversity_neutrality_stats_byHabitat:
     Estimate pi, Waterson's theta, Tajima's D, etc. in each habitat
     """
     input:
-        rules.angsd_estimate_thetas_byHabitat.output.idx
+        idx = rules.angsd_estimate_thetas_byHabitat.output.idx,
+        thet = rules.angsd_estimate_thetas_byHabitat.output.thet,
     output:
        '{0}/summary_stats/thetas/byHabitat/{{site}}_{{habitat}}.thetas.idx.pestPG'.format(ANGSD_DIR)
     log: LOG_DIR + '/angsd_diversity_neutrality_stats_byHabitat/{site}_{habitat}_diversity_neutrality.log'
@@ -231,7 +233,7 @@ rule angsd_diversity_neutrality_stats_byHabitat:
         time = '01:00:00'
     shell:
         """
-        thetaStat do_stat {input} 2> {log}
+        thetaStat do_stat {input.idx} 2> {log}
         """
 
 ##############
