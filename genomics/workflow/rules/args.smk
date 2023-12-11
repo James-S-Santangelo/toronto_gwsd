@@ -40,16 +40,15 @@ rule singer_infer_arg:
         region = rules.split_arg_regions.output
     output:
         log = f"{ARG_DIR}/trees/region{{n}}/region{{n}}.log",
-        done = f"{ARG_DIR}/trees/region{{n}}/region{{n}}.done"
     log: f"{LOG_DIR}/singer_infer_arg/region{{n}}_singer.log"
     conda: "../envs/args.yaml"
     params:
         out_prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}",
         vcf_prefix = f"{ARG_DIR}/vcfs/region{{n}}",
-        n_samples = 1000
+        n_samples = 200
     shell:
         """
-        ( START=$( cut -f2 {input.region} | cat );
+        START=$( cut -f2 {input.region} | cat );
         END=$( cut -f3 {input.region} | cat )
         ~/github-repos/SINGER/previous_releases/singer_master \
             -vcf {params.vcf_prefix} \
@@ -58,31 +57,38 @@ rule singer_infer_arg:
             -output {params.out_prefix} \
             -start $START \
             -end $END \
-            -thin 1 \
-            -n {params.n_samples} && 
-    
-        ~/github-repos/SINGER/previous_releases/convert_to_tskit \
-            -log {params.out_prefix} \
-            -output {params.out_prefix} &&
+            -thin 10 \
+            -n {params.n_samples} &> {log}
+        """
 
-            rm {params.out_prefix}_muts*.txt &&
-            rm {params.out_prefix}_branches*.txt &&
-            rm {params.out_prefix}_nodes*.txt &&
-            rm {params.out_prefix}_recombs*.txt &&
-
-            touch {output.done} ) &> {log}
-            """
+rule convert_to_tskit:
+    input:
+        rules.singer_infer_arg.output.log
+    output:
+        done = f"{ARG_DIR}/trees/region{{n}}/region{{n}}_trees.done",
+    log: f"{LOG_DIR}/convert_to_tskit/region{{n}}_tskit_convert.log"
+    conda: "../envs/args.yaml"
+    params:
+        prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}",
+        n_samples = 200
+    shell:
+        """
+        ( ~/github-repos/SINGER/SINGER/SINGER/convert_to_tskit \
+            -log {params.prefix} \
+            -output {params.prefix} &&
+          touch {output.done} ) &> {log}
+        """
 
 rule calculate_fsts_fromARGs:
     input:
-        trees = lambda w: expand(rules.singer_infer_arg.output.done, n=w.n),
+        trees = lambda w: expand(rules.convert_to_tskit.output.done, n=w.n),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
     output:
         f"{ARG_DIR}/fst/region{{n}}.fst"
     conda: "../envs/args.yaml"
     params:
         prefix = f"{ARG_DIR}/trees/region{{n}}/region{{n}}",
-        n_samples = 1000
+        n_samples = 200
     script:
         "../scripts/python/calculate_fsts_fromARGs.py"
 
