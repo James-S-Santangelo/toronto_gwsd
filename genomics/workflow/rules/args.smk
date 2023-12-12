@@ -148,6 +148,20 @@ rule analyse_args:
     notebook:
         "../notebooks/analyse_args.r.ipynb"
 
+rule plot_windowed_fst:
+    input:
+        trees = expand(rules.convert_to_tskit.output, n=[x for x in range(1, 363)]),
+        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
+        bams = rules.create_bam_lists_allFinalSamples_allSites.output,
+        regions = rules.create_regions_file_forARGs.output
+    output:
+        "test.txt"
+    conda: "../envs/args.yaml"
+    params:
+        arg_path = ARG_DIR
+    notebook:
+        "../notebooks/plot_windowed_fst.py.ipynb"
+        
 rule args_done:
     input:
         expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
