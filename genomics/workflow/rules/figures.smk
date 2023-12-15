@@ -24,6 +24,7 @@ rule write_selected_regions:
         rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
         gff = GFF_FILE 
     output:
+        "test2.txt",
         top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
         all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt'

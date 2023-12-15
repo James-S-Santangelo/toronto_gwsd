@@ -94,12 +94,14 @@ rule calculate_fsts_fromARGs:
 
 rule fst_from_genotypes:
     input:
-        vcf = rules.split_vcf_forARGs.output, samples = config["samples"]
+        vcf = rules.split_vcf_forARGs.output, 
+        samples = config["samples"]
     output:
         fst = f"{ARG_DIR}/vcftools/region{{n}}.weir.fst",
         log = f"{ARG_DIR}/vcftools/region{{n}}.log"
     conda: "../envs/args.yaml"
     params:
+        win_size = 10000,
         out = f"{ARG_DIR}/vcftools/region{{n}}" 
     shell:
         """
@@ -148,23 +150,26 @@ rule analyse_args:
     notebook:
         "../notebooks/analyse_args.r.ipynb"
 
-rule plot_windowed_fst:
+rule generate_windowed_arg_gt_estimates:
     input:
-        trees = expand(rules.convert_to_tskit.output, n=[x for x in range(1, 363)]),
-        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
+        trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
+        win_gt_fst = lambda w: expand(rules.fst_from_genotypes.output.fst, n=w.n),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-        regions = rules.create_regions_file_forARGs.output
     output:
-        "test.txt"
+        f"{ARG_DIR}/fst/windowed/region{{n}}_windowed.fst"
     conda: "../envs/args.yaml"
     params:
-        arg_path = ARG_DIR
+        arg_path = ARG_DIR,
+        n_samples = 200,
+        win_size = 10000
     notebook:
         "../notebooks/plot_windowed_fst.py.ipynb"
         
 rule args_done:
     input:
         expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
+        rules.extract_gt_fst.output,
+        expand(rules.generate_windowed_arg_gt_estimates.output, n=[x for x in range(1, 363)]),
     output:
         f"{ARG_DIR}/args.done"
     shell:
