@@ -136,20 +136,6 @@ rule extract_gt_fst:
         df = pd.DataFrame(zip(regions, means, weighted), columns = ["regionID", "gt_fst_mean", "gt_fst_weighted"])
         df.to_csv(output[0], sep="\t", index=False)
 
-rule analyse_args:
-    input:
-        arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
-        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
-        gt_fst = rules.extract_gt_fst.output, 
-        sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
-        bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-        regions = rules.create_regions_file_forARGs.output
-    output:
-        "text.txt"
-    conda: "../envs/args.yaml"
-    notebook:
-        "../notebooks/analyse_args.r.ipynb"
-
 rule generate_windowed_arg_gt_estimates:
     input:
         trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
@@ -163,8 +149,23 @@ rule generate_windowed_arg_gt_estimates:
         n_samples = 200,
         win_size = 10000
     notebook:
-        "../notebooks/plot_windowed_fst.py.ipynb"
+        "../notebooks/generate_windowed_arg_gt_estimates.py.ipynb"
         
+rule analyse_args:
+    input:
+        arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
+        logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
+        gt_fst = rules.extract_gt_fst.output, 
+        sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
+        bams = rules.create_bam_lists_allFinalSamples_allSites.output,
+        regions = rules.create_regions_file_forARGs.output,
+        win_fst = expand(rules.generate_windowed_arg_gt_estimates.output, n=[x for x in range(1, 363)])
+    output:
+        "text.txt"
+    conda: "../envs/args.yaml"
+    notebook:
+        "../notebooks/analyse_args.r.ipynb"
+
 rule args_done:
     input:
         expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
