@@ -142,6 +142,7 @@ rule generate_windowed_arg_gt_estimates:
         win_gt_fst = lambda w: expand(rules.fst_from_genotypes.output.fst, n=w.n),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
     output:
+        f"test{{n}}.txt",
         f"{ARG_DIR}/fst/windowed/region{{n}}_windowed.fst"
     conda: "../envs/args.yaml"
     params:
@@ -151,6 +152,18 @@ rule generate_windowed_arg_gt_estimates:
     notebook:
         "../notebooks/generate_windowed_arg_gt_estimates.py.ipynb"
         
+rule get_nsites_ntrees_fromARGs:
+    input:
+        trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
+    output:
+        f"{ARG_DIR}/nsites_ntrees/region{{n}}_nsites_ntrees.txt"
+    conda: "../envs/args.yaml"
+    params:
+        arg_path = ARG_DIR,
+        n_samples = 200,
+    script:
+        "../scripts/python/get_nsites_ntrees_fromARGs.py"
+
 rule analyse_args:
     input:
         arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
@@ -159,7 +172,8 @@ rule analyse_args:
         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
         regions = rules.create_regions_file_forARGs.output,
-        win_fst = expand(rules.generate_windowed_arg_gt_estimates.output, n=[x for x in range(1, 363)])
+        win_fst = expand(rules.generate_windowed_arg_gt_estimates.output, n=[x for x in range(1, 363)]),
+        nsites = expand(rules.get_nsites_ntrees_fromARGs.output, n=[x for x in range(1, 363)])
     output:
         "text.txt"
     conda: "../envs/args.yaml"
