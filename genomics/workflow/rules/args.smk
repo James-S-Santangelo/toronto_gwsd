@@ -141,6 +141,7 @@ rule generate_windowed_arg_gt_estimates:
         trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
         win_gt_fst = lambda w: expand(rules.fst_from_genotypes.output.fst, n=w.n),
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
+        sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
     output:
         f"test{{n}}.txt",
         f"{ARG_DIR}/fst/windowed/region{{n}}_windowed.fst"
