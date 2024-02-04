@@ -34,6 +34,7 @@ rule create_region_files_forFreebayes:
             --bed {params.out}\
             --chromosome {params.chroms} 2> {log}
         """
+
 rule freebayes_call_variants:
     input:
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,

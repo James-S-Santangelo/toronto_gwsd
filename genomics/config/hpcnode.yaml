@@ -3,7 +3,7 @@ samples: ../resources/sequencedPlants_phenotypesHabitat.txt
 chromosomes: ../resources/chromosome_file.txt
 gff: ../resources/reference/UTM_Trep_v1.0_functional_withDiamondProducts_final_sorted.gff3
 genmap: ../resources/reference/TrR_v6_linkageMap.csv
-ref: ../resources/reference/UTM_Trep_v1.0_haploid_reference_softmasked.fasta
+ref: ../resources/reference/UTM_Trep_v1.0_haploid_reference_softMasked.fasta
 
 results_prefix: /scratch/projects/trifolium/gwsd/results 
 figures: /home/santang3/github-repos/toronto_gwsd/figures_tables
