@@ -25,17 +25,36 @@ rule split_vcf_forARGs:
         vcf = rules.bcftools_concat_phased_vcfs.output.vcf,
         region = f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed'
     output:
-        f"{ARG_DIR}/vcfs/{{chrom}}/{{chrom}}_region{{region_id}}.vcf"
+        temp(f"{ARG_DIR}/vcfs/{{chrom}}/{{chrom}}_region{{region_id}}.vcf")
     log: f"{LOG_DIR}/split_vcf_forARGs/{{chrom}}/{{chrom}}_region{{region_id}}_vcf.log"
     conda: "../envs/args.yaml"
     shell:
         """
-        tabix -h -R {input.region} {input.vcf} > {output} 2> {log}
+        tabix -h -R {input.region} {input.vcf} > {output}
         """
+
+def get_vcfs(wildcards):
+    ck_output = checkpoints.create_regions_file_forARGs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "genome.{chrom}.region.{region_id}.bed"))
+    vcfs = expand(f"{ARG_DIR}/vcfs/{{chrom}}/{{chrom}}_region{{region_id}}.vcf", zip, chrom=chrom, region_id=region_id)
+    return(vcfs)
+
+checkpoint write_nonempty_vcfs:
+    input:
+        get_vcfs
+    output:
+        directory(f"{ARG_DIR}/vcfs/nonempty")
+    run:
+        import shutil
+        os.makedirs(output[0])
+        for vcf in input:
+            num_sites = sum(1 for l in open(vcf, "r").readlines() if not l.startswith("#"))
+            if num_sites > 0:
+                shutil.copy(vcf, output[0])
 
 rule singer_infer_arg:
     input:
-        vcf = rules.split_vcf_forARGs.output, 
+        vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf",
         region = f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed'
     output:
         log = f"{ARG_DIR}/trees/{{chrom}}/region{{region_id}}/region{{region_id}}.log",
@@ -80,12 +99,17 @@ rule convert_to_tskit:
           touch {output.done} ) &> {log}
         """
 
-
 def get_all_ARGs(wildcards):
-    ck_output = checkpoints.create_regions_file_forARGs.get(**wildcards).output[0]
-    chrom, region_id = glob_wildcards(os.path.join(ck_output, "genome.{chrom}.region.{region_id}.bed"))
-    args = expand(f"{ARG_DIR}/trees/{{chrom}}/region{{region_id}}/region{{region_id}}_trees.done", chrom = "Chr01_Occ", region_id = region_id)
-    return(args)
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    chroms = []
+    region_ids = []
+    for i, c in enumerate(chrom):
+        if c == "Chr01_Occ":
+            chroms.append(c)
+            region_ids.append(region_id[i])
+    args = expand(f"{ARG_DIR}/trees/{{chrom}}/region{{region_id}}/region{{region_id}}_trees.done", chrom=chroms, region_id=region_ids)
+    return args
 
 # rule calculate_fsts_fromARGs:
 #     input:
@@ -192,7 +216,7 @@ def get_all_ARGs(wildcards):
 
 rule args_done:
     input:
-        get_all_ARGs 
+        get_all_ARGs
     output:
         f"{ARG_DIR}/args.done"
     shell:
