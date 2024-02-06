@@ -1,3 +1,7 @@
+##############
+### SETUP ####
+##############
+
 checkpoint create_regions_file_forARGs:
     input:
         ref_idx = rules.samtools_index_reference.output,
@@ -52,6 +56,10 @@ checkpoint write_nonempty_vcfs:
             if num_sites > 0:
                 shutil.copy(vcf, output[0])
 
+#############################
+### SINGER ARG INFERENCE ####
+#############################
+
 rule singer_infer_arg:
     input:
         vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf",
@@ -94,10 +102,29 @@ rule convert_to_tskit:
         ( ~/github-repos/SINGER/releases/singer-0.1.6-beta-linux-x86_64/convert_to_tskit \
             -input {params.prefix} \
             -start 0 \
-            -end 99 \
+            -end 100 \
             -output {params.prefix} &&
           touch {output.done} ) &> {log}
         """
+
+#####################################
+#### FST FROM GENOTYPES AND ARGS ####
+#####################################
+
+rule generate_perSite_fst_estimates:
+    input:
+        trees = rules.convert_to_tskit.output,
+        bams = rules.create_bam_lists_allFinalSamples_allSites.output,
+        vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf",
+        sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
+    output:
+        f"{ARG_DIR}/fst/{{chrom}}/{{chrom}}_region{{region_id}}_windowed.fst"
+    conda: "../envs/args.yaml"
+    params:
+        arg_path = ARG_DIR,
+        n_samples = 100
+    notebook:
+        "../notebooks/generate_windowed_arg_gt_estimates.py.ipynb"
 
 def get_all_ARGs(wildcards):
     ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
@@ -108,21 +135,8 @@ def get_all_ARGs(wildcards):
         if c == "Chr01_Occ":
             chroms.append(c)
             region_ids.append(region_id[i])
-    args = expand(f"{ARG_DIR}/trees/{{chrom}}/region{{region_id}}/region{{region_id}}_trees.done", chrom=chroms, region_id=region_ids)
-    return args
-
-# rule calculate_fsts_fromARGs:
-#     input:
-#         trees = lambda w: expand(rules.convert_to_tskit.output.done, n=w.n),
-#         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-#     output:
-#         f"{ARG_DIR}/fst/region{{region_id}}.fst"
-#     conda: "../envs/args.yaml"
-#     params:
-#         prefix = f"{ARG_DIR}/trees/region{{region_id}}/region{{region_id}}",
-#         n_samples = 100
-#     script:
-#         "../scripts/python/calculate_fsts_fromARGs.py"
+    fsts = expand(f"{ARG_DIR}/fst/{{chrom}}/{{chrom}}_region{{region_id}}_windowed.fst", chrom=chroms, region_id=region_ids)
+    return fsts 
 
 # rule fst_from_genotypes:
 #     input:
@@ -167,25 +181,7 @@ def get_all_ARGs(wildcards):
 #                 weighted.append(weight)
 #         df = pd.DataFrame(zip(regions, means, weighted), columns = ["regionID", "gt_fst_mean", "gt_fst_weighted"])
 #         df.to_csv(output[0], sep="\t", index=False)
-
-# rule generate_windowed_arg_gt_estimates:
-#     input:
-#         trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
-#         win_gt_fst = lambda w: expand(rules.fst_from_genotypes.output.fst, n=w.n),
-#         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-#         vcf = rules.split_vcf_forARGs.output,
-#         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
-#     output:
-#         f"text{{n}}.txt",
-#         f"{ARG_DIR}/fst/windowed/region{{region_id}}_windowed.fst"
-#     conda: "../envs/args.yaml"
-#     params:
-#         arg_path = ARG_DIR,
-#         n_samples = 100,
-#         win_size = 10000
-#     notebook:
-#         "../notebooks/generate_windowed_arg_gt_estimates.py.ipynb"
-#         
+ 
 # rule get_nsites_ntrees_fromARGs:
 #     input:
 #         trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
