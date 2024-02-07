@@ -111,20 +111,20 @@ rule convert_to_tskit:
 #### FST FROM GENOTYPES AND ARGS ####
 #####################################
 
-rule generate_perSite_fst_estimates:
+rule generate_windowed_arg_summary_stats:
     input:
         trees = rules.convert_to_tskit.output,
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-        vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf",
         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
     output:
-        f"{ARG_DIR}/fst/{{chrom}}/{{chrom}}_region{{region_id}}_windowed.fst"
+        f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt"
     conda: "../envs/args.yaml"
     params:
         arg_path = ARG_DIR,
-        n_samples = 100
+        n_samples = 100,
+        window_size = 10000
     notebook:
-        "../notebooks/generate_windowed_arg_gt_estimates.py.ipynb"
+        "../notebooks/generate_windowed_arg_summary_stats.py.ipynb"
 
 def get_all_ARGs(wildcards):
     ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
@@ -135,8 +135,17 @@ def get_all_ARGs(wildcards):
         if c == "Chr01_Occ":
             chroms.append(c)
             region_ids.append(region_id[i])
-    fsts = expand(f"{ARG_DIR}/fst/{{chrom}}/{{chrom}}_region{{region_id}}_windowed.fst", chrom=chroms, region_id=region_ids)
+    fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt", zip, chrom=chroms, region_id=region_ids)
     return fsts 
+
+rule plot_arg_gt_fst_correlations:
+    input:
+        get_all_ARGs
+    output:
+        "test.txt"
+    conda: "../envs/args.yaml"
+    notebook:
+        "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
 # rule fst_from_genotypes:
 #     input:
@@ -212,7 +221,7 @@ def get_all_ARGs(wildcards):
 
 rule args_done:
     input:
-        get_all_ARGs
+        rules.plot_arg_gt_fst_correlations.output
     output:
         f"{ARG_DIR}/args.done"
     shell:
