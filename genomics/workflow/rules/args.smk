@@ -107,9 +107,9 @@ rule convert_to_tskit:
           touch {output.done} ) &> {log}
         """
 
-#####################################
-#### FST FROM GENOTYPES AND ARGS ####
-#####################################
+#################################
+#### SUMMARY STATS FROM ARGS ####
+#################################
 
 rule generate_windowed_arg_summary_stats:
     input:
@@ -137,6 +137,54 @@ def get_all_ARGs(wildcards):
             region_ids.append(region_id[i])
     fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt", zip, chrom=chroms, region_id=region_ids)
     return fsts 
+
+######################################
+#### SUMMARY STATS FROM GENOTYPES ####
+######################################
+
+rule create_pixy_popfile:
+    input:
+       config['samples']
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/pixy/popfile.txt"
+    run:
+        with open(input[0], "r") as fin:
+            with open(output[0], "w") as fout:
+                lines = fin.readlines()
+                for l in lines:
+                    sl = l.split('\t')
+                    sample = sl[0]
+                    pop = sl[1]
+                    if sample in FINAL_SAMPLES:
+                        fout.write(f"{sample}\t{pop}\n")
+
+rule pixy:
+    input:
+        popu = rules.create_pixy_popfile.output,
+        vcf = rules.concat_variant_invariant_sites.output.vcf,
+        tbi = rules.concat_variant_invariant_sites.output.tbi
+    output:
+        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_fst.txt",
+        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_pi.txt",
+        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_dxy.txt"
+    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_pixy.log"
+    conda: "../envs/pixy.yaml"
+    threads: 4
+    params:
+        window_size = 10000,
+        out = f"{PIXY_DIR}/{{chrom}}/",
+        pref = f"{{chrom}}_miss{{miss}}_pixy"
+    shell:
+        """
+        pixy --stats fst pi dxy \
+            --population {input.popu} \
+            --vcf {input.vcf} \
+            --n_cores {threads} \
+            --window_size {params.window_size} \
+            --output_folder {params.out} \
+            --output_prefix {params.pref} \
+            --fst_type hudson &> {log}
+        """
 
 rule plot_arg_gt_fst_correlations:
     input:
@@ -221,7 +269,8 @@ rule plot_arg_gt_fst_correlations:
 
 rule args_done:
     input:
-        rules.plot_arg_gt_fst_correlations.output
+        get_all_ARGs,
+        expand(rules.pixy.output, chrom=CHROMOSOMES, miss="0")
     output:
         f"{ARG_DIR}/args.done"
     shell:

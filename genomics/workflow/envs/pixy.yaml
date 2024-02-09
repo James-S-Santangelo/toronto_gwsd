@@ -2,6 +2,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - bcftools=1.16
-  - vcflib=1.0.3
-  - tabixpp=1.1.0
+  - python=3.8
+  - pixy=1.2.8.beta1

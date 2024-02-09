@@ -37,6 +37,7 @@ HCN_LOCI_DIR = '{0}/hcn_loci'.format(config['results_prefix'])
 GENMAP_RESULTS_DIR = '{0}/gen_map'.format(config['results_prefix'])
 SWEEPS_DIR = '{0}/sweeps'.format(config['results_prefix'])
 ARG_DIR = '{0}/args'.format(config['results_prefix'])
+PIXY_DIR = '{0}/pixy'.format(config['results_prefix'])
 
 # Parameters for initial PCA and relatedness analysis post-QC
 LOWQUAL_SAMPLES_TO_EXCLUDE = config['lowQual_samples_to_exclude']
@@ -140,7 +141,6 @@ rule all:
         #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
-        '{0}/filtering.done'.format(FREEBAYES_DIR),
         '{0}/phasing.done'.format(FREEBAYES_DIR),
         # Recombination map
         '{0}/recombination_map.done'.format(GENMAP_RESULTS_DIR),
