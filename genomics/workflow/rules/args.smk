@@ -126,18 +126,6 @@ rule generate_windowed_arg_summary_stats:
     notebook:
         "../notebooks/generate_windowed_arg_summary_stats.py.ipynb"
 
-def get_all_ARGs(wildcards):
-    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
-    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
-    chroms = []
-    region_ids = []
-    for i, c in enumerate(chrom):
-        if c == "Chr01_Occ":
-            chroms.append(c)
-            region_ids.append(region_id[i])
-    fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt", zip, chrom=chroms, region_id=region_ids)
-    return fsts 
-
 ######################################
 #### SUMMARY STATS FROM GENOTYPES ####
 ######################################
@@ -186,12 +174,41 @@ rule pixy:
             --fst_type hudson &> {log}
         """
 
+def get_all_ARGs(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    chroms = []
+    region_ids = []
+    for i, c in enumerate(chrom):
+        if c == "Chr01_Occ":
+            chroms.append(c)
+            region_ids.append(region_id[i])
+    fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt", zip, chrom=chroms, region_id=region_ids)
+    return fsts 
+
+def get_all_ARG_region_files(wildcards):
+    ck_output = checkpoints.create_regions_file_forARGs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "genome.{chrom}.region.{region_id}.bed"))
+    chroms = []
+    region_ids = []
+    for i, c in enumerate(chrom):
+        if c == "Chr01_Occ":
+            chroms.append(c)
+            region_ids.append(region_id[i])
+    regions = expand(f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed', zip, chrom=chroms, region_id=region_ids)
+    return regions 
+
 rule plot_arg_gt_fst_correlations:
     input:
-        get_all_ARGs
+        arg_fst = get_all_ARGs,
+        regions = get_all_ARG_region_files,
+        gt_fsts = expand(rules.pixy.output.fst, chrom="Chr01_Occ", miss="0"),
+        sfs_fsts = expand(rules.angsd_fst_allSites_readable.output, chrom="Chr01_Occ", hab_comb="Urban_Rural")
     output:
         "test.txt"
     conda: "../envs/args.yaml"
+    params:
+        window_size = 10000
     notebook:
         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
