@@ -115,6 +115,7 @@ rule generate_windowed_arg_summary_stats:
     input:
         trees = rules.convert_to_tskit.output,
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
+        region = f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed',
         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
     output:
         f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt"
