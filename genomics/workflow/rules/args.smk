@@ -222,7 +222,14 @@ rule plot_arg_gt_fst_correlations:
     input:
         all_fsts = rules.write_all_fsts.output,
     output:
-        "test.txt"
+        arg_branch_gt_cor = f"{ARG_DIR}/figures/arg_branch_fst_by_gt_fst.pdf",
+        arg_site_gt_cor = f"{ARG_DIR}/figures/arg_site_fst_by_gt_fst.pdf",
+        arg_branch_gt_hist = f"{ARG_DIR}/figures/arg_branch_gt_fst_cor_hist.pdf",
+        arg_site_gt_hist = f"{ARG_DIR}/figures/arg_site_gt_fst_cor_hist.pdf",
+        arg_branch_sfs_cor = f"{ARG_DIR}/figures/arg_branch_fst_by_sfs_fst.pdf",
+        arg_site_sfs_cor = f"{ARG_DIR}/figures/arg_site_fst_by_sfs_fst.pdf",
+        arg_branch_sfs_hist = f"{ARG_DIR}/figures/arg_branch_sfs_fst_cor_hist.pdf",
+        arg_site_sfs_hist = f"{ARG_DIR}/figures/arg_site_sfs_fst_cor_hist.pdf",
     conda: "../envs/args.yaml"
     params:
         window_size = 10000
@@ -303,8 +310,7 @@ rule plot_arg_gt_fst_correlations:
 
 rule args_done:
     input:
-        get_all_ARGs,
-        expand(rules.pixy.output, chrom=CHROMOSOMES, miss="0")
+        rules.plot_arg_gt_fst_correlations.output
     output:
         f"{ARG_DIR}/args.done"
     shell:
