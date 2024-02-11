@@ -199,12 +199,28 @@ def get_all_ARG_region_files(wildcards):
     regions = expand(f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed', zip, chrom=chroms, region_id=region_ids)
     return regions 
 
-rule plot_arg_gt_fst_correlations:
+##################
+#### ANALYSES ####
+##################
+
+rule write_all_fsts:
     input:
         arg_fst = get_all_ARGs,
         regions = get_all_ARG_region_files,
         gt_fsts = expand(rules.pixy.output.fst, chrom="Chr01_Occ", miss="0"),
         sfs_fsts = expand(rules.angsd_fst_allSites_readable.output, chrom="Chr01_Occ", hab_comb="Urban_Rural")
+    output:
+        f"{ARG_DIR}/all_fsts.txt"    
+    conda: "../envs/args.yaml"
+    params:
+        window_size = 10000
+    script:
+        "../scripts/r/write_all_fsts.R"
+        
+
+rule plot_arg_gt_fst_correlations:
+    input:
+        all_fsts = rules.write_all_fsts.output,
     output:
         "test.txt"
     conda: "../envs/args.yaml"
