@@ -118,12 +118,11 @@ rule generate_windowed_arg_summary_stats:
         region = f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed',
         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
     output:
-        f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt"
+        f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_win{{win_size}}_stats.txt"
     conda: "../envs/args.yaml"
     params:
         arg_path = ARG_DIR,
-        n_samples = 100,
-        window_size = 10000
+        n_samples = 100
     notebook:
         "../notebooks/generate_windowed_arg_summary_stats.py.ipynb"
 
@@ -153,23 +152,22 @@ rule pixy:
         vcf = rules.concat_variant_invariant_sites.output.vcf,
         tbi = rules.concat_variant_invariant_sites.output.tbi
     output:
-        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_fst.txt",
-        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_pi.txt",
-        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_pixy_dxy.txt"
-    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_pixy.log"
+        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_fst.txt",
+        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_pi.txt",
+        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_dxy.txt"
+    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy.log"
     conda: "../envs/pixy.yaml"
     threads: 4
     params:
-        window_size = 10000,
-        out = f"{PIXY_DIR}/{{chrom}}/",
-        pref = f"{{chrom}}_miss{{miss}}_pixy"
+        out = f"{PIXY_DIR}/{{chrom}}",
+        pref = f"{{chrom}}_miss{{miss}}_win{{win_size}}_pixy"
     shell:
         """
         pixy --stats fst pi dxy \
             --population {input.popu} \
             --vcf {input.vcf} \
             --n_cores {threads} \
-            --window_size {params.window_size} \
+            --window_size {wildcards.win_size} \
             --output_folder {params.out} \
             --output_prefix {params.pref} \
             --fst_type hudson &> {log}
@@ -184,7 +182,9 @@ def get_all_ARGs(wildcards):
         if c == "Chr01_Occ":
             chroms.append(c)
             region_ids.append(region_id[i])
-    fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_windowed_stats.txt", zip, chrom=chroms, region_id=region_ids)
+    win_sizes = [wildcards.win_size for x in range(len(chroms))]
+    fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_win{{win_size}}_stats.txt",
+                  zip, chrom=chroms, region_id=region_ids, win_size=win_sizes)
     return fsts 
 
 def get_all_ARG_region_files(wildcards):
@@ -207,32 +207,27 @@ rule write_all_fsts:
     input:
         arg_fst = get_all_ARGs,
         regions = get_all_ARG_region_files,
-        gt_fsts = expand(rules.pixy.output.fst, chrom="Chr01_Occ", miss="0"),
+        gt_fsts = lambda w: expand(rules.pixy.output.fst, chrom="Chr01_Occ", miss="0", win_size=w.win_size),
         sfs_fsts = expand(rules.angsd_fst_allSites_readable.output, chrom="Chr01_Occ", hab_comb="Urban_Rural")
     output:
-        f"{ARG_DIR}/all_fsts.txt"    
+        f"{ARG_DIR}/all_fsts_win{{win_size}}.txt"    
     conda: "../envs/args.yaml"
-    params:
-        window_size = 10000
     script:
         "../scripts/r/write_all_fsts.R"
-        
 
 rule plot_arg_gt_fst_correlations:
     input:
-        all_fsts = rules.write_all_fsts.output,
+        all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=w.win_size)
     output:
-        arg_branch_gt_cor = f"{ARG_DIR}/figures/arg_branch_fst_by_gt_fst.pdf",
-        arg_site_gt_cor = f"{ARG_DIR}/figures/arg_site_fst_by_gt_fst.pdf",
-        arg_branch_gt_hist = f"{ARG_DIR}/figures/arg_branch_gt_fst_cor_hist.pdf",
-        arg_site_gt_hist = f"{ARG_DIR}/figures/arg_site_gt_fst_cor_hist.pdf",
-        arg_branch_sfs_cor = f"{ARG_DIR}/figures/arg_branch_fst_by_sfs_fst.pdf",
-        arg_site_sfs_cor = f"{ARG_DIR}/figures/arg_site_fst_by_sfs_fst.pdf",
-        arg_branch_sfs_hist = f"{ARG_DIR}/figures/arg_branch_sfs_fst_cor_hist.pdf",
-        arg_site_sfs_hist = f"{ARG_DIR}/figures/arg_site_sfs_fst_cor_hist.pdf",
+        arg_branch_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_gt_fst.pdf",
+        arg_site_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_gt_fst.pdf",
+        arg_branch_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_gt_fst_cor_hist.pdf",
+        arg_site_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_gt_fst_cor_hist.pdf",
+        arg_branch_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_sfs_fst.pdf",
+        arg_site_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_sfs_fst.pdf",
+        arg_branch_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_sfs_fst_cor_hist.pdf",
+        arg_site_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_sfs_fst_cor_hist.pdf",
     conda: "../envs/args.yaml"
-    params:
-        window_size = 10000
     notebook:
         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
@@ -310,7 +305,7 @@ rule plot_arg_gt_fst_correlations:
 
 rule args_done:
     input:
-        rules.plot_arg_gt_fst_correlations.output
+        expand(rules.plot_arg_gt_fst_correlations.output, win_size=["1", "10000"])
     output:
         f"{ARG_DIR}/args.done"
     shell:

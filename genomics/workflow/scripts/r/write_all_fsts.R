@@ -27,7 +27,6 @@ merge_gt_fst_vals <- function(df){
     region_df <- regions_df %>% filter(region_id == region) 
     start <- region_df$start + 1
     end <- region_df$end
-    window_size <- snakemake@params[["window_size"]]
     
     arg_fsts <- df %>% 
         dplyr::select(regionID, arg_win_start, arg_win_end, arg_branch_fst, arg_site_fst) %>% 
