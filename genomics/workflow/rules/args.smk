@@ -146,31 +146,61 @@ rule create_pixy_popfile:
                     if sample in FINAL_SAMPLES:
                         fout.write(f"{sample}\t{pop}\n")
 
+def get_pixy_vcf(wildcards):
+    if int(wildcards.win_size) > 1:
+        vcf = rules.concat_variant_invariant_sites.output.vcf
+        tbi = rules.concat_variant_invariant_sites.output.tbi
+    else:
+        vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf"
+    return vcf
+
+
 rule pixy:
     input:
+        vcf = get_pixy_vcf,
         popu = rules.create_pixy_popfile.output,
-        vcf = rules.concat_variant_invariant_sites.output.vcf,
-        tbi = rules.concat_variant_invariant_sites.output.tbi
+        region = f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed'
     output:
-        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_fst.txt",
-        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_pi.txt",
-        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_dxy.txt"
-    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy.log"
+        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy_fst.txt",
+        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy_pi.txt",
+        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy_dxy.txt"
+    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy.log"
     conda: "../envs/pixy.yaml"
-    threads: 4
     params:
+        start = lambda wildcards, input: int(open(input['region'], "r").readlines()[0].split("\t")[1]) + 1,
+        end = lambda wildcards, input: int(open(input['region'], "r").readlines()[0].split("\t")[2].strip()) + 1,
+        tmp_vcf = f"{{chrom}}{{miss}}{{region_id}}{{win_size}}_tmp.vcf.gz",
+        tmp_sites = f"{{chrom}}{{miss}}{{region_id}}{{win_size}}.sites",
         out = f"{PIXY_DIR}/{{chrom}}",
-        pref = f"{{chrom}}_miss{{miss}}_win{{win_size}}_pixy"
+        pref = f"{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy"
     shell:
         """
-        pixy --stats fst pi dxy \
-            --population {input.popu} \
-            --vcf {input.vcf} \
-            --n_cores {threads} \
-            --window_size {wildcards.win_size} \
-            --output_folder {params.out} \
-            --output_prefix {params.pref} \
-            --fst_type hudson &> {log}
+        if [ {wildcards.win_size} = '1' ]; then
+            bgzip -c {input.vcf} > {params.tmp_vcf};
+            tabix {params.tmp_vcf};
+            zgrep -v '#' {params.tmp_vcf} | cut -f1,2 > {params.tmp_sites}; 
+            pixy --stats fst pi dxy \
+                --population {input.popu} \
+                --vcf {params.tmp_vcf} \
+                --bypass_invariant_check yes \
+                --window_size {wildcards.win_size} \
+                --output_folder {params.out} \
+                --output_prefix {params.pref} \
+                --sites_file {params.tmp_sites} \
+                --fst_type hudson &> {log}
+            rm {params.tmp_vcf}*
+            rm {params.tmp_sites}
+        else
+            pixy --stats fst pi dxy \
+                --population {input.popu} \
+                --vcf {input.vcf} \
+                --interval_start {params.start} \
+                --interval_end {params.end} \
+                --window_size {wildcards.win_size} \
+                --output_folder {params.out} \
+                --output_prefix {params.pref} \
+                --fst_type hudson &> {log}
+        fi
         """
 
 def get_all_ARGs(wildcards):
@@ -199,6 +229,21 @@ def get_all_ARG_region_files(wildcards):
     regions = expand(f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed', zip, chrom=chroms, region_id=region_ids)
     return regions 
 
+def get_all_pixy_files(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    chroms = []
+    region_ids = []
+    for i, c in enumerate(chrom):
+        if c == "Chr01_Occ":
+            chroms.append(c)
+            region_ids.append(region_id[i])
+    win_sizes = [wildcards.win_size for x in range(len(chroms))]
+    misses = [wildcards.miss for x in range(len(chroms))]
+    fsts = expand(f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy_fst.txt",
+                  zip, chrom=chroms, region_id=region_ids, miss=misses, win_size=win_sizes)
+    return fsts 
+
 ##################
 #### ANALYSES ####
 ##################
@@ -207,29 +252,29 @@ rule write_all_fsts:
     input:
         arg_fst = get_all_ARGs,
         regions = get_all_ARG_region_files,
-        gt_fsts = lambda w: expand(rules.pixy.output.fst, chrom="Chr01_Occ", miss="0", win_size=w.win_size),
+        gt_fsts = get_all_pixy_files,
         sfs_fsts = expand(rules.angsd_fst_allSites_readable.output, chrom="Chr01_Occ", hab_comb="Urban_Rural")
     output:
-        f"{ARG_DIR}/all_fsts_win{{win_size}}.txt"    
+        f"{ARG_DIR}/all_fsts_miss{{miss}}_win{{win_size}}.txt"    
     conda: "../envs/args.yaml"
     script:
         "../scripts/r/write_all_fsts.R"
 
-rule plot_arg_gt_fst_correlations:
-    input:
-        all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=w.win_size)
-    output:
-        arg_branch_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_gt_fst.pdf",
-        arg_site_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_gt_fst.pdf",
-        arg_branch_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_gt_fst_cor_hist.pdf",
-        arg_site_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_gt_fst_cor_hist.pdf",
-        arg_branch_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_sfs_fst.pdf",
-        arg_site_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_sfs_fst.pdf",
-        arg_branch_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_sfs_fst_cor_hist.pdf",
-        arg_site_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_sfs_fst_cor_hist.pdf",
-    conda: "../envs/args.yaml"
-    notebook:
-        "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
+# rule plot_arg_gt_fst_correlations:
+#     input:
+#         all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=w.win_size)
+#     output:
+#         arg_branch_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_gt_fst.pdf",
+#         arg_site_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_gt_fst.pdf",
+#         arg_branch_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_gt_fst_cor_hist.pdf",
+#         arg_site_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_gt_fst_cor_hist.pdf",
+#         arg_branch_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_sfs_fst.pdf",
+#         arg_site_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_sfs_fst.pdf",
+#         arg_branch_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_sfs_fst_cor_hist.pdf",
+#         arg_site_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_sfs_fst_cor_hist.pdf",
+#     conda: "../envs/args.yaml"
+#     notebook:
+#         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
 # rule fst_from_genotypes:
 #     input:
@@ -305,7 +350,7 @@ rule plot_arg_gt_fst_correlations:
 
 rule args_done:
     input:
-        expand(rules.plot_arg_gt_fst_correlations.output, win_size=["1", "10000"])
+        expand(rules.write_all_fsts.output, miss="0", win_size=["1", "10000"])
     output:
         f"{ARG_DIR}/args.done"
     shell:
