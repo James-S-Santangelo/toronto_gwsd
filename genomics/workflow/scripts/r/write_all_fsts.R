@@ -28,7 +28,8 @@ merge_gt_fst_vals <- function(df){
         rename("window_pos_1" = "arg_win_start",
                "window_pos_2" = "arg_win_end")
     gt_fsts <- gt_fst_df %>% 
-        filter(window_pos_1 >= start & window_pos_2 <= end)
+        filter(window_pos_1 >= start & window_pos_2 <= end) %>%
+        rename("gt_hudson_fst" = "avg_hudson_fst")
 
     all_fsts <- gt_fsts %>% 
         left_join(arg_fsts, by = c("window_pos_1", "window_pos_2"))
