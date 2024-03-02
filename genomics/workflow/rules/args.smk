@@ -260,21 +260,26 @@ rule write_all_fsts:
     script:
         "../scripts/r/write_all_fsts.R"
 
-# rule plot_arg_gt_fst_correlations:
-#     input:
-#         all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=w.win_size)
-#     output:
-#         arg_branch_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_gt_fst.pdf",
-#         arg_site_gt_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_gt_fst.pdf",
-#         arg_branch_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_gt_fst_cor_hist.pdf",
-#         arg_site_gt_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_gt_fst_cor_hist.pdf",
-#         arg_branch_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_fst_by_sfs_fst.pdf",
-#         arg_site_sfs_cor = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_fst_by_sfs_fst.pdf",
-#         arg_branch_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_branch_sfs_fst_cor_hist.pdf",
-#         arg_site_sfs_hist = f"{ARG_DIR}/figures/win{{win_size}}/arg_site_sfs_fst_cor_hist.pdf",
-#     conda: "../envs/args.yaml"
-#     notebook:
-#         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
+rule plot_arg_gt_fst_correlations:
+    input:
+        all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=["1", "10000"], miss="0")
+    output:
+        site_fst_winSize_hist = f"{ARG_DIR}/figures/site_fst_hist_by_winSize.pdf",
+        site_fst_winSize_hist_filt = f"{ARG_DIR}/figures/site_fst_hist_by_winSize_filtered.pdf",
+        branch_fst_winSize_hist_filt = f"{ARG_DIR}/figures/branch_fst_hist_by_winSize_filtered.pdf",
+        site_fst_by_method_winSize_manhat = f"{ARG_DIR}/figures/site_fst_by_method_winSize_manhat.pdf",
+        branch_fst_by_method_winSize_manhat = f"{ARG_DIR}/figures/branch_fst_by_method_winSize_manhat.pdf",
+        site_gt_fst_cor_by_winSize= f"{ARG_DIR}/figures/site_gt_fst_cor_by_winSize.pdf",
+        branch_gt_fst_cor_by_winSize= f"{ARG_DIR}/figures/branch_gt_fst_cor_by_winSize.pdf",
+        site_sfs_fst_cor_by_winSize= f"{ARG_DIR}/figures/site_sfs_fst_cor_by_winSize.pdf",
+        branch_sfs_fst_cor_by_winSize= f"{ARG_DIR}/figures/branch_sfs_fst_cor_by_winSize.pdf",
+        branch_gt_cor_hist_by_winSize = f"{ARG_DIR}/figures/branch_gt_cor_hist_by_winSize.pdf",
+        site_gt_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_gt_cor_hist_by_winSize.pdf",
+        branch_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/branch_sfs_cor_hist_by_winSize.pdf",
+        site_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_sfs_cor_hist_by_winSize.pdf",
+    conda: "../envs/args.yaml"
+    notebook:
+        "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
 # rule fst_from_genotypes:
 #     input:
@@ -350,7 +355,7 @@ rule write_all_fsts:
 
 rule args_done:
     input:
-        expand(rules.write_all_fsts.output, miss="0", win_size=["1", "10000"])
+        rules.plot_arg_gt_fst_correlations.output
     output:
         f"{ARG_DIR}/args.done"
     shell:
