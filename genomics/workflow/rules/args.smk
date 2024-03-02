@@ -277,6 +277,8 @@ rule plot_arg_gt_fst_correlations:
         site_gt_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_gt_cor_hist_by_winSize.pdf",
         branch_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/branch_sfs_cor_hist_by_winSize.pdf",
         site_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_sfs_cor_hist_by_winSize.pdf",
+        fst_outlier_venn = f"{ARG_DIR}/figures/fst_outlier_venn.pdf",
+        outlier_manhat = f"{ARG_DIR}/figures/outlier_manhat.pdf",
     conda: "../envs/args.yaml"
     notebook:
         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
