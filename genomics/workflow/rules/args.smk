@@ -327,17 +327,17 @@ rule plot_arg_gt_fst_correlations:
 #         df = pd.DataFrame(zip(regions, means, weighted), columns = ["regionID", "gt_fst_mean", "gt_fst_weighted"])
 #         df.to_csv(output[0], sep="\t", index=False)
  
-# rule get_nsites_ntrees_fromARGs:
-#     input:
-#         trees = lambda w: expand(rules.convert_to_tskit.output, n=w.n),
-#     output:
-#         f"{ARG_DIR}/nsites_ntrees/region{{region_id}}_nsites_ntrees.txt"
-#     conda: "../envs/args.yaml"
-#     params:
-#         arg_path = ARG_DIR,
-#         n_samples = 100,
-#     script:
-#         "../scripts/python/get_nsites_ntrees_fromARGs.py"
+rule get_nsites_ntrees_fromARGs:
+    input:
+        trees = lambda w: expand(rules.convert_to_tskit.output, chrom=w.chrom, region_id=w.region_id)
+    output:
+        f"{ARG_DIR}/nsites_ntrees/{{chrom}}/{{chrom}}_region{{region_id}}_nsites_ntrees.txt"
+    conda: "../envs/args.yaml"
+    params:
+        arg_path = ARG_DIR,
+        n_samples = 100,
+    script:
+        "../scripts/python/get_nsites_ntrees_fromARGs.py"
 
 # rule analyse_args:
 #     input:
@@ -355,9 +355,23 @@ rule plot_arg_gt_fst_correlations:
 #     notebook:
 #         "../notebooks/analyse_args.r.ipynb"
 
+def get_all_ntree_nsite_files(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    chroms = []
+    region_ids = []
+    for i, c in enumerate(chrom):
+        if c == "Chr01_Occ":
+            chroms.append(c)
+            region_ids.append(region_id[i])
+    files = expand(f"{ARG_DIR}/nsites_ntrees/{{chrom}}/{{chrom}}_region{{region_id}}_nsites_ntrees.txt",
+                  zip, chrom=chroms, region_id=region_ids)
+    return files 
+
 rule args_done:
     input:
-        rules.plot_arg_gt_fst_correlations.output
+        get_all_ntree_nsite_files,
+        rules.plot_arg_gt_fst_correlations.output,
     output:
         f"{ARG_DIR}/args.done"
     shell:
