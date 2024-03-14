@@ -53,7 +53,7 @@ checkpoint write_nonempty_vcfs:
         os.makedirs(output[0])
         for vcf in input:
             num_sites = sum(1 for l in open(vcf, "r").readlines() if not l.startswith("#"))
-            if num_sites > 0:
+            if num_sites >= 100:
                 shutil.copy(vcf, output[0])
 
 #############################
@@ -105,6 +105,8 @@ rule convert_to_tskit:
             -end 100 \
             -output {params.prefix} &&
           touch {output.done} ) &> {log}
+
+        rm {params.prefix}_*.txt
         """
 
 #################################
@@ -207,41 +209,42 @@ def get_all_ARGs(wildcards):
     ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
     chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
     chroms = []
-    region_ids = []
+    regions = []
     for i, c in enumerate(chrom):
-        if c == "Chr01_Occ":
+        if c == wildcards.chrom:
             chroms.append(c)
-            region_ids.append(region_id[i])
+            regions.append(region_id[i])
     win_sizes = [wildcards.win_size for x in range(len(chroms))]
     fsts = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_win{{win_size}}_stats.txt",
-                  zip, chrom=chroms, region_id=region_ids, win_size=win_sizes)
+                  zip, chrom=chroms, region_id=regions, win_size=win_sizes)
     return fsts 
 
 def get_all_ARG_region_files(wildcards):
     ck_output = checkpoints.create_regions_file_forARGs.get(**wildcards).output[0]
     chrom, region_id = glob_wildcards(os.path.join(ck_output, "genome.{chrom}.region.{region_id}.bed"))
     chroms = []
-    region_ids = []
+    regions = []
     for i, c in enumerate(chrom):
-        if c == "Chr01_Occ":
+        if c == wildcards.chrom:
             chroms.append(c)
-            region_ids.append(region_id[i])
-    regions = expand(f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed', zip, chrom=chroms, region_id=region_ids)
+            regions.append(region_id[i])
+    regions = expand(f'{PROGRAM_RESOURCE_DIR}/arg_regions/genome.{{chrom}}.region.{{region_id}}.bed',
+                     zip, chrom=chroms, region_id=regions)
     return regions 
 
 def get_all_pixy_files(wildcards):
     ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
     chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
     chroms = []
-    region_ids = []
+    regions = []
     for i, c in enumerate(chrom):
-        if c == "Chr01_Occ":
+        if c == wildcards.chrom:
             chroms.append(c)
-            region_ids.append(region_id[i])
+            regions.append(region_id[i])
     win_sizes = [wildcards.win_size for x in range(len(chroms))]
     misses = [wildcards.miss for x in range(len(chroms))]
     fsts = expand(f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_region{{region_id}}_win{{win_size}}_pixy_fst.txt",
-                  zip, chrom=chroms, region_id=region_ids, miss=misses, win_size=win_sizes)
+                  zip, chrom=chroms, region_id=regions, miss=misses, win_size=win_sizes)
     return fsts 
 
 ##################
@@ -253,22 +256,28 @@ rule write_all_fsts:
         arg_fst = get_all_ARGs,
         regions = get_all_ARG_region_files,
         gt_fsts = get_all_pixy_files,
-        sfs_fsts = expand(rules.angsd_fst_allSites_readable.output, chrom="Chr01_Occ", hab_comb="Urban_Rural")
+        sfs_fsts = lambda w: expand(rules.angsd_fst_allSites_readable.output, chrom=w.chrom, hab_comb="Urban_Rural")
     output:
-        f"{ARG_DIR}/all_fsts_miss{{miss}}_win{{win_size}}.txt"    
+        f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_all_fsts_miss{{miss}}_win{{win_size}}.txt"    
     conda: "../envs/args.yaml"
     script:
         "../scripts/r/write_all_fsts.R"
 
+def get_all_ntree_nsite_files(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    files = expand(f"{ARG_DIR}/nsites_ntrees/{{chrom}}/{{chrom}}_region{{region_id}}_nsites_ntrees.txt",
+                  zip, chrom=chrom, region_id=region_id)
+    return files 
+
 rule plot_arg_gt_fst_correlations:
     input:
-        all_fsts = lambda w: expand(rules.write_all_fsts.output, win_size=["1", "10000"], miss="0")
+        nSites_nTrees = get_all_ntree_nsite_files,
+        all_fsts = expand(rules.write_all_fsts.output, chrom=CHROMOSOMES, miss="0", win_size=["1", "10000"])
     output:
         site_fst_winSize_hist = f"{ARG_DIR}/figures/site_fst_hist_by_winSize.pdf",
         site_fst_winSize_hist_filt = f"{ARG_DIR}/figures/site_fst_hist_by_winSize_filtered.pdf",
         branch_fst_winSize_hist_filt = f"{ARG_DIR}/figures/branch_fst_hist_by_winSize_filtered.pdf",
-        site_fst_by_method_winSize_manhat = f"{ARG_DIR}/figures/site_fst_by_method_winSize_manhat.pdf",
-        branch_fst_by_method_winSize_manhat = f"{ARG_DIR}/figures/branch_fst_by_method_winSize_manhat.pdf",
         site_gt_fst_cor_by_winSize= f"{ARG_DIR}/figures/site_gt_fst_cor_by_winSize.pdf",
         branch_gt_fst_cor_by_winSize= f"{ARG_DIR}/figures/branch_gt_fst_cor_by_winSize.pdf",
         site_sfs_fst_cor_by_winSize= f"{ARG_DIR}/figures/site_sfs_fst_cor_by_winSize.pdf",
@@ -277,56 +286,11 @@ rule plot_arg_gt_fst_correlations:
         site_gt_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_gt_cor_hist_by_winSize.pdf",
         branch_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/branch_sfs_cor_hist_by_winSize.pdf",
         site_sfs_cor_hist_by_winSize = f"{ARG_DIR}/figures/site_sfs_cor_hist_by_winSize.pdf",
-        fst_outlier_venn = f"{ARG_DIR}/figures/fst_outlier_venn.pdf",
-        outlier_manhat = f"{ARG_DIR}/figures/outlier_manhat.pdf",
+        nTrees_nSites_hist = f"{ARG_DIR}/figures/nSites_nTrees_hist.pdf"
     conda: "../envs/args.yaml"
     notebook:
         "../notebooks/plot_arg_gt_fst_correlations.r.ipynb"
 
-# rule fst_from_genotypes:
-#     input:
-#         vcf = rules.split_vcf_forARGs.output, 
-#         samples = config["samples"]
-#     output:
-#         fst = f"{ARG_DIR}/vcftools/region{{region_id}}.weir.fst",
-#         log = f"{ARG_DIR}/vcftools/region{{region_id}}.log"
-#     conda: "../envs/args.yaml"
-#     params:
-#         win_size = 10000,
-#         out = f"{ARG_DIR}/vcftools/region{{region_id}}" 
-#     shell:
-#         """
-#         grep 'Urban' {input.samples} | cut -f1 > urban{wildcards.n}.txt
-#         grep 'Rural' {input.samples} | cut -f1 > rural{wildcards.n}.txt
-#         vcftools --vcf {input.vcf} \
-#             --weir-fst-pop urban{wildcards.n}.txt \
-#             --weir-fst-pop rural{wildcards.n}.txt \
-#             --out {params.out} && 
-#         rm urban{wildcards.n}.txt
-#         rm rural{wildcards.n}.txt
-#         """
-
-# rule extract_gt_fst:
-#     input:
-#         expand(rules.fst_from_genotypes.output.log, n = [x for x in range(1, 363)])
-#     output:
-#         f"{ARG_DIR}/gt_fst.txt"
-#     run:
-#         regions = []
-#         means = []
-#         weighted = []
-#         for f in input:
-#             region = re.search("(\\d+)", os.path.basename(f)).group()
-#             regions.append(region)
-#             with open(f, "r") as fin:
-#                 lines = fin.readlines()
-#                 mean = re.search("(?<=:\\s)(.*$)", lines[-4].strip()).group()
-#                 weight = re.search("(?<=:\\s)(.*$)", lines[-3].strip()).group()
-#                 means.append(mean)
-#                 weighted.append(weight)
-#         df = pd.DataFrame(zip(regions, means, weighted), columns = ["regionID", "gt_fst_mean", "gt_fst_weighted"])
-#         df.to_csv(output[0], sep="\t", index=False)
- 
 rule get_nsites_ntrees_fromARGs:
     input:
         trees = lambda w: expand(rules.convert_to_tskit.output, chrom=w.chrom, region_id=w.region_id)
@@ -339,39 +303,9 @@ rule get_nsites_ntrees_fromARGs:
     script:
         "../scripts/python/get_nsites_ntrees_fromARGs.py"
 
-# rule analyse_args:
-#     input:
-#         arg_fst= expand(rules.calculate_fsts_fromARGs.output, n=[x for x in range(1, 363)]),
-#         logs = expand(rules.singer_infer_arg.output.log, n=[x for x in range(1, 363)]),
-#         gt_fst = rules.extract_gt_fst.output, 
-#         sfs_fst = expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb="Urban_Rural"),
-#         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
-#         regions = rules.create_regions_file_forARGs.output,
-#         win_fst = expand(rules.generate_windowed_arg_gt_estimates.output, n=[x for x in range(1, 363)]),
-#         nsites = expand(rules.get_nsites_ntrees_fromARGs.output, n=[x for x in range(1, 363)])
-#     output:
-#         "text.txt"
-#     conda: "../envs/args.yaml"
-#     notebook:
-#         "../notebooks/analyse_args.r.ipynb"
-
-def get_all_ntree_nsite_files(wildcards):
-    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
-    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
-    chroms = []
-    region_ids = []
-    for i, c in enumerate(chrom):
-        if c == "Chr01_Occ":
-            chroms.append(c)
-            region_ids.append(region_id[i])
-    files = expand(f"{ARG_DIR}/nsites_ntrees/{{chrom}}/{{chrom}}_region{{region_id}}_nsites_ntrees.txt",
-                  zip, chrom=chroms, region_id=region_ids)
-    return files 
-
 rule args_done:
     input:
-        get_all_ntree_nsite_files,
-        rules.plot_arg_gt_fst_correlations.output,
+        rules.plot_arg_gt_fst_correlations.output
     output:
         f"{ARG_DIR}/args.done"
     shell:

@@ -10,4 +10,5 @@ for s in range(snakemake.params["n_samples"]):
     results["num_trees"].append(ts.num_trees) 
 df_out = pd.DataFrame(results)
 df_out["regionID"] = region
+df_out["chrom"] = chrom
 df_out.to_csv(snakemake.output[0], index = False)
