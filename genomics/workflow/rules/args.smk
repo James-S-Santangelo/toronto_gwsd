@@ -303,9 +303,21 @@ rule get_nsites_ntrees_fromARGs:
     script:
         "../scripts/python/get_nsites_ntrees_fromARGs.py"
 
+rule arg_outlier_analysis:
+    input:
+        nSites_nTrees = get_all_ntree_nsite_files,
+        all_fsts = expand(rules.write_all_fsts.output, chrom=CHROMOSOMES, miss="0", win_size=["1", "10000"])
+    output:
+        venn = f"{ARG_DIR}/figures/arg_sfs_gt_outlier_venn.pdf",
+        outlier_manhat_windowed_threeway= f"{ARG_DIR}/figures/arg_gt_sfs_threeway_windowed_manhattant.pdf",
+        outlier_manhat_persite = f"{ARG_DIR}/figures/arg_perSite_outlier_manhat.pdf"
+    conda: "../envs/args.yaml"
+    notebook:
+        "../notebooks/arg_outlier_analysis.r.ipynb"
 rule args_done:
     input:
-        rules.plot_arg_gt_fst_correlations.output
+        rules.plot_arg_gt_fst_correlations.output,
+        rules.arg_outlier_analysis.output
     output:
         f"{ARG_DIR}/args.done"
     shell:
