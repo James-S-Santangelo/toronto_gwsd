@@ -314,8 +314,28 @@ rule arg_outlier_analysis:
     conda: "../envs/args.yaml"
     notebook:
         "../notebooks/arg_outlier_analysis.r.ipynb"
+
+rule get_allele_freqs:
+    input:
+        vcf = f"{ARG_DIR}/vcfs/nonempty/{{chrom}}_region{{region_id}}.vcf",
+        samples = config["samples"],
+        bams = rules.create_bam_lists_allFinalSamples_allSites.output
+    output:
+        f"{ARG_DIR}/allele_freqs/{{chrom}}/{{chrom}}_region{{region_id}}_allele_freqs.txt"
+    conda: "../envs/args.yaml"
+    script:
+        "../scripts/python/get_allele_freqs.py"
+
+def get_all_allele_freq_files(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    freqs = expand(f"{ARG_DIR}/allele_freqs/{{chrom}}/{{chrom}}_region{{region_id}}_allele_freqs.txt",
+                  zip, chrom=chrom, region_id=region_id)
+    return freqs
+
 rule args_done:
     input:
+        get_all_allele_freq_files,
         rules.plot_arg_gt_fst_correlations.output,
         rules.arg_outlier_analysis.output
     output:
