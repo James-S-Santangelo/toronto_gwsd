@@ -1,0 +1,33 @@
+Chr,start,end,gene_symbol,product,arg_sites,
+Chr01_Occ,60225865,60229259,ACLI19_g4836,NA,(R)-mandelonitrile oxidase,Chr01_Occ_region61:60227626
+Chr02_Occ,8929778,8932079,ACLI19_g12266,NA,hypothetical protein,"Chr02_Occ_region9:8930555, Chr02_Occ_region9:8930576"
+Chr02_Pall,8257001,8257420,ACLI19_g16041,NA,hypothetical protein,"Chr02_Pall_region9:8257104, Chr02_Pall_region9:8257208, Chr02_Pall_region9:8257220, Chr02_Pall_region9:8257297"
+Chr02_Pall,26801125,26805346,ACLI19_g17381,NA,hypothetical protein,"Chr02_Pall_region27:26801486, Chr02_Pall_region27:26801866, Chr02_Pall_region27:26802266, Chr02_Pall_region27:26802289, Chr02_Pall_region27:26802350"
+Chr03_Occ,53744318,53751090,ACLI19_g23595,NA,transcriptional corepressor LEUNIG isoform X2 [Trifolium pratense],"Chr03_Occ_region54:53745369, Chr03_Occ_region54:53745419"
+Chr03_Pall,54792955,54797036,ACLI19_g28975,NA,histidine kinase 5-like [Trifolium pratense],"Chr03_Pall_region55:54793251, Chr03_Pall_region55:54793279"
+Chr04_Occ,413685,416987,ACLI19_g29827,NA,factor of DNA methylation 1-like [Trifolium pratense],"Chr04_Occ_region1:416676, Chr04_Occ_region1:416684, Chr04_Occ_region1:416700, Chr04_Occ_region1:416702, Chr04_Occ_region1:416841"
+Chr04_Occ,5695270,5696181,ACLI19_g30518,NA,TrPRP2 [Trifolium repens],Chr04_Occ_region6:5696040
+Chr04_Occ,5706569,5708122,ACLI19_g30519,NA,hypothetical protein,"Chr04_Occ_region6:5706682, Chr04_Occ_region6:5706742, Chr04_Occ_region6:5706743, Chr04_Occ_region6:5706772, Chr04_Occ_region6:5706778, Chr04_Occ_region6:5707238"
+Chr04_Occ,5712475,5712933,ACLI19_g30520,NA,extensin-like repeat protein [Trifolium pratense],"Chr04_Occ_region6:5712518, Chr04_Occ_region6:5712519, Chr04_Occ_region6:5712537, Chr04_Occ_region6:5712553, Chr04_Occ_region6:5712557, Chr04_Occ_region6:5712567, Chr04_Occ_region6:5712621"
+Chr04_Occ,7452059,7456926,ACLI19_g30737,UBP24,Ubiquitin carboxyl-terminal hydrolase 24,Chr04_Occ_region8:7456675
+Chr04_Occ,12747836,12749155,ACLI19_g31226,NA,hypothetical protein,"Chr04_Occ_region13:12748433, Chr04_Occ_region13:12748439, Chr04_Occ_region13:12748447, Chr04_Occ_region13:12748449, Chr04_Occ_region13:12748480"
+Chr04_Pall,16897263,16899832,ACLI19_g36937,CBR1,NADH-cytochrome b5 reductase,"Chr04_Pall_region17:16898186, Chr04_Pall_region17:16898231"
+Chr04_Pall,19624931,19627294,ACLI19_g37226,NA,mitochondrial import inner membrane translocase subunit TIM22-4-like [Trifolium pratense],"Chr04_Pall_region20:19627139, Chr04_Pall_region20:19627146"
+Chr04_Pall,30893191,30895535,ACLI19_g37985,NA,endonuclease/exonuclease/phosphatase family protein [Trifolium medium],"Chr04_Pall_region31:30893878, Chr04_Pall_region31:30893911, Chr04_Pall_region31:30893917, Chr04_Pall_region31:30893922, Chr04_Pall_region31:30893926, Chr04_Pall_region31:30893934, Chr04_Pall_region31:30893939, Chr04_Pall_region31:30893947, Chr04_Pall_region31:30893953, Chr04_Pall_region31:30895321, Chr04_Pall_region31:30895323, Chr04_Pall_region31:30895324, Chr04_Pall_region31:30895334, Chr04_Pall_region31:30895338, Chr04_Pall_region31:30895358, Chr04_Pall_region31:30895360, Chr04_Pall_region31:30895365, Chr04_Pall_region31:30895388, Chr04_Pall_region31:30895391, Chr04_Pall_region31:30895395, Chr04_Pall_region31:30895400, Chr04_Pall_region31:30895511, Chr04_Pall_region31:30895524"
+Chr04_Pall,45983116,45991791,ACLI19_g38770,SS4,"Probable starch synthase 4%2C chloroplastic/amyloplastic, chloroplastic/amyloplastic","Chr04_Pall_region46:45988810, Chr04_Pall_region46:45989177, Chr04_Pall_region46:45989180"
+Chr04_Pall,56451160,56454414,ACLI19_g39959,PGD1,mediator complex subunit,"Chr04_Pall_region57:56453995, Chr04_Pall_region57:56454262"
+Chr05_Occ,3299597,3302021,ACLI19_g40802,ACR8,ACT domain-containing protein acr8,"Chr05_Occ_region4:3300809, Chr05_Occ_region4:3300821"
+Chr05_Occ,4816503,4820551,ACLI19_g40987,NA,hypothetical protein,"Chr05_Occ_region5:4817052, Chr05_Occ_region5:4818473, Chr05_Occ_region5:4818882, Chr05_Occ_region5:4818918, Chr05_Occ_region5:4818927, Chr05_Occ_region5:4818942, Chr05_Occ_region5:4819499"
+Chr05_Occ,53782776,53783846,ACLI19_g44563,NA,SNF2 family amino-terminal protein%2C partial [Trifolium pratense],"Chr05_Occ_region54:53783460, Chr05_Occ_region54:53783548, Chr05_Occ_region54:53783556"
+Chr05_Pall,19962804,19965141,ACLI19_g46992,NA,flavonol synthase/flavanone 3-hydroxylase-like protein [Trifolium pratense],Chr05_Pall_region20:19964162
+Chr05_Pall,37841967,37845456,ACLI19_g47787,NA,hypothetical protein,Chr05_Pall_region38:37844600
+Chr07_Occ,47347849,47348943,ACLI19_g62127,AUX22E,Auxin-induced protein 22E,"Chr07_Occ_region48:47348281, Chr07_Occ_region48:47348303"
+Chr07_Occ,49821913,49824738,ACLI19_g62381,NA,hypothetical protein,Chr07_Occ_region50:49823661
+Chr07_Pall,16743267,16752296,ACLI19_g65098,NA,CDK-activating kinase assembly factor MAT1 [Trifolium pratense],Chr07_Pall_region17:16749114
+Chr07_Pall,49466278,49472081,ACLI19_g67150,RH57,DEAD-box ATP-dependent RNA helicase 57,"Chr07_Pall_region50:49469222, Chr07_Pall_region50:49469312, Chr07_Pall_region50:49469347, Chr07_Pall_region50:49469354, Chr07_Pall_region50:49469389, Chr07_Pall_region50:49469424, Chr07_Pall_region50:49469436"
+Chr08_Occ,1296569,1306203,ACLI19_g68353,ABCC9,ATP-binding cassette sub- C member 9,"Chr08_Occ_region2:1304795, Chr08_Occ_region2:1304835, Chr08_Occ_region2:1305503, Chr08_Occ_region2:1305621, Chr08_Occ_region2:1305718, Chr08_Occ_region2:1305850"
+Chr08_Occ,14063135,14074591,ACLI19_g69733,NA,hypothetical protein,Chr08_Occ_region15:14069709
+Chr08_Occ,19805596,19815547,ACLI19_g70310,NA,protein SEEDLING PLASTID DEVELOPMENT 1 [Trifolium pratense],"Chr08_Occ_region20:19809896, Chr08_Occ_region20:19809897, Chr08_Occ_region20:19809899, Chr08_Occ_region20:19810025, Chr08_Occ_region20:19810028, Chr08_Occ_region20:19810034, Chr08_Occ_region20:19810446, Chr08_Occ_region20:19810492, Chr08_Occ_region20:19810544, Chr08_Occ_region20:19810567, Chr08_Occ_region20:19810732, Chr08_Occ_region20:19810757, Chr08_Occ_region20:19810762"
+Chr08_Occ,61033260,61037060,ACLI19_g72783,OPR3,12-oxophytodienoate reductase 3,Chr08_Occ_region62:61036696
+Chr08_Pall,18373352,18379627,ACLI19_g75236,NA,hypothetical protein,"Chr08_Pall_region19:18378038, Chr08_Pall_region19:18378062, Chr08_Pall_region19:18378080, Chr08_Pall_region19:18378084, Chr08_Pall_region19:18378091, Chr08_Pall_region19:18378092"
+Chr08_Pall,21105534,21109302,ACLI19_g75500,TMT3,major facilitator super,Chr08_Pall_region22:21108956

@@ -16,18 +16,28 @@ rule compare_observed_permuted_xpnsl:
     notebook:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
 
+def get_all_ARG_stats(wildcards):
+    ck_output = checkpoints.write_nonempty_vcfs.get(**wildcards).output[0]
+    chrom, region_id = glob_wildcards(os.path.join(ck_output, "{chrom}_region{region_id}.vcf"))
+    win_sizes = ["1" for x in range(len(chrom))]
+    stats = expand(f"{ARG_DIR}/summary_stats/{{chrom}}/{{chrom}}_region{{region_id}}_win{{win_size}}_stats.txt",
+                   zip, chrom=chrom, region_id=region_id, win_size=win_sizes)
+    return stats 
+
 rule write_selected_regions:
     input:
+        arg_stats = get_all_ARG_stats,
         fst = rules.write_windowed_statistics.output.sfs_df,
         xpnsl = rules.write_windowed_statistics.output.xpnsl_df,
         urb_perc = rules.compare_observed_permuted_xpnsl.output.urb_perc,
         rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
         gff = GFF_FILE 
     output:
-        "test2.txt",
         top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt'
+        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt',
+        xpnsl_arg_out = f'{FIGURES_DIR}/selection/xpnsl_arg_outlier_overlap.txt',
+        arg_gene = f'{FIGURES_DIR}/selection/genes_with_arg_outliers.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/write_top_selected_regions.r.ipynb"
