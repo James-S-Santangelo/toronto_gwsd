@@ -454,6 +454,44 @@ rule write_windowed_statistics_permuted:
         "../scripts/r/write_windowed_statistics_permuted.R"
 
 #############
+#### nSL ####
+#############
+
+rule nsl:
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
+        genMap = rules.genMap_toPlinkFormat.output
+    output:
+        '{0}/nsl/{{chrom}}/{{chrom}}_{{habitat}}.nsl.out'.format(SWEEPS_DIR)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_nsl/{chrom}_{habitat}_nsl.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 2
+    params:
+        out = '{0}/nsl/{{chrom}}/{{chrom}}_{{habitat}}'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --nsl \
+            --vcf {input.vcf} \
+            --map {input.genMap} \
+            --threads {threads} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_nsl:
+    input:
+        lambda w: expand(rules.nsl.output, chrom=CHROMOSOMES, habitat=w.habitat)
+    output:
+        expand(f'{SWEEPS_DIR}/nsl/{{chrom}}/{{chrom}}_{{habitat}}.nsl.out.100bins.norm', chrom=CHROMOSOMES, allow_missing=True)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    shell:
+        """
+        norm --nsl --qbins 10 --files {input} 
+        """
+
+#############
 #### iHs ####
 #############
 
@@ -584,6 +622,7 @@ rule sweeps_done:
         expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural']),
         expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
+        expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
