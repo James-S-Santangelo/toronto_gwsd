@@ -571,22 +571,29 @@ rule norm_ihh_OneTwo:
 #### ANALYSES ####
 ##################
 
-rule write_windowed_statistics:
+rule write_windowed_sfs_stats:
     input:
         thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
         thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
         fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
-        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
     output:
-        sfs_df = f'{SWEEPS_DIR}/analyses/windowed_fst_thetas.txt',
-        xpnsl_df = f'{SWEEPS_DIR}/analyses/windowed_xpnsl.txt'
+        sfs_df = f'{SWEEPS_DIR}/analyses/windowed_sfs_stats.txt',
     params:
-        winsize = 50000,
-        nSites_fst = 1500,
-        nSites_xpnsl = 40 
+        winsize = 50000
     conda: '../envs/sweeps.yaml'
     script:
-        "../scripts/r/write_windowed_statistics.R"
+        "../scripts/r/write_windowed_sfs_stats.R"
+
+rule write_windowed_hapstats:
+    input:
+        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    output:
+        hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_hapstats.txt'
+    params:
+        winsize = 50000
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/write_windowed_hapstats.R"
 
 rule create_geneToGO_mapfile:
     input:
