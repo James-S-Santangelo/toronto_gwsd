@@ -578,17 +578,26 @@ rule write_windowed_sfs_stats:
         fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
     output:
         sfs_df = f'{SWEEPS_DIR}/analyses/windowed_sfs_stats.txt',
-    params:
-        winsize = 50000
     conda: '../envs/sweeps.yaml'
     script:
         "../scripts/r/write_windowed_sfs_stats.R"
 
+def get_windowed_hapstats_input_files(wildcards):
+    if wildcards.stat == "xpnsl":
+        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    elif wildcards.stat == "nsl":
+        norm = expand(rules.norm_nsl.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    elif wildcards.stat == "ihs":
+        norm = expand(rules.norm_ihs.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    elif wildcards.stat == "ihh12":
+        norm = expand(rules.norm_ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    return norm
+
 rule write_windowed_hapstats:
     input:
-        xpnsl = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+        norm = get_windowed_hapstats_input_files
     output:
-        hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_hapstats.txt'
+        hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_{{stat}}.txt'
     params:
         winsize = 50000
     conda: '../envs/sweeps.yaml'
@@ -630,6 +639,7 @@ rule sweeps_done:
         expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
+        expand(rules.write_windowed_hapstats.output, stat=["xpnsl"]),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),

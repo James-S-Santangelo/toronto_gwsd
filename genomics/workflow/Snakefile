@@ -155,7 +155,7 @@ rule all:
         # Args
         '{0}/args.done'.format(ARG_DIR),
         # Figures
-        '{0}/figures.done'.format(FIGURES_DIR),
+        #'{0}/figures.done'.format(FIGURES_DIR),
 
 include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
@@ -172,4 +172,4 @@ include: 'rules/phasing.smk'
 include: 'rules/population_structure.smk'
 include: 'rules/sweeps.smk'
 include: 'rules/args.smk'
-include: 'rules/figures.smk'
+#include: 'rules/figures.smk'
