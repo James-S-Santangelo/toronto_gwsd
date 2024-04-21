@@ -639,7 +639,7 @@ rule sweeps_done:
         expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
-        expand(rules.write_windowed_hapstats.output, stat=["xpnsl"]),
+        expand(rules.write_windowed_hapstats.output, stat=["xpnsl", "ihh12", "ihs", "nsl"]),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
