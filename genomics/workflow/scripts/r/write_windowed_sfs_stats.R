@@ -47,29 +47,4 @@ sfs_stats_windowed_df <- thetas_df_wide %>%
     mutate(delta_tp_ur = tp_scaled_Urban - tp_scaled_Rural,
            delta_td_ur = Tajima_Urban - Tajima_Rural)
 
-# Identify outliers across genome
-nSites_thresh <- as.numeric(snakemake@params[['nSites']])
-
-win_sfs_df_filt <- sfs_stats_windowed_df %>%
-    filter_at(vars(starts_with('nSites')), ~ . >= nSites_thresh)
-
-sprintf("%s of %s Fst windows remaining", nrow(win_sfs_df_filt), nrow(sfs_stats_windowed_df))
-
-fst_quant_filt <- quantile(win_sfs_df_filt %>% pull(fst), probs = c(0.99))
-tp_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_tp_ur), probs = c(0.01, 0.99))
-td_quant_filt <- quantile(win_sfs_df_filt %>% pull(delta_td_ur), probs = c(0.01, 0.99))
-
-win_sfs_df_filt <- win_sfs_df_filt %>%
-    mutate(fst_outlier = ifelse(fst >= fst_quant_filt, 1, 0),
-           tp_outlier = ifelse(delta_tp_ur <= tp_quant_filt[1] | delta_tp_ur >= tp_quant_filt[2], 1, 0),
-           td_outlier = ifelse(delta_td_ur <= td_quant_filt[1] | delta_td_ur >= td_quant_filt[2], 1, 0),
-           all_outlier = ifelse(fst_outlier == 1 & tp_outlier == 1 & td_outlier == 1, 1, 0)) %>%
-    dplyr::select(chrom_pos, Chr, start, end, WinCenter, fst, delta_tp_ur, delta_td_ur, contains('_outlier'))
-
-# Add habitat under selection based on difference in pi and Tajima's D
-win_sfs_df_filt <- win_sfs_df_filt %>% 
-    mutate(direction = case_when(delta_tp_ur < 0 & delta_td_ur < 0 ~ 'Urban sel',
-                                 delta_tp_ur > 0 & delta_td_ur > 0 ~ 'Rural sel',
-                                 TRUE ~ 'Weird'))
-
-write_delim(win_sfs_df_filt, snakemake@output[["sfs_df"]], delim = "\t")
+write_delim(sfs_stats_windowed_df, snakemake@output[["sfs_df"]], delim = "\t")
