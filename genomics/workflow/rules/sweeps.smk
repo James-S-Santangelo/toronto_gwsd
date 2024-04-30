@@ -441,18 +441,6 @@ rule norm_xpnsl_permuted:
         norm --xpnsl --qbins 10 --files {input} 2> {log} 
         """
 
-rule write_windowed_statistics_permuted:
-    input:
-        xpnsl = rules.norm_xpnsl_permuted.output
-    output:
-        xpnsl_df = f'{SWEEPS_DIR}/permuted/windowed_stats/{{hab_comb}}_{{n}}_windowed_xpnsl_permuted.txt'
-    params:
-        winsize = 50000,
-        nSites_xpnsl = 40 
-    conda: '../envs/sweeps.yaml'
-    script:
-        "../scripts/r/write_windowed_statistics_permuted.R"
-
 #############
 #### nSL ####
 #############
@@ -604,6 +592,17 @@ rule write_windowed_hapstats:
     script:
         "../scripts/r/write_windowed_hapstats.R"
 
+rule write_windowed_xpnsl_permuted:
+    input:
+        xpnsl = rules.norm_xpnsl_permuted.output
+    output:
+        xpnsl_df = f'{SWEEPS_DIR}/analyses/permuted_xpnsl/{{hab_comb}}_{{n}}_windowed_xpnsl_permuted.txt'
+    params:
+        winsize = 50000,
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/write_windowed_xpnsl_permuted.R"
+
 rule create_geneToGO_mapfile:
     input:
         GFF_FILE
@@ -640,6 +639,8 @@ rule sweeps_done:
         expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
         expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
         expand(rules.write_windowed_hapstats.output, stat=["xpnsl", "ihh12", "ihs", "nsl"]),
+        expand(rules.write_windowed_sfs_stats.output),
+        expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)]),
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),

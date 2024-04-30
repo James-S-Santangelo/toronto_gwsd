@@ -130,3 +130,14 @@ def bcftools_splitVCF_permuted_input(wildcards):
        samples = [x for x in samples_allChroms if wildcards.chrom in x]
     return(samples)
 
+def get_windowed_hapstats_input_files(wildcards):
+    if wildcards.stat == "xpnsl":
+        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    elif wildcards.stat == "nsl":
+        norm = expand(rules.norm_nsl.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    elif wildcards.stat == "ihs":
+        norm = expand(rules.norm_ihs.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    elif wildcards.stat == "ihh12":
+        norm = expand(rules.norm_ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
+    return norm
+
