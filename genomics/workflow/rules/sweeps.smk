@@ -570,17 +570,6 @@ rule write_windowed_sfs_stats:
     script:
         "../scripts/r/write_windowed_sfs_stats.R"
 
-def get_windowed_hapstats_input_files(wildcards):
-    if wildcards.stat == "xpnsl":
-        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
-    elif wildcards.stat == "nsl":
-        norm = expand(rules.norm_nsl.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
-    elif wildcards.stat == "ihs":
-        norm = expand(rules.norm_ihs.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
-    elif wildcards.stat == "ihh12":
-        norm = expand(rules.norm_ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=['Urban', 'Rural'])
-    return norm
-
 rule write_windowed_hapstats:
     input:
         norm = get_windowed_hapstats_input_files
@@ -627,6 +616,39 @@ rule create_geneToGO_mapfile:
                                 go_string = ', '.join(go)
                                 fout.write(f'{gene}\t{go_string}\n')
 
+rule compare_observed_permuted_xpnsl:
+    input:
+        obs = expand(rules.write_windowed_hapstats.output, stat="xpnsl"),
+        perm = expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
+    output:
+        cor_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
+        urb_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/urbanSel_mean.pdf",
+        urb_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/urbanSel_prop.pdf",
+        rur_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_mean.pdf",
+        rur_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_prop.pdf",
+        urb_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/urban_percentiles.txt",
+        rur_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/rural_percentiles.txt",
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
+
+rule outlier_analysis:
+    input:
+        fst = rules.write_windowed_sfs_stats.output.sfs_df,
+        xpnsl = expand(rules.write_windowed_hapstats.output, stat="xpnsl"),
+        nsl = expand(rules.write_windowed_hapstats.output, stat="nsl"),
+        ihh12 = expand(rules.write_windowed_hapstats.output, stat="ihh12"),
+        urb_perc = rules.compare_observed_permuted_xpnsl.output.urb_perc,
+        rur_perc = rules.compare_observed_permuted_xpnsl.output.rur_perc,
+        gff = GFF_FILE 
+    output:
+        "test.txt",
+        top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
+        top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
+        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/outlier_analysis.r.ipynb"
 
 ##############
 #### POST ####
@@ -644,7 +666,8 @@ rule sweeps_done:
         expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
         expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
-        expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS)
+        expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS),
+        rules.outlier_analysis.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
