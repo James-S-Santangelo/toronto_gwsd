@@ -96,11 +96,15 @@ if(snakemake@wildcards[["stat"]] == "xpnsl"){
         } else {
             if (stat == "ihs") {
                 cols <- c("id", "pos", "1_freq", "ihh1", "ihh0", "iHs", "normihs", "crit")
+                df <- suppressMessages(read_delim(path, delim = "\t", col_names = cols)) %>%
+                    mutate(Chr = chrom_name, habitat = habitat) %>%
+                    mutate(abs_normihs = abs(normihs))
             } else if (stat == "nsl") {
                 cols <- c("id", "pos", "1_freq", "sl1", "sl0", "nSL", "normnsl", "crit")
+                df <- suppressMessages(read_delim(path, delim = "\t", col_names = cols)) %>%
+                    mutate(Chr = chrom_name, habitat = habitat) %>%
+                    mutate(abs_normnsl = abs(normnsl))
             }
-            df <- suppressMessages(read_delim(path, delim = "\t", col_names = cols)) %>%
-                mutate(Chr = chrom_name, habitat = habitat)
         }
         return(df)
 
@@ -114,9 +118,9 @@ if(snakemake@wildcards[["stat"]] == "xpnsl"){
     if (snakemake@wildcards[["stat"]] == "ihh12") {
         var <- "normihh12"
     } else if (snakemake@wildcards[["stat"]] == "ihs") {
-        var <- "normihs"
+        var <- "abs_normihs"
     } else {
-        var <- "normnsl"
+        var <- "abs_normnsl"
     }
     # Calculate windowed haplotype stats
     stats_windowed <- stats_norm_df %>%

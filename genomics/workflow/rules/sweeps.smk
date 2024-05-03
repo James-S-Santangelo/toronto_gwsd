@@ -645,9 +645,12 @@ rule outlier_analysis:
         rur_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_mean.pdf",
         rur_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_prop.pdf",
         xpnsl_df = f"{SWEEPS_DIR}/analyses/outliers/xpnsl_outliers.txt",
+        rur_nsl_manhat= f"{FIGURES_DIR}/selection/manhattan/rural_nSL_manhat.pdf",
+        urb_nsl_manhat= f"{FIGURES_DIR}/selection/manhattan/urban_nSL_manhat.pdf",
+
         top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt'
+        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt',
         fst_manhat= f"{FIGURES_DIR}/selection/manhattan/fst_allChroms.pdf",
     conda: '../envs/sweeps.yaml'
     notebook:
