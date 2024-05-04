@@ -14,9 +14,9 @@ rule bcftools_filter_vcfs:
     shell:
         """
         if [ {wildcards.site_type} = 'invariant' ]; then
-            bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} -Oz > {output.vcf} 2> {log} &&
+            bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} -Oz -o {output.vcf} 2> {log} &&
             sleep 5
-            tabix {output.vcf} 
+            tabix {output.vcf} 2>> {log}
         elif [ {wildcards.site_type} = 'snps' ]; then
             ( bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} |
                 bcftools filter -i 'QUAL >= 30' |
@@ -42,9 +42,9 @@ rule remove_duplicate_sites:
         time = '01:00:00'
     shell:
         """
-        vcfuniq {input.vcf} | bcftools view -Oz > {output.vcf} 2> {log}
+        vcfuniq {input.vcf} | bcftools view -Oz -o {output.vcf} 2> {log}
         sleep 5
-        tabix {output.vcf}
+        tabix {output.vcf} 2>> {log}
         """
 
 rule concat_variant_invariant_sites:
@@ -60,5 +60,5 @@ rule concat_variant_invariant_sites:
         """
         bcftools concat -a {input.vcfs} | bcftools sort -Oz -o {output.vcf} 2> {log}
         sleep 5
-        tabix {output.vcf}
+        tabix {output.vcf} 2>> {log}
         """

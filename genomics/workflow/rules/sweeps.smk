@@ -309,6 +309,65 @@ rule windowed_fst:
         realSFS fst stats2 {input} -win {params.win} -step {params.step} > {output} 2> {log}
         """
 
+#############################
+#### PIXY FST AND THETAS ####
+#############################
+
+rule create_pixy_popfile:
+    input:
+       config['samples']
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/pixy/popfile.txt"
+    run:
+        with open(input[0], "r") as fin:
+            with open(output[0], "w") as fout:
+                lines = fin.readlines()
+                for l in lines:
+                    sl = l.split('\t')
+                    sample = sl[0]
+                    pop = sl[1]
+                    if sample in FINAL_SAMPLES:
+                        fout.write(f"{sample}\t{pop}\n")
+
+rule pixy:
+    input:
+        vcf = rules.concat_variant_invariant_sites.output.vcf,
+        tbi = rules.concat_variant_invariant_sites.output.tbi,
+        popu = rules.create_pixy_popfile.output
+    output:
+        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_fst.txt",
+        pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_pi.txt",
+        dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_dxy.txt"
+    log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy.log"
+    conda: "../envs/pixy.yaml"
+    params:
+        tmp_vcf = f"{{chrom}}{{miss}}{{win_size}}_tmp.vcf.gz",
+        tmp_sites = f"{{chrom}}{{miss}}{{win_size}}.sites",
+        out = f"{PIXY_DIR}/{{chrom}}",
+        pref = f"{{chrom}}_miss{{miss}}_win{{win_size}}_pixy"
+    shell:
+        """
+        if [ {wildcards.win_size} = '1' ]; then
+            pixy --stats fst pi dxy \
+                --population {input.popu} \
+                --vcf {input.vcf} \
+                --window_size {wildcards.win_size} \
+                --output_folder {params.out} \
+                --output_prefix {params.pref} \
+                --fst_type hudson &> {log}
+            rm {params.tmp_vcf}*
+            rm {params.tmp_sites}
+        else
+            pixy --stats fst pi dxy \
+                --population {input.popu} \
+                --vcf {input.vcf} \
+                --window_size {wildcards.win_size} \
+                --output_folder {params.out} \
+                --output_prefix {params.pref} \
+                --fst_type hudson &> {log}
+        fi
+        """
+
 ################
 #### XP-NSL ####
 ################
@@ -639,6 +698,8 @@ rule outlier_analysis:
         norm_ihh12 = expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
         norm_ihs = expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
         norm_nsl = expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
+        gt_win_fst = expand(rules.pixy.output.fst, win_size="50000", miss="0", chrom=CHROMOSOMES),
+        gt_win_pi = expand(rules.pixy.output.pi, win_size="50000", miss="0", chrom=CHROMOSOMES),
         gff = GFF_FILE 
     output:
         "test.txt",
