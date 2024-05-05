@@ -727,6 +727,8 @@ rule outlier_analysis:
         rur_ihh12_manhat_persite = f"{FIGURES_DIR}/selection/manhattan/rural_iHH12_persite_manhat.pdf",
         urb_ihh12_manhat_persite = f"{FIGURES_DIR}/selection/manhattan/urban_iHH12_persite_manhat.pdf",
         ihh12_df = f"{SWEEPS_DIR}/analyses/outliers/ihh12_outliers.txt",
+        gt_fst_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_gt_fst_windowed_manhat.pdf",
+        gt_fst_df = f"{SWEEPS_DIR}/analyses/outliers/gt_fst_outliers.txt",
         top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
         all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt',
