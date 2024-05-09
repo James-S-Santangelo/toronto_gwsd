@@ -702,7 +702,6 @@ rule outlier_analysis:
         gt_win_pi = expand(rules.pixy.output.pi, win_size="50000", miss="0", chrom=CHROMOSOMES),
         gff = GFF_FILE 
     output:
-        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_persite = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_persite_manhat.pdf",
@@ -742,8 +741,6 @@ rule outlier_analysis:
         gt_fst_df = f"{FIGURES_DIR}/analyses/outliers/gt_fst_outliers.txt",
         top_ten_genes = f'{FIGURES_DIR}/selection/top10_selected_regions_genes.txt', 
         top_ten_tbl = f'{FIGURES_DIR}/selection/top10_selected_regions_urban_rural_table.txt',
-        all_xpnsl_sel = f'{FIGURES_DIR}/selection/all_selected_regions_genes.txt',
-        fst_manhat = f"{FIGURES_DIR}/selection/manhattan/fst_allChroms.pdf",
         Chr04_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr04_Occ_urb_xpnsl.pdf",
         Chr05_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr05_Occ_urb_xpnsl.pdf",
         Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr08_Pall_rur_xpnsl.pdf",
@@ -760,17 +757,6 @@ rule outlier_analysis:
 
 rule sweeps_done:
     input:
-        expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural']),
-        expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
-        expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
-        expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
-        expand(rules.write_windowed_hapstats.output, stat=["xpnsl", "ihh12", "ihs", "nsl"]),
-        expand(rules.write_windowed_sfs_stats.output),
-        expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)]),
-        expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
-        expand(rules.angsd_fst_allSites_readable.output, chrom=CHROMOSOMES, hab_comb=HABITAT_COMBOS),
-        expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat=HABITATS),
-        expand(rules.angsd_thetas_allSites_readable.output, chrom=CHROMOSOMES, habitat=HABITATS),
         rules.outlier_analysis.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
