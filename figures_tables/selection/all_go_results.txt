@@ -1,45 +1,46 @@
 GO.ID	Term	Annotated	Significant	Expected	Pval	Selection	Ontology
-GO:0006515	protein quality control for misfolded or...	84	5	0.69	0.00063	Urban	BP
-GO:0015693	magnesium ion transport	22	3	0.18	0.00074	Urban	BP
-GO:0007018	microtubule-based movement	140	6	1.14	0.00105	Urban	BP
-GO:0051083	'de novo' cotranslational protein foldin...	7	2	0.06	0.00135	Urban	BP
-GO:0006450	regulation of translational fidelity	9	2	0.07	0.00230	Urban	BP
-GO:0045037	protein import into chloroplast stroma	35	3	0.29	0.00290	Urban	BP
-GO:0010089	xylem development	11	2	0.09	0.00347	Urban	BP
-GO:0006164	purine nucleotide biosynthetic process	234	3	1.91	0.00569	Urban	BP
-GO:0071586	CAAX-box protein processing	16	2	0.13	0.00738	Urban	BP
-GO:0030041	actin filament polymerization	75	3	0.61	0.00811	Urban	BP
-GO:0006511	ubiquitin-dependent protein catabolic pr...	871	10	7.11	0.00938	Urban	BP
-GO:0030544	Hsp70 protein binding	25	4	0.2	4.8e-05	Urban	MF
-GO:0015095	magnesium ion transmembrane transporter ...	22	3	0.18	0.00074	Urban	MF
-GO:0004412	homoserine dehydrogenase activity	9	2	0.07	0.00231	Urban	MF
-GO:0031625	ubiquitin protein ligase binding	123	5	1	0.00348	Urban	MF
-GO:0003777	microtubule motor activity	140	6	1.14	0.00464	Urban	MF
-GO:0004072	aspartate kinase activity	13	2	0.11	0.00489	Urban	MF
-GO:0061659	ubiquitin-like protein ligase activity	443	4	3.62	0.00494	Urban	MF
-GO:0016787	hydrolase activity	7781	79	63.57	0.00939	Urban	MF
-GO:0007021	tubulin complex assembly	7	3	0.05	1.2e-05	Rural	BP
-GO:0007023	post-chaperonin tubulin folding pathway	10	3	0.07	3.9e-05	Rural	BP
-GO:0009793	embryo development ending in seed dorman...	12	2	0.08	0.0031	Rural	BP
-GO:0046168	glycerol-3-phosphate catabolic process	12	2	0.08	0.0031	Rural	BP
-GO:0007018	microtubule-based movement	140	5	0.98	0.0031	Rural	BP
-GO:0032784	regulation of DNA-templated transcriptio...	91	3	0.64	0.0036	Rural	BP
-GO:0006432	phenylalanyl-tRNA aminoacylation	14	2	0.1	0.0042	Rural	BP
-GO:0000422	autophagy of mitochondrion	48	3	0.34	0.0046	Rural	BP
-GO:0006270	DNA replication initiation	57	3	0.4	0.0075	Rural	BP
-GO:0072488	ammonium transmembrane transport	19	2	0.13	0.0077	Rural	BP
-GO:0006152	purine nucleoside catabolic process	21	2	0.15	0.0094	Rural	BP
-GO:0045036	protein targeting to chloroplast	63	3	0.44	0.0099	Rural	BP
-GO:0048487	beta-tubulin binding	5	3	0.03	2.8e-06	Rural	MF
-GO:0003688	DNA replication origin binding	22	3	0.15	0.0004	Rural	MF
-GO:0000049	tRNA binding	70	4	0.46	0.0012	Rural	MF
-GO:0015018	galactosylgalactosylxylosylprotein 3-bet...	10	2	0.07	0.0019	Rural	MF
-GO:0003777	microtubule motor activity	140	5	0.93	0.0025	Rural	MF
-GO:0047952	glycerol-3-phosphate dehydrogenase [NAD(...	12	2	0.08	0.0028	Rural	MF
-GO:0008194	UDP-glycosyltransferase activity	525	12	3.47	0.0031	Rural	MF
-GO:0016297	acyl-[acyl-carrier-protein] hydrolase ac...	13	2	0.09	0.0032	Rural	MF
-GO:0033897	ribonuclease T2 activity	47	3	0.31	0.0037	Rural	MF
-GO:0042285	xylosyltransferase activity	14	2	0.09	0.0038	Rural	MF
-GO:0004826	phenylalanine-tRNA ligase activity	14	2	0.09	0.0038	Rural	MF
-GO:0008519	ammonium transmembrane transporter activ...	19	2	0.13	0.0069	Rural	MF
-GO:0015095	magnesium ion transmembrane transporter ...	22	2	0.15	0.0092	Rural	MF
+GO:0006013	mannose metabolic process	15	3	0.14	0.00033	Urban	BP
+GO:0015693	magnesium ion transport	22	3	0.2	0.00105	Urban	BP
+GO:0016226	iron-sulfur cluster assembly	65	4	0.6	0.00309	Urban	BP
+GO:0006511	ubiquitin-dependent protein catabolic pr...	871	12	8.03	0.00613	Urban	BP
+GO:0006164	purine nucleotide biosynthetic process	234	4	2.16	0.00717	Urban	BP
+GO:0006515	protein quality control for misfolded or...	84	4	0.77	0.00768	Urban	BP
+GO:0071586	CAAX-box protein processing	16	2	0.15	0.00934	Urban	BP
+GO:0015095	magnesium ion transmembrane transporter ...	22	3	0.2	0.00095	Urban	MF
+GO:0008176	tRNA (guanine-N7-)-methyltransferase act...	8	2	0.07	0.00213	Urban	MF
+GO:0016868	intramolecular transferase activity, pho...	31	3	0.28	0.00260	Urban	MF
+GO:0004412	homoserine dehydrogenase activity	9	2	0.08	0.00272	Urban	MF
+GO:0016887	ATP hydrolysis activity	1201	21	10.67	0.00275	Urban	MF
+GO:1902936	phosphatidylinositol bisphosphate bindin...	128	3	1.14	0.00490	Urban	MF
+GO:0031625	ubiquitin protein ligase binding	123	5	1.09	0.00495	Urban	MF
+GO:0003724	RNA helicase activity	125	5	1.11	0.00530	Urban	MF
+GO:0061659	ubiquitin-like protein ligase activity	443	6	3.94	0.00575	Urban	MF
+GO:0004072	aspartate kinase activity	13	2	0.12	0.00576	Urban	MF
+GO:0004559	alpha-mannosidase activity	41	3	0.36	0.00578	Urban	MF
+GO:0004252	serine-type endopeptidase activity	330	8	2.93	0.00983	Urban	MF
+GO:2000031	regulation of salicylic acid mediated si...	28	5	0.22	2.7e-06	Rural	BP
+GO:0035266	meristem growth	6	3	0.05	9.9e-06	Rural	BP
+GO:0007021	tubulin complex assembly	7	3	0.06	1.7e-05	Rural	BP
+GO:0007023	post-chaperonin tubulin folding pathway	10	3	0.08	5.8e-05	Rural	BP
+GO:0012501	programmed cell death	65	5	0.52	0.00018	Rural	BP
+GO:0045087	innate immune response	79	5	0.63	0.00044	Rural	BP
+GO:0072488	ammonium transmembrane transport	19	3	0.15	0.00045	Rural	BP
+GO:0045039	protein insertion into mitochondrial inn...	24	3	0.19	0.00090	Rural	BP
+GO:0006401	RNA catabolic process	340	6	2.72	0.00328	Rural	BP
+GO:0009793	embryo development ending in seed dorman...	12	2	0.1	0.00399	Rural	BP
+GO:0046168	glycerol-3-phosphate catabolic process	12	2	0.1	0.00399	Rural	BP
+GO:0000422	autophagy of mitochondrion	48	3	0.38	0.00671	Rural	BP
+GO:0004867	serine-type endopeptidase inhibitor acti...	82	10	0.66	1.3e-09	Rural	MF
+GO:0048487	beta-tubulin binding	5	3	0.04	5.1e-06	Rural	MF
+GO:0016616	oxidoreductase activity, acting on the C...	494	15	3.97	0.00016	Rural	MF
+GO:0008519	ammonium transmembrane transporter activ...	19	3	0.15	0.00045	Rural	MF
+GO:0003688	DNA replication origin binding	22	3	0.18	0.00071	Rural	MF
+GO:0015018	galactosylgalactosylxylosylprotein 3-bet...	10	2	0.08	0.00278	Rural	MF
+GO:0004332	fructose-bisphosphate aldolase activity	35	3	0.28	0.00279	Rural	MF
+GO:0008233	peptidase activity	1693	20	13.62	0.00293	Rural	MF
+GO:0047952	glycerol-3-phosphate dehydrogenase [NAD(...	12	2	0.1	0.00404	Rural	MF
+GO:0042285	xylosyltransferase activity	14	2	0.11	0.00551	Rural	MF
+GO:0003910	DNA ligase (ATP) activity	15	2	0.12	0.00632	Rural	MF
+GO:0033897	ribonuclease T2 activity	47	3	0.38	0.00644	Rural	MF
+GO:0030151	molybdenum ion binding	16	2	0.13	0.00719	Rural	MF
+GO:0001228	DNA-binding transcription activator acti...	55	3	0.44	0.00995	Rural	MF

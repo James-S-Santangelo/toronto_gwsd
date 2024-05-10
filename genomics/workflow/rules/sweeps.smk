@@ -712,6 +712,7 @@ rule outlier_analysis:
         rur_mean_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_mean.pdf",
         rur_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_prop.pdf",
         xpnsl_df = f"{FIGURES_DIR}/tables/xpnsl_outliers.txt",
+        xpnsl_out_genes = f"{FIGURES_DIR}/tables/xpnsl_outlier_genes.txt",
         nsl_nSites_hist = f'{FIGURES_DIR}/selection/nsl_nSites_histogram.pdf',
         rur_nsl_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_nSL_windowed_manhat.pdf",
         urb_nsl_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_nSL_windowed_manhat.pdf",
@@ -751,13 +752,25 @@ rule outlier_analysis:
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
 
+rule go_enrichment_analysis:
+    input:
+        all_genes = rules.create_geneToGO_mapfile.output,
+        all_sel = rules.outlier_analysis.output.xpnsl_out_genes,
+        top_ten_genes = rules.outlier_analysis.output.top_ten_genes
+    output:
+        all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
+    conda: '../envs/sweeps.yaml'
+    notebook:
+        "../notebooks/go_enrichment_analysis.r.ipynb"
+
+
 ##############
 #### POST ####
 ##############
 
 rule sweeps_done:
     input:
-        rules.outlier_analysis.output
+        rules.go_enrichment_analysis.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
