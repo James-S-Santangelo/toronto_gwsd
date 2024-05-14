@@ -614,6 +614,62 @@ rule norm_ihh_OneTwo:
         norm --ihh12 --qbins 10 --files {input} 
         """
         
+#####################
+#### LASSI-PLUS ####
+####################
+
+rule generate_salti_spectra:
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
+        popf = rules.create_pixy_popfile.output
+    output:
+        spec = '{0}/lassip/{{chrom}}/{{chrom}}_salti.{{habitat}}.lassip.hap.spectra.gz'.format(SWEEPS_DIR)
+    container: 'library://james-s-santangelo/lassip/lassip:1.1.1'
+    log: LOG_DIR + '/lassip/{chrom}_{habitat}_lassip.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    params:
+        out = '{0}/lassip/{{chrom}}/{{chrom}}_salti'.format(SWEEPS_DIR) 
+    shell:
+        """
+        grep '{wildcards.habitat}' {input.popf} > {wildcards.chrom}{wildcards.habitat}_popfile.tmp
+        lassip --vcf {input.vcf} \
+            --hapstats \
+            --calc-spec \
+            --winsize 201 \
+            --winstep 50 \
+            --k 20 \
+            --out {params.out} \
+            --salti \
+            --pop {wildcards.chrom}{wildcards.habitat}_popfile.tmp 2> {log}
+        rm {wildcards.chrom}{wildcards.habitat}_popfile.tmp 
+        """
+
+rule analyze_salti_spectra:
+    input:
+        spectra = lambda w: expand(rules.generate_salti_spectra.output.spec, chrom=CHROMOSOMES, habitat=w.habitat),
+        maps = expand(rules.genMap_toPlinkFormat.output, chrom=CHROMOSOMES)
+    output:
+        f'{SWEEPS_DIR}/lassip/{{habitat}}_salti.lassip.hap.out.gz'
+    log: LOG_DIR + '/lassip/{habitat}_analyze.log'
+    container: 'library://james-s-santangelo/lassip/lassip:1.1.1'
+    threads: 16
+    params:
+        out = '{0}/lassip/{{habitat}}_salti'.format(SWEEPS_DIR) 
+    shell:
+        """
+        cat {input.maps} > {wildcards.habitat}_allChroms.map
+        lassip --spectra {input.spectra} \
+            --threads {threads} \
+            --out {params.out} \
+            --salti \
+            --k 20 \
+            --map {wildcards.habitat}_allChroms.map \
+            --dist-type cm &> {log}
+        rm {wildcards.habitat}_allChroms.map
+        """
+
 ##################
 #### ANALYSES ####
 ##################
@@ -700,6 +756,8 @@ rule outlier_analysis:
         norm_nsl = expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
         gt_win_fst = expand(rules.pixy.output.fst, win_size="50000", miss="0", chrom=CHROMOSOMES),
         gt_win_pi = expand(rules.pixy.output.pi, win_size="50000", miss="0", chrom=CHROMOSOMES),
+        lassip = expand(rules.analyze_salti_spectra.output, habitat=["Urban", "Rural"]),
+        spec = expand(rules.generate_salti_spectra.output, chrom=CHROMOSOMES, habitat=["Urban", "Rural"]),
         gff = GFF_FILE 
     output:
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
@@ -748,6 +806,13 @@ rule outlier_analysis:
         Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr08_Pall_rur_xpnsl.pdf",
         Chr07_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr07_Occ_rur_xpnsl.pdf",
         Chr05_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr05_Occ_rur_xpnsl.pdf",
+        salti_df = f"{FIGURES_DIR}/tables/salti_outliers.txt",
+        urban_salti_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_salti_manhat.pdf",
+        rural_salti_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_salti_manhat.pdf",
+        salti_m_hist = f"{FIGURES_DIR}/selection/salti_m_histogram.pdf",
+        Chr04_Occ_hfs = f"{FIGURES_DIR}/selection/Chr04_Occ_hfs.pdf",
+        Chr05_Occ_hfs = f"{FIGURES_DIR}/selection/Chr05_Occ_hfs.pdf",
+        Chr08_Pall_hfs = f"{FIGURES_DIR}/selection/Chr08_Pall_hfs.pdf"
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
