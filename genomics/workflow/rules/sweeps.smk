@@ -685,16 +685,27 @@ rule write_windowed_sfs_stats:
     script:
         "../scripts/r/write_windowed_sfs_stats.R"
 
-rule write_windowed_hapstats:
+rule write_windowed_singPop_hapstats:
     input:
-        norm = get_windowed_hapstats_input_files
+        norm = get_windowed_singPop_hapstats_input_files
     output:
         hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_{{stat}}.txt'
     params:
         winsize = 50000
     conda: '../envs/sweeps.yaml'
     script:
-        "../scripts/r/write_windowed_hapstats.R"
+        "../scripts/r/write_windowed_singPop_hapstats.R"
+
+rule write_windowed_xpnsl:
+    input:
+        norm = get_windowed_xpnsl_input_files
+    output:
+        hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_{{hab_comb}}_xpnsl.txt'
+    params:
+        winsize = 50000
+    conda: '../envs/sweeps.yaml'
+    script:
+        "../scripts/r/write_windowed_xpnsl.R"
 
 rule write_windowed_xpnsl_permuted:
     input:
@@ -733,7 +744,7 @@ rule create_geneToGO_mapfile:
 
 rule compare_observed_permuted_xpnsl:
     input:
-        obs = expand(rules.write_windowed_hapstats.output, stat="xpnsl"),
+        obs = expand(rules.write_windowed_singPop_hapstats.output, stat="xpnsl"),
         perm = expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
     output:
         urb_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/urban_percentiles.txt",
@@ -745,12 +756,12 @@ rule compare_observed_permuted_xpnsl:
 rule outlier_analysis:
     input:
         win_sfs_fst = rules.write_windowed_sfs_stats.output.sfs_df,
-        win_xpnsl = expand(rules.write_windowed_hapstats.output, stat="xpnsl"),
+        win_xpnsl = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Rural', 'Suburban_Rural', 'Urban_Suburban']),
         win_xpnsl_perm = expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)]),
-        win_nsl = expand(rules.write_windowed_hapstats.output, stat="nsl"),
-        win_ihh12 = expand(rules.write_windowed_hapstats.output, stat="ihh12"),
-        win_ihs = expand(rules.write_windowed_hapstats.output, stat="ihs"),
-        norm_xpnsl = expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural']),
+        win_nsl = expand(rules.write_windowed_singPop_hapstats.output, stat="nsl"),
+        win_ihh12 = expand(rules.write_windowed_singPop_hapstats.output, stat="ihh12"),
+        win_ihs = expand(rules.write_windowed_singPop_hapstats.output, stat="ihs"),
+        norm_xpnsl = expand(rules.norm_xpnsl.output, hab_comb=['Urban_Rural', 'Suburban_Rural', 'Urban_Suburban']),
         norm_ihh12 = expand(rules.norm_ihh_OneTwo.output, habitat=['Urban', 'Rural']),
         norm_ihs = expand(rules.norm_ihs.output, habitat=['Urban', 'Rural']),
         norm_nsl = expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
@@ -760,6 +771,7 @@ rule outlier_analysis:
         spec = expand(rules.generate_salti_spectra.output, chrom=CHROMOSOMES, habitat=["Urban", "Rural"]),
         gff = GFF_FILE 
     output:
+        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_persite = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_persite_manhat.pdf",

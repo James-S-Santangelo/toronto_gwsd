@@ -114,11 +114,15 @@ def get_dadi_sfs_input_files(wildcards):
     return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 def selscan_xpnsl_input(wildcards):
-    if 'Urban' in wildcards.hab_comb:
+    if wildcards.hab_comb == 'Urban_Rural':
         vcf = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Urban')
-    elif 'Suburban' in wildcards.hab_comb:
+        vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Rural')
+    elif wildcards.hab_comb == 'Urban_Suburban':
+        vcf = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Urban')
+        vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Suburban')
+    elif wildcards.hab_comb == 'Suburban_Rural':
         vcf = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Suburban')
-    vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Rural')
+        vcf_ref = expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=wildcards.chrom, habitat='Rural')
     return { 'vcf' : vcf, 'vcf_ref' : vcf_ref } 
 
 def bcftools_splitVCF_permuted_input(wildcards):
@@ -130,7 +134,16 @@ def bcftools_splitVCF_permuted_input(wildcards):
        samples = [x for x in samples_allChroms if wildcards.chrom in x]
     return(samples)
 
-def get_windowed_hapstats_input_files(wildcards):
+def get_windowed_xpnsl_input_files(wildcards):
+    if wildcards.hab_comb == 'Urban_Rural':
+        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
+    elif wildcards.hab_comb == 'Urban_Suburban':
+        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Suburban')
+    elif wildcards.hab_comb == 'Suburban_Rural':
+        norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Suburban_Rural')
+    return norm
+
+def get_windowed_singPop_hapstats_input_files(wildcards):
     if wildcards.stat == "xpnsl":
         norm = expand(rules.norm_xpnsl.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural')
     elif wildcards.stat == "nsl":
