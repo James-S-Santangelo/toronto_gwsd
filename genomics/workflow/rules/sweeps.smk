@@ -771,6 +771,8 @@ rule outlier_analysis:
         gt_win_pi = expand(rules.pixy.output.pi, win_size="50000", miss="0", chrom=CHROMOSOMES),
         lassip = expand(rules.analyze_salti_spectra.output, habitat=["Urban", "Rural"]),
         spec = expand(rules.generate_salti_spectra.output, chrom=CHROMOSOMES, habitat=["Urban", "Rural"]),
+        vcfs = expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES),
+        popmap = rules.create_pixy_popfile.output,
         gff = GFF_FILE 
     output:
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
@@ -784,36 +786,42 @@ rule outlier_analysis:
         rur_prop_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/ruralSel_prop.pdf",
         xpnsl_df = f"{FIGURES_DIR}/tables/xpnsl_outliers.txt",
         xpnsl_out_genes = f"{FIGURES_DIR}/tables/xpnsl_outlier_genes.txt",
-        nsl_nSites_hist = f'{FIGURES_DIR}/selection/nsl_nSites_histogram.pdf',
         rur_nsl_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_nSL_windowed_manhat.pdf",
         urb_nsl_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_nSL_windowed_manhat.pdf",
         nsl_df = f"{FIGURES_DIR}/tables/nsl_outliers.txt",
-        ihs_nSites_hist = f'{FIGURES_DIR}/selection/ihs_nSites_histogram.pdf',
         rur_ihs_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_iHS_windowed_manhat.pdf",
         urb_ihs_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_iHS_windowed_manhat.pdf",
         ihs_df = f"{FIGURES_DIR}/tables/ihs_outliers.txt",
-        ihh12_nSites_hist = f'{FIGURES_DIR}/selection/ihh12_nSites_histogram.pdf',
         rur_ihh12_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_iHH12_windowed_manhat.pdf",
         urb_ihh12_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_iHH12_windowed_manhat.pdf",
         ihh12_df = f"{FIGURES_DIR}/tables/ihh12_outliers.txt",
-        gt_fst_nSites_hist = f'{FIGURES_DIR}/selection/gt_fst_nSites_histogram.pdf',
         gt_fst_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_gt_fst_windowed_manhat.pdf",
         gt_fst_df = f"{FIGURES_DIR}/tables/gt_fst_outliers.txt",
-        top_ten_genes = f'{FIGURES_DIR}/tables/top10_selected_regions_genes.txt', 
-        top_ten_tbl = f'{FIGURES_DIR}/tables/top10_selected_regions_urban_rural_table.txt',
-        Chr04_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr04_Occ_urb_xpnsl.pdf",
-        Chr05_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr05_Occ_urb_xpnsl.pdf",
-        Chr04_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr04_Occ_rur_xpnsl.pdf",
-        Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr08_Pall_rur_xpnsl.pdf",
-        Chr07_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr07_Occ_rur_xpnsl.pdf",
-        Chr05_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/manhattan/Chr05_Occ_rur_xpnsl.pdf",
+        top_hits_genes = f'{FIGURES_DIR}/tables/topHits_selected_regions_genes.txt', 
+        top_hits_tbl = f'{FIGURES_DIR}/tables/topHits_selected_regions_urban_rural_table.txt',
         salti_df = f"{FIGURES_DIR}/tables/salti_outliers.txt",
         urban_salti_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_salti_manhat.pdf",
         rural_salti_manhat = f"{FIGURES_DIR}/selection/manhattan/rural_salti_manhat.pdf",
         salti_m_hist = f"{FIGURES_DIR}/selection/salti_m_histogram.pdf",
-        Chr04_Occ_hfs = f"{FIGURES_DIR}/selection/Chr04_Occ_hfs.pdf",
-        Chr05_Occ_hfs = f"{FIGURES_DIR}/selection/Chr05_Occ_hfs.pdf",
-        Chr08_Pall_hfs = f"{FIGURES_DIR}/selection/Chr08_Pall_hfs.pdf"
+        salti_sr_hist = f"{FIGURES_DIR}/selection/salti_sr_histogram.pdf",
+        logA_perm_plot = f"{FIGURES_DIR}/selection/logA_perm_plot.pdf",
+        logA_ur_density = f"{FIGURES_DIR}/selection/logA_ur_density.pdf",
+        Chr04_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_xpnsl.pdf",
+        Chr04_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_haps.pdf",
+        Chr04_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_af.pdf",
+        Chr04_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_pca.pdf",
+        Chr05_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_xpnsl.pdf",
+        Chr05_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_haps.pdf",
+        Chr05_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_af.pdf",
+        Chr05_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_pca.pdf",
+        Chr04_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_xpnsl.pdf",
+        Chr04_Occ_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_haps.pdf",
+        Chr04_Occ_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_af.pdf",
+        Chr04_Occ_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_pca.pdf",
+        Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_xpnsl.pdf",
+        Chr08_Pall_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.pdf",
+        Chr08_Pall_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_af.pdf",
+        Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf"
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
@@ -822,8 +830,9 @@ rule go_enrichment_analysis:
     input:
         all_genes = rules.create_geneToGO_mapfile.output,
         all_sel = rules.outlier_analysis.output.xpnsl_out_genes,
-        top_ten_genes = rules.outlier_analysis.output.top_ten_genes
+        top_ten_genes = rules.outlier_analysis.output.top_hits_genes
     output:
+        "test.txt",
         all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
     conda: '../envs/sweeps.yaml'
     notebook:

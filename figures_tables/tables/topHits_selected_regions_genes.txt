@@ -1,0 +1,225 @@
+Chr	start	end	direction	gene_id	gene_symbol	product
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75068	NA	gag-pol polyprotein [Trifolium pratense]
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75069	ITPK1	Inositol-tetrakisphosphate 1-kinase
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75071	SUVH2	Histone-lysine N-methyltransferase member suvh2
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75072	CML18	Probable calcium-binding protein cml18
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75073	NA	hypothetical protein
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75075	NA	binding partner of ACD11 1-like [Trifolium pratense]
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75076	NA	hypothetical protein
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75077	SYP22	Syntaxin-22
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75078	NA	phosphatidylinositol-glycan biosynthesis class X protein-like [Trifolium pratense]
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75070	ABCB2	(ABC) transporter
+Chr08_Pall	16600000	16700000	Rural	ACLI19_g75074	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62371	NA	DNA helicase
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62372	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62374	MCM8	DNA replication licensing factor mcm8
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62376	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62377	RPS23B	ribosomal 40S subunit protein S23B%2C variant 2, variant 2
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62378	NA	interactor of constitutive active ROPs 2%2C chloroplastic isoform X2 [Trifolium pratense]
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62379	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62380	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62382	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62383	NA	beta-1%2C4-xylosyltransferase IRX9 [Trifolium pratense]
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62385	RH57	DEAD-box ATP-dependent RNA helicase 57
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62386	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62387	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62389	NA	ATP-dependent zinc metalloprotease FTSH 4%2C mitochondrial-like [Pisum sativum]
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62390	NA	glucan endo-13-beta-glucosidase 8-like [Trifolium medium]
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62373	NFYB8	Nuclear transcription factor Y subunit B-8
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62375	RPL32A	60S ribosomal protein L32-1
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62381	NA	hypothetical protein
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62384	NA	pentatricopeptide repeat-containing protein At3g53360%2C mitochondrial [Trifolium pratense]
+Chr07_Occ	49750000	49900000	Rural	ACLI19_g62388	NA	hypothetical protein
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44931	ORC4	origin recognition complex subunit 4
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44932	NA	hypothetical protein
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44933	NA	tubulin-folding cofactor A [Trifolium pratense]
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44934	NA	hypothetical protein
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44936	NA	hypothetical protein
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44937	NA	hypothetical protein
+Chr05_Occ	56600000	56650000	Rural	ACLI19_g44935	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30729	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30731	NA	alpha-farnesene synthase
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30732	ACA11	Putative calcium-transporting ATPase 11%2C plasma membrane-type, plasma membrane-type
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30733	NA	zinc finger CCCH domain-containing protein 22 [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30734	GPDHC1	Glycerol-3-phosphate dehydrogenase [NAD(+)] gpdhc1%2C cytosolic, cytosolic
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30735	CKX6	Cytokinin dehydrogenase 6
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30738	NA	myosin heavy chain kinase B-like protein [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30739	NA	polygalacturonase-like [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30740	TIP51	Probable aquaporin TIP5-1
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30741	NA	nitric-oxide synthase (NADPH)
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30742	MAN2	Mannan endo-1%2C4-beta-mannosidase 2,4-beta-mannosidase 2
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30743	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30744	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30745	NA	cell number regulator 6-like [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30746	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30747	NA	hypothetical protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30748	HSP22	Heat shock 22 kDa protein%2C mitochondrial, mitochondrial
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30750	NA	putative glycerol-3-phosphate transporter 1 [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30751	NA	RNA polymerase sigma factor sigA [Trifolium pratense]
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30752	MEX1	Core protein
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30730	NA	alpha-farnesene synthase
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30736	IQD11	Protein of unknown function (DUF4005)
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30737	UBP24	Ubiquitin carboxyl-terminal hydrolase 24
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30749	COG7	Golgi transport complex subunit 7
+Chr04_Occ	7350000	7600000	Rural	ACLI19_g30753	TOP1A	DNA topoisomerase 1 alpha%2C variant 2, variant 2
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49711	ABCG26	ABC transporter G member 26
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49713	CBL3	Calcineurin B-like protein 3
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49714	HSC80	Heat shock cognate protein 80
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49716	NA	hypothetical protein
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49718	NA	protein TIME FOR COFFEE [Medicago truncatula]
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49712	NA	E3 ubiquitin-protein ligase at4g11680-like protein [Trifolium pratense]
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49715	NA	transmembrane protein 208 homolog [Trifolium pratense]
+Chr05_Pall	58150000	58200000	Rural	ACLI19_g49717	NA	chitinase
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49724	NA	hypothetical protein
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49725	NA	hypothetical protein
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49727	NA	hypothetical protein
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49729	NA	hypothetical protein
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49730	NA	fructose-bisphosphate aldolase
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49731	NA	hypothetical protein
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49732	NA	BTB/POZ domain-containing protein At1g55760-like [Trifolium pratense]
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49733	NA	subtilisin-like protease SBT5.3 [Trifolium pratense]
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49734	NA	BTB/POZ domain plant protein [Medicago truncatula]
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49726	NA	kinesin-4-like protein [Trifolium pratense]
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49728	UKL4	Uridine kinase-like protein 4
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49736	SMC3	Structural maintenance of chromosomes protein 3%2C variant 3, variant 3
+Chr05_Pall	58250000	58350000	Rural	ACLI19_g49735	RFS1	flavodoxin-like fold protein
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67147	NA	hypothetical protein
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67148	NA	beta-1%2C4-xylosyltransferase IRX9 [Trifolium pratense]
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67150	RH57	DEAD-box ATP-dependent RNA helicase 57
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67152	NA	hypothetical protein
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67149	NA	pentatricopeptide repeat-containing protein mitochondrial-like [Trifolium pratense]
+Chr07_Pall	49450000	49500000	Rural	ACLI19_g67151	NA	hypothetical protein
+Chr05_Occ	16400000	16450000	Rural	ACLI19_g41958	NA	hypothetical protein
+Chr05_Occ	16400000	16450000	Rural	ACLI19_g41959	IWS1	Transcription factor iws1
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30687	NA	cytochrome-b5 reductase
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30688	NA	riboflavin synthase
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30689	NA	riboflavin synthase
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30690	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30691	NA	aminoacyl tRNA synthase complex-interacting multifunctional protein 1 [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30692	NA	pentatricopeptide repeat-containing protein At2g06000-like [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30693	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30694	NA	riboflavin synthase
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30695	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30696	RPL1	ribosomal protein L1
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30697	RER4	Protein RETICULATA-RELATED 4%2C chloroplastic, chloroplastic
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30698	NA	pentatricopeptide repeat-containing protein At1g34160 [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30699	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30701	SCPL40	Serine carboxypeptidase-like 40
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30702	NA	protein BPS1%2C chloroplastic-like [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30703	NA	agamous-like MADS-box protein AGL15 [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30704	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30705	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30706	NA	LOW QUALITY PROTEIN: glyoxylase I 4 [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30707	SEC31B	Protein transport protein Sec31B
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30708	NA	non-specific serine/threonine protein kinase
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30709	NA	hypothetical protein
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30710	HAC1	transcription factor that binds to CRE motif
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30711	NA	interaptin-like [Trifolium pratense]
+Chr04_Occ	7050000	7250000	Rural	ACLI19_g30700	ATG7	Autophagy protein 7
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40986	PALM1	transcriptional regulator
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40988	NA	nucleoporin autopeptidase [Trifolium pratense]
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40989	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40990	NA	acetylornithine deacetylase
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40991	NA	acetylornithine deacetylase
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40993	NA	histone acetyltransferase
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40994	NA	transcription factor bHLH18-like [Trifolium pratense]
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40995	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40996	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40997	NA	transcription factor bHLH25-like [Trifolium pratense]
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40999	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40987	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40992	NA	hypothetical protein
+Chr05_Occ	4800000	4900000	Urban	ACLI19_g40998	NA	hypothetical protein
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33611	NA	hypothetical protein
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33612	NA	isoflavone 2'-hydroxylase-like [Cicer arietinum]
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33613	NA	hypothetical protein
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33614	NA	PHD finger protein MALE MEIOCYTE DEATH 1 [Trifolium pratense]
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33615	NA	isoflavone 2'-hydroxylase-like [Trifolium pratense]
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33616	NA	hypothetical protein
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33617	FKBP13	Peptidyl-prolyl cis-trans isomerase fkbp13%2C chloroplastic, chloroplastic
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33618	NA	hypothetical protein
+Chr04_Occ	51000000	51100000	Urban	ACLI19_g33619	NA	LRR receptor-like serine/threonine-protein kinase GSO1 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33850	NA	protein TIC 22-like%2C chloroplastic [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33851	NA	xyloglucan:xyloglucosyl transferase
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33852	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33853	NA	UDP-glycosyltransferase 75D1-like protein [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33854	NA	phloretin 4'-O-glucosyltransferase-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33855	NA	phloretin 4'-O-glucosyltransferase-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33856	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33858	NA	receptor-like kinase TMK4 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33860	AKHSDH1	Bifunctional aspartokinase/homoserine dehydrogenase 1%2C chloroplastic, chloroplastic
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33861	AAE15	Long-chain-fatty-acid--[acyl-carrier-protein] ligase AEE15%2C chloroplastic, chloroplastic
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33862	NA	protein RALF-like 32 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33863	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33864	NA	pentatricopeptide repeat-containing protein mitochondrial-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33865	NA	protein BUD31 homolog 2 [Cicer arietinum]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33866	NA	heat stress transcription factor a-5-like protein [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33867	NA	agamous-like MADS-box protein AGL29 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33869	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33870	NA	agamous-like mads-box protein agl61-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33872	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33874	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33875	NA	LEA-18 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33877	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33878	NA	myb-like protein X [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33880	NA	chaperone protein dnaJ 20%2C chloroplastic-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33881	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33882	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33884	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33857	NA	ribonuclease H%2C partial [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33859	NA	subtilisin-like protease SBT3.9 [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33868	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33871	NA	adenosylhomocysteinase
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33873	SHM4	Serine hydroxymethyltransferase 4
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33876	NA	hypothetical protein
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33879	NA	protein ECERIFERUM 26-like [Trifolium pratense]
+Chr04_Occ	53600000	53900000	Urban	ACLI19_g33883	NA	probable magnesium transporter NIPA2 [Trifolium pratense]
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40959	TOM2A	Tobamovirus multiplication protein 2A
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40960	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40961	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40962	APRR2	Two-component response regulator-like
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40964	NA	vacuolar protein sorting-associated protein 55 homolog [Trifolium pratense]
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40965	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40966	NA	phosphoacetylglucosamine mutase
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40967	NA	[histone H3]-lysine(4) N-trimethyltransferase
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40968	NA	GATA transcription factor 26 [Trifolium pratense]
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40969	NA	pentatricopeptide repeat-containing protein At1g32415%2C mitochondrial [Trifolium pratense]
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40970	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40971	RABH1B	Ras-related protein RABH1b
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40974	LON2	Lon protease 2%2C peroxisomal, peroxisomal
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40976	NA	FCS-Like Zinc finger 1 [Trifolium pratense]
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40977	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40963	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40972	UPF1	ATP-dependent helicase NAM7
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40975	NA	hypothetical protein
+Chr05_Occ	4450000	4700000	Urban	ACLI19_g40973	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73304	NA	alpha/beta fold hydrolase [Trifolium pratense]
+Chr08_Pall	350000	450000	Urban	ACLI19_g73305	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73306	DJA6	Chaperone protein dnaJ A6
+Chr08_Pall	350000	450000	Urban	ACLI19_g73307	NA	ubiquitin carboxyl-terminal hydrolase [Trifolium pratense]
+Chr08_Pall	350000	450000	Urban	ACLI19_g73308	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73309	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73310	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73311	NA	hydroquinone glucosyltransferase
+Chr08_Pall	350000	450000	Urban	ACLI19_g73313	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73315	NA	sterol 14alpha-demethylase
+Chr08_Pall	350000	450000	Urban	ACLI19_g73317	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73312	NA	hydroquinone glucosyltransferase
+Chr08_Pall	350000	450000	Urban	ACLI19_g73314	NA	hypothetical protein
+Chr08_Pall	350000	450000	Urban	ACLI19_g73316	NA	hypothetical protein
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40929	DXO1	NAD-capped RNA hydrolase dxo1
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40931	NA	F-box/LRR-repeat protein At4g14103-like [Trifolium pratense]
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40932	RPL37A	60S ribosomal protein L37A
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40934	BAM3	Beta-amylase 3%2C chloroplastic, chloroplastic
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40935	NA	RING-type E3 ubiquitin transferase
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40936	NA	hypothetical protein
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40930	CKB1	casein kinase 2 regulatory subunit
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40933	PBL19	Probable serine/threonine-protein kinase pbl19
+Chr05_Occ	4250000	4300000	Urban	ACLI19_g40937	BAM3	Beta-amylase 3%2C chloroplastic, chloroplastic
+Chr04_Occ	52350000	52400000	Urban	ACLI19_g33745	TCP24	Transcription factor TCP2-like
+Chr04_Occ	52350000	52400000	Urban	ACLI19_g33746	INT2	Fibroblast growth factor 3
+Chr04_Occ	52350000	52400000	Urban	ACLI19_g33744	NA	ornithine aminotransferase
+Chr06_Occ	10100000	10150000	Urban	ACLI19_g50813	NA	high mobility group B protein 7-like [Trifolium pratense]
+Chr06_Occ	10100000	10150000	Urban	ACLI19_g50814	NA	hypothetical protein
+Chr06_Occ	10100000	10150000	Urban	ACLI19_g50815	NA	hypothetical protein
+Chr06_Occ	10100000	10150000	Urban	ACLI19_g50812	NA	diphosphoinositol-pentakisphosphate 1-kinase

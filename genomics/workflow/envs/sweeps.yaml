@@ -13,6 +13,8 @@ dependencies:
   - r-data.table=1.14.8
   - r-ape=5.7
   - r-ggvenndiagram=1.5.2
+  - r-vcfr
+  - r-remotes
   - bedtools=2.30
   - bioconductor-topgo
   - pixy=1.2.8.beta1
