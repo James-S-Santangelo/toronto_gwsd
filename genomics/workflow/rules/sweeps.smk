@@ -775,6 +775,7 @@ rule outlier_analysis:
         popmap = rules.create_pixy_popfile.output,
         gff = GFF_FILE 
     output:
+        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat_ur = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_sr = f"{FIGURES_DIR}/selection/manhattan/suburban_rural_xpnsl_windowed_manhat.pdf",
@@ -832,7 +833,6 @@ rule go_enrichment_analysis:
         all_sel = rules.outlier_analysis.output.xpnsl_out_genes,
         top_ten_genes = rules.outlier_analysis.output.top_hits_genes
     output:
-        "test.txt",
         all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
