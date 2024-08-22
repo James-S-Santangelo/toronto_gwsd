@@ -775,7 +775,6 @@ rule outlier_analysis:
         popmap = rules.create_pixy_popfile.output,
         gff = GFF_FILE 
     output:
-        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat_ur = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_sr = f"{FIGURES_DIR}/selection/manhattan/suburban_rural_xpnsl_windowed_manhat.pdf",
@@ -809,18 +808,22 @@ rule outlier_analysis:
         logA_ur_density = f"{FIGURES_DIR}/selection/logA_ur_density.pdf",
         Chr04_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_xpnsl.pdf",
         Chr04_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_haps.pdf",
+        Chr04_Occ_urb_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_haps.png",
         Chr04_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_af.pdf",
         Chr04_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_pca.pdf",
         Chr05_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_xpnsl.pdf",
         Chr05_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_haps.pdf",
+        Chr05_Occ_urb_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_haps.png",
         Chr05_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_af.pdf",
         Chr05_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_pca.pdf",
         Chr04_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_xpnsl.pdf",
         Chr04_Occ_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_haps.pdf",
+        Chr04_Occ_rur_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_haps.png",
         Chr04_Occ_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_af.pdf",
         Chr04_Occ_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_pca.pdf",
         Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_xpnsl.pdf",
         Chr08_Pall_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.pdf",
+        Chr08_Pall_rur_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.png",
         Chr08_Pall_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_af.pdf",
         Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf"
     conda: '../envs/sweeps.yaml'
@@ -833,6 +836,7 @@ rule go_enrichment_analysis:
         all_sel = rules.outlier_analysis.output.xpnsl_out_genes,
         top_ten_genes = rules.outlier_analysis.output.top_hits_genes
     output:
+        "test.txt",
         all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
