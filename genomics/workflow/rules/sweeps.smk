@@ -833,11 +833,9 @@ rule outlier_analysis:
 rule go_enrichment_analysis:
     input:
         all_genes = rules.create_geneToGO_mapfile.output,
-        all_sel = rules.outlier_analysis.output.xpnsl_out_genes,
         top_ten_genes = rules.outlier_analysis.output.top_hits_genes
     output:
-        "test.txt",
-        all_go_res = f'{FIGURES_DIR}/selection/all_go_results.txt'
+        all_go_res = f'{FIGURES_DIR}/tables/all_go_results.txt'
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/go_enrichment_analysis.r.ipynb"

@@ -1,0 +1,20 @@
+GO.ID	Term	Annotated	Significant	Expected	Pval	Selection	Ontology
+GO:0000972	transcription-dependent tethering of RNA...	29	2	0.04	0.00064	Urban	BP
+GO:0000272	polysaccharide catabolic process	39	2	0.05	0.00116	Urban	BP
+GO:0006405	RNA export from nucleus	108	2	0.14	0.00856	Urban	BP
+GO:0006357	regulation of transcription by RNA polym...	956	5	1.23	0.00901	Urban	BP
+GO:0016161	beta-amylase activity	20	2	0.03	0.00040	Urban	MF
+GO:0000978	RNA polymerase II cis-regulatory region ...	439	5	0.65	0.00049	Urban	MF
+GO:0017056	structural constituent of nuclear pore	47	2	0.07	0.00223	Urban	MF
+GO:0046983	protein dimerization activity	982	6	1.45	0.00328	Urban	MF
+GO:0033612	receptor serine/threonine kinase binding	70	2	0.1	0.00488	Urban	MF
+GO:0007021	tubulin complex assembly	7	2	0.01	7.8e-05	Rural	BP
+GO:0007023	post-chaperonin tubulin folding pathway	10	2	0.02	0.00017	Rural	BP
+GO:0045492	xylan biosynthetic process	42	2	0.08	0.00305	Rural	BP
+GO:0009057	macromolecule catabolic process	1618	4	3.15	0.00998	Rural	BP
+GO:0048487	beta-tubulin binding	5	2	0.01	3.3e-05	Rural	MF
+GO:0015018	galactosylgalactosylxylosylprotein 3-bet...	10	2	0.02	0.00015	Rural	MF
+GO:0042285	xylosyltransferase activity	14	2	0.03	0.00030	Rural	MF
+GO:0005524	ATP binding	4687	17	8.56	0.00407	Rural	MF
+GO:0016887	ATP hydrolysis activity	1201	7	2.19	0.00634	Rural	MF
+GO:0010333	terpene synthase activity	68	2	0.12	0.00694	Rural	MF
