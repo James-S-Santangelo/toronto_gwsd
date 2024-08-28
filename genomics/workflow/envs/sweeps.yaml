@@ -15,6 +15,7 @@ dependencies:
   - r-ggvenndiagram=1.5.2
   - r-vcfr
   - r-remotes
+  - r-factoextra
   - bedtools=2.30
   - bioconductor-topgo
   - pixy=1.2.8.beta1

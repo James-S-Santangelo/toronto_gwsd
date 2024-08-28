@@ -825,7 +825,9 @@ rule outlier_analysis:
         Chr08_Pall_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.pdf",
         Chr08_Pall_rur_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.png",
         Chr08_Pall_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_af.pdf",
-        Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf"
+        Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf",
+        random_unsel_regions_af = f"{FIGURES_DIR}/selection/region_plots/random_unsel_regions_af.pdf",
+        random_unsel_regions_pca = f"{FIGURES_DIR}/selection/region_plots/random_unsel_regions_pca.pdf"
     conda: '../envs/sweeps.yaml'
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
