@@ -138,7 +138,6 @@ rule all:
         '{0}/ref.done'.format(REF_DIR),
         # Trimming, mapping, and QC
         '{0}/multiqc/multiqc_report.html'.format(QC_DIR),
-        #'{0}/species_id.done'.format(SPECIES_ID_DIR), 
         # Freebayes
         '{0}/freebayes.done'.format(FREEBAYES_DIR),
         '{0}/phasing.done'.format(FREEBAYES_DIR),
@@ -161,7 +160,6 @@ include: 'rules/ref.smk'
 include: 'rules/trimming.smk'
 include: 'rules/mapping.smk'
 include: 'rules/qc.smk'
-include: 'rules/species_id.smk'
 include: 'rules/angsd_allSamples.smk'
 include: 'rules/angsd_byHabitat.smk'
 include: 'rules/angsd_byPopulation.smk'
