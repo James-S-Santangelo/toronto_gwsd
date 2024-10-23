@@ -1,4 +1,7 @@
 rule fastqc_raw_reads:
+    """
+    QC of raw reads
+    """
     input:
         unpack(get_raw_reads)
     output:
@@ -23,6 +26,9 @@ rule fastqc_raw_reads:
         """.format(QC_DIR)
 
 rule fastqc_trimmed_reads:
+    """
+    QC of trimmed reads
+    """
     input:
         read1 = rules.fastp_trim.output.r1_trim,
         read2 = rules.fastp_trim.output.r2_trim
@@ -43,6 +49,9 @@ rule fastqc_trimmed_reads:
         """.format(QC_DIR)
 
 rule qualimap_bam_qc:
+    """
+    QC of aligned reads
+    """
     input:
         bam = rules.samtools_markdup.output.bam,
         index = rules.index_bam.output
@@ -67,6 +76,9 @@ rule qualimap_bam_qc:
         """.format(QC_DIR)
 
 rule bamtools_stats:
+    """
+    QC of aligned reads
+    """
     input:
         bam = rules.samtools_markdup.output.bam,
         index = rules.index_bam.output

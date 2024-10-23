@@ -5,6 +5,9 @@
 ###############
 
 rule create_bam_list_byPop_multiInd:
+    """
+    Create BAM list with all individuals in a population
+    """
     input:
         rules.create_bam_list_allFinalSamples.output
     output:
@@ -227,6 +230,9 @@ rule angsd_population_fst_readable:
 ##############
 
 rule angsd_byPopulation_done:
+    """
+    Create empty flag file signaling completion of per-population ANGSD stats
+    """
     input:
         expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
         expand(rules.angsd_population_fst_readable.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')

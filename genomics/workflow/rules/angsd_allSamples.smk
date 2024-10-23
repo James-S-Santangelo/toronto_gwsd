@@ -25,6 +25,9 @@ rule subset_bams_degeneracy:
         """
 
 rule create_bam_list_allFinalSamples:
+    """
+    Create text file with final samples excluding low quality ones
+    """
     input:
         bams = lambda wildcards: expand(rules.subset_bams_degeneracy.output.bam, sample=FINAL_SAMPLES, site=wildcards.site),
         ref_flag = rules.ref_done.output 
@@ -38,6 +41,9 @@ rule create_bam_list_allFinalSamples:
                 f.write('{0}\n'.format(bam))
 
 rule convert_sites_for_angsd:
+    """
+    Convert BED file (e.g., 4fold, 0fold) to angsd sites input format
+    """
     input:
         get_bed_to_subset
     output:
@@ -51,6 +57,9 @@ rule convert_sites_for_angsd:
         """
 
 rule angsd_index_degenerate_sites:
+    """
+    Index ANGSD site file
+    """
     input:
         rules.convert_sites_for_angsd.output
     output:
@@ -64,6 +73,9 @@ rule angsd_index_degenerate_sites:
         """
 
 rule split_angsd_sites_byChrom:
+    """
+    Split ANGSD sites by chromosome
+    """
     input:
         rules.convert_sites_for_angsd.output
     output:
@@ -75,6 +87,9 @@ rule split_angsd_sites_byChrom:
         """
 
 rule angsd_index_sites_byChrom:
+    """
+    Index chromosomal ANGSD sites files
+    """
     input:
         rules.split_angsd_sites_byChrom.output
     output:
@@ -92,6 +107,9 @@ rule angsd_index_sites_byChrom:
 ##############################
 
 rule angsd_gl_degenerate_allSamples:
+    """
+    Estimate genotype likelihoods and genome-wide 4fold sites across all samples by chromsome
+    """
     input:
         bams = rules.create_bam_list_allFinalSamples.output,
         ref = REFERENCE_GENOME,
@@ -140,6 +158,9 @@ rule angsd_gl_degenerate_allSamples:
 ##############
 
 rule extract_sample_angsd:
+    """
+    Extract the order of samples that was input to ANGSD
+    """
     input:
         rules.create_bam_list_allFinalSamples.output
     output:
@@ -155,6 +176,9 @@ rule extract_sample_angsd:
                     fout.write('{0}\n'.format(sample))
 
 rule angsd_allSamples_done:
+    """
+    Create empty flag file signaling completion of ANGSD GL estimation
+    """
     input:
         expand(rules.angsd_gl_degenerate_allSamples.output, site='4fold', chrom=CHROMOSOMES, maf='0.05'),
         expand(rules.extract_sample_angsd.output, site='4fold')

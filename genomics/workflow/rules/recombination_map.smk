@@ -2,6 +2,9 @@
 # Relies on genetic positions from Olsen et al. 2021 and GBS marker sequences sent by Olsen
 
 rule sites_toInterpolate_byChrom:
+    """
+    Extract sites from VCF to be used for genetic map interpolation
+    """
     input:
         lambda w: expand(rules.remove_duplicate_sites.output, chrom=w.chrom, site_type='snps', miss='0')
     output:
@@ -12,6 +15,9 @@ rule sites_toInterpolate_byChrom:
         """
 
 rule interpolate_genetic_map:
+    """
+    Run script to interpolate genetic map
+    """
     input:
         linkage_map = config['genmap'],
         sites = expand(rules.sites_toInterpolate_byChrom.output, chrom=CHROMOSOMES)
@@ -23,6 +29,9 @@ rule interpolate_genetic_map:
         "../scripts/r/genMap_interpolation.R"
 
 rule split_genMap:
+    """
+    Split genetic map by chromosome
+    """
     input:
         rules.interpolate_genetic_map.output.genMap_interp
     output:
@@ -33,6 +42,9 @@ rule split_genMap:
         """
 
 rule recombination_map_done:
+    """
+    Create empty flag file signaling completion of recombination map interpolation
+    """
     input:
         expand(rules.sites_toInterpolate_byChrom.output, chrom = CHROMOSOMES),
         expand(rules.split_genMap.output, chrom = CHROMOSOMES)

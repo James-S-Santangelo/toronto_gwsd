@@ -5,6 +5,9 @@
 ###############
 
 rule bcftools_concat_filtered_vcfs:
+    """
+    Concatenate filtered chromosomal SNP VCFs
+    """
     input:
         lambda wildcards: expand(rules.remove_duplicate_sites.output, 
             chrom=CHROMOSOMES, 
@@ -26,6 +29,9 @@ rule bcftools_concat_filtered_vcfs:
         """
     
 rule bcftools_split_samples:
+    """
+    Split concatenated VCF into separate VCF for each sample
+    """
     input:
         rules.bcftools_concat_filtered_vcfs.output.vcf
     output:
@@ -47,6 +53,9 @@ rule bcftools_split_samples:
 #############################
 
 rule whatshap_phase:
+    """
+    Perform read-backed phasing with WhatsHap
+    """
     input:
         unpack(get_whatshap_phase_input)
     output:
@@ -70,6 +79,9 @@ rule whatshap_phase:
         """
 
 rule bcftools_remove_format_tags:
+    """
+    Remove stray format tags from VCF
+    """
     input:
         rules.whatshap_phase.output.vcf
     output:
@@ -88,6 +100,9 @@ rule bcftools_remove_format_tags:
         """
 
 rule bcftools_merge_phased:
+    """
+    Merge VCFs that have been phased with WhatsHap
+    """
     input:
         lambda wildcards: expand(rules.bcftools_remove_format_tags.output.vcf, sample=FINAL_SAMPLES)
     output:
@@ -109,6 +124,9 @@ rule bcftools_merge_phased:
         """
 
 rule split_phased_vcf_byChrom:
+    """
+    Split VCF by chromosome
+    """
     input:
         rules.bcftools_merge_phased.output.vcf
     output:
@@ -135,6 +153,9 @@ rule split_phased_vcf_byChrom:
 ############################
 
 rule shapeit_phase:
+    """
+    Phase chromosomal VCF with SHAPEIT
+    """
     input:
         vcf = rules.split_phased_vcf_byChrom.output.vcf,
         idx = rules.split_phased_vcf_byChrom.output.idx,
@@ -160,6 +181,9 @@ rule shapeit_phase:
         """
 
 rule bcftools_concat_phased_vcfs:
+    """
+    Concatenate SHAPEIT phased chromosomal VCFs
+    """
     input:
         expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES)
     output:
@@ -178,6 +202,9 @@ rule bcftools_concat_phased_vcfs:
         """
 
 rule phasing_done:
+    """
+    Create empty flag file signaling completion of phasing
+    """
     input:
         rules.bcftools_concat_phased_vcfs.output
     output:

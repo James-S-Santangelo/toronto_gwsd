@@ -1,4 +1,7 @@
 rule bwa_map_unpaired:
+    """
+    Align unpaired reads
+    """
     input:
         unp = rules.fastp_trim.output.unp,
         ref = REFERENCE_GENOME,
@@ -20,6 +23,9 @@ rule bwa_map_unpaired:
         """
 
 rule bwa_map_paired:
+    """
+    Align pared reads
+    """
     input:
         r1 = rules.fastp_trim.output.r1_trim,
         r2 = rules.fastp_trim.output.r2_trim,
@@ -42,6 +48,9 @@ rule bwa_map_paired:
         """
 
 rule merge_bams:
+    """
+    Merge paired and unpaired read alignments
+    """
     input:
         unp = rules.bwa_map_unpaired.output,
         pair = rules.bwa_map_paired.output
@@ -60,6 +69,9 @@ rule merge_bams:
         """
 
 rule samtools_markdup:
+    """
+    Mark duplicate reads
+    """
     input:
         rules.merge_bams.output
     output:

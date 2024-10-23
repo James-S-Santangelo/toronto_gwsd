@@ -1,4 +1,7 @@
 rule fastp_trim:
+    """
+    Trim adapters and poly-G tails from raw reads
+    """
     input:
         unpack(get_raw_reads)
     output:

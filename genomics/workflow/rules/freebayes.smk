@@ -1,4 +1,7 @@
 rule create_bam_lists_allFinalSamples_allSites:
+    """
+    Create text final with final samples (i.e. excluding low quality and related samples
+    """
     input:
         bams = expand(rules.samtools_markdup.output.bam, sample=SAMPLES)
     output:
@@ -14,6 +17,9 @@ rule create_bam_lists_allFinalSamples_allSites:
                     f.write('{0}\n'.format(bam))
 
 rule create_region_files_forFreebayes:
+    """
+    Create region input files for freebayes parallelization
+    """
     input:
         ref_idx = rules.samtools_index_reference.output,
         ref = REFERENCE_GENOME,
@@ -36,6 +42,9 @@ rule create_region_files_forFreebayes:
         """
 
 rule freebayes_call_variants:
+    """
+    Call variants using freebayes
+    """
     input:
         bams = rules.create_bam_lists_allFinalSamples_allSites.output,
         region = '{0}/freebayes_regions/genome.{{chrom}}.region.{{i}}.bed'.format(PROGRAM_RESOURCE_DIR), 
@@ -59,6 +68,9 @@ rule freebayes_call_variants:
         """
 
 rule concat_vcfs:
+    """
+    Concatenate VCFs by chromosome for all freebayes jobs that were run in parallel
+    """
     input:
         vcfs = get_vcfs_by_chrom,
     output:
@@ -77,6 +89,9 @@ rule concat_vcfs:
         """
 
 rule bcftools_split_variants:
+    """
+    Split variants in SNPs, SVs, etc.
+    """
     input:
         vcf = rules.concat_vcfs.output,
     output:
@@ -102,6 +117,9 @@ rule bcftools_split_variants:
         """
 
 rule tabix_vcf:
+    """
+    Tabix index resulting VCFs
+    """
     input:
         rules.bcftools_split_variants.output
     output:
@@ -114,6 +132,9 @@ rule tabix_vcf:
         """
 
 rule vcf_to_zarr:
+    """
+    Convert VCF to Zarr DB for fast interactive analysis
+    """
     input:
         rules.bcftools_split_variants.output
     output:

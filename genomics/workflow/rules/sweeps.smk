@@ -36,6 +36,9 @@ rule create_bam_list_byHabitat_allSites:
 
 
 rule samples_byHabitat:
+    """
+    Create text file withBAM files for samples in each habitat
+    """
     input:
         samples = config['samples']
     output:
@@ -85,6 +88,9 @@ rule bcftools_splitVCF_byHabitat:
         """
 
 rule genMap_toPlinkFormat:
+    """
+    Convert genetic map to Plink format
+    """
     input:
         rules.split_genMap.output
     output:
@@ -273,6 +279,9 @@ rule angsd_thetas_allSites_readable:
         """
 
 rule windowed_theta:
+    """
+    Estimate thetas in windows across the genome
+    """
     input:
         rules.angsd_estimate_thetas_byHabitat_allSites.output.idx
     output:
@@ -292,6 +301,9 @@ rule windowed_theta:
         """
 
 rule windowed_fst:
+    """
+    Estimate Hudson's Fst in windows across the genome. 
+    """
     input:
         rules.angsd_habitat_fst_index_allSites.output.idx
     output:
@@ -314,6 +326,9 @@ rule windowed_fst:
 #############################
 
 rule create_pixy_popfile:
+    """
+    Create poulation file for Pixy
+    """
     input:
        config['samples']
     output:
@@ -330,6 +345,9 @@ rule create_pixy_popfile:
                         fout.write(f"{sample}\t{pop}\n")
 
 rule pixy:
+    """
+    Run Pixy to estimate windowed Fst from VCFs
+    """
     input:
         vcf = rules.concat_variant_invariant_sites.output.vcf,
         tbi = rules.concat_variant_invariant_sites.output.tbi,
@@ -373,6 +391,9 @@ rule pixy:
 ################
 
 rule selscan_xpnsl:
+    """
+    Estimate XP-nSL
+    """
     input:
         unpack(selscan_xpnsl_input)
     output:
@@ -395,6 +416,9 @@ rule selscan_xpnsl:
         """
 
 rule norm_xpnsl:
+    """
+    Normalize XP-nSL
+    """
     input:
         lambda w: expand(rules.selscan_xpnsl.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
     output:
@@ -410,6 +434,9 @@ rule norm_xpnsl:
 #############################
 
 rule permuted_samples_byHabitat:
+    """
+    Generate text files with permuted BAM files
+    """
     input:
         samples = config['samples']
     output:
@@ -471,6 +498,9 @@ rule bcftools_splitVCF_byHabitat_permuted:
         """
 
 rule selscan_xpnsl_permuted:
+    """
+    Run selscan to estimate XP-nSL on permuted samples
+    """
     input:
         vcf_ref = lambda w: expand(rules.bcftools_splitVCF_byHabitat_permuted.output.vcf, chrom=w.chrom, habitat="Rural", n=w.n),
         vcf = lambda w: expand(rules.bcftools_splitVCF_byHabitat_permuted.output.vcf, chrom=w.chrom, habitat="Urban", n=w.n)
@@ -489,6 +519,9 @@ rule selscan_xpnsl_permuted:
         """
 
 rule norm_xpnsl_permuted:
+    """
+    Normalize permuted XP-nSL scores
+    """
     input:
         lambda w: expand(rules.selscan_xpnsl_permuted.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb, n=w.n)
     output:
@@ -505,6 +538,9 @@ rule norm_xpnsl_permuted:
 #############
 
 rule nsl:
+    """
+    Estimate nSL in each habitat
+    """
     input:
         vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
         genMap = rules.genMap_toPlinkFormat.output
@@ -528,6 +564,9 @@ rule nsl:
         """
 
 rule norm_nsl:
+    """
+    Normalize nSL
+    """
     input:
         lambda w: expand(rules.nsl.output, chrom=CHROMOSOMES, habitat=w.habitat)
     output:
@@ -543,6 +582,9 @@ rule norm_nsl:
 #############
 
 rule ihs:
+    """
+    Estimate iHS
+    """
     input:
         vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
         genMap = rules.genMap_toPlinkFormat.output
@@ -566,6 +608,9 @@ rule ihs:
         """
 
 rule norm_ihs:
+    """
+    Normalize iHS
+    """
     input:
         lambda w: expand(rules.ihs.output, chrom=CHROMOSOMES, habitat=w.habitat)
     output:
@@ -581,6 +626,9 @@ rule norm_ihs:
 ###############
 
 rule ihh_OneTwo:
+    """
+    Estimate IHH12
+    """
     input:
         vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
         genMap = rules.genMap_toPlinkFormat.output
@@ -604,6 +652,9 @@ rule ihh_OneTwo:
         """
 
 rule norm_ihh_OneTwo:
+    """
+    Normalize iHH12
+    """
     input:
         lambda w: expand(rules.ihh_OneTwo.output, chrom=CHROMOSOMES, habitat=w.habitat)
     output:
@@ -619,6 +670,9 @@ rule norm_ihh_OneTwo:
 ####################
 
 rule generate_salti_spectra:
+    """
+    Generate haplotype frequency spectra for saltiLassi
+    """
     input:
         vcf = rules.bcftools_splitVCF_byHabitat.output.vcf,
         popf = rules.create_pixy_popfile.output
@@ -647,6 +701,9 @@ rule generate_salti_spectra:
         """
 
 rule analyze_salti_spectra:
+    """
+    Estimate saltiLassi lamda, the number of sweeping haplotypes, and the width of selective sweeps
+    """
     input:
         spectra = lambda w: expand(rules.generate_salti_spectra.output.spec, chrom=CHROMOSOMES, habitat=w.habitat),
         maps = expand(rules.genMap_toPlinkFormat.output, chrom=CHROMOSOMES)
@@ -675,6 +732,9 @@ rule analyze_salti_spectra:
 ##################
 
 rule write_windowed_sfs_stats:
+    """
+    Create file with all windowed sfs stats
+    """
     input:
         thetaU = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Urban'),
         thetaR = expand(rules.windowed_theta.output, chrom=CHROMOSOMES, habitat='Rural'),
@@ -686,6 +746,9 @@ rule write_windowed_sfs_stats:
         "../scripts/r/write_windowed_sfs_stats.R"
 
 rule write_windowed_singPop_hapstats:
+    """
+    Create file with windowed single population haplotype stats
+    """
     input:
         norm = get_windowed_singPop_hapstats_input_files
     output:
@@ -697,6 +760,9 @@ rule write_windowed_singPop_hapstats:
         "../scripts/r/write_windowed_singPop_hapstats.R"
 
 rule write_windowed_xpnsl:
+    """
+    Create file with windowed XP-nSL stats
+    """
     input:
         norm = get_windowed_xpnsl_input_files
     output:
@@ -708,6 +774,9 @@ rule write_windowed_xpnsl:
         "../scripts/r/write_windowed_xpnsl.R"
 
 rule write_windowed_xpnsl_permuted:
+    """
+    Create file with windowed XP-nSL stats for permuted samples
+    """
     input:
         xpnsl = rules.norm_xpnsl_permuted.output
     output:
@@ -719,6 +788,9 @@ rule write_windowed_xpnsl_permuted:
         "../scripts/r/write_windowed_xpnsl_permuted.R"
 
 rule create_geneToGO_mapfile:
+    """
+    Creating mapping file for GO analysis
+    """
     input:
         GFF_FILE
     output:
@@ -743,6 +815,9 @@ rule create_geneToGO_mapfile:
                                 fout.write(f'{gene}\t{go_string}\n')
 
 rule compare_observed_permuted_xpnsl:
+    """
+    Compare observed to permuted XP-nSL distributions
+    """
     input:
         obs = expand(rules.write_windowed_singPop_hapstats.output, stat="xpnsl"),
         perm = expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)])
@@ -754,6 +829,9 @@ rule compare_observed_permuted_xpnsl:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
 
 rule outlier_analysis:
+    """
+    Perform outlier analysis and generate figures (e.g., Manhattan plot)
+    """
     input:
         win_sfs_fst = rules.write_windowed_sfs_stats.output.sfs_df,
         win_xpnsl_ur = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Rural']),
@@ -833,6 +911,9 @@ rule outlier_analysis:
         "../notebooks/outlier_analysis.r.ipynb"
 
 rule go_enrichment_analysis:
+    """
+    Perform GO enrichment analysis
+    """
     input:
         all_genes = rules.create_geneToGO_mapfile.output,
         top_ten_genes = rules.outlier_analysis.output.top_hits_genes
@@ -848,6 +929,9 @@ rule go_enrichment_analysis:
 ##############
 
 rule sweeps_done:
+    """
+    Create empty file signaling completion of selective sweeps analysis
+    """
     input:
         rules.go_enrichment_analysis.output
     output:

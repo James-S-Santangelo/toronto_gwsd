@@ -8,6 +8,9 @@
 # Prune these SNPs within 20 Kb using r-squared cutoff of 0.2
 
 rule create_pos_file_for_ngsLD:
+    """
+    Create text file with site positions for NGSLD
+    """
     input:
         rules.angsd_gl_degenerate_allSamples.output.mafs
     output:
@@ -19,6 +22,9 @@ rule create_pos_file_for_ngsLD:
         """
 
 rule ngsLD_degenerateSites:
+    """
+    Estimate pairwise LD among 4fold sites
+    """
     input:
         pos = rules.create_pos_file_for_ngsLD.output,
         gls = rules.angsd_gl_degenerate_allSamples.output.gls
@@ -45,6 +51,9 @@ rule ngsLD_degenerateSites:
         """
 
 rule prune_degenerateSNPs_forPopStructure:
+    """
+    Create text file with IDs for sites to keep post LD pruning
+    """
     input:
         rules.ngsLD_degenerateSites.output
     output:
@@ -62,6 +71,9 @@ rule prune_degenerateSNPs_forPopStructure:
         """
 
 rule pruneGLs_degenerateSNPs:
+    """
+    Prune sites for LD
+    """
     input:
         gls = rules.angsd_gl_degenerate_allSamples.output.gls,
         pos = rules.prune_degenerateSNPs_forPopStructure.output
@@ -107,6 +119,9 @@ rule concat_angsd_gl:
 # PCA & admixture analysis using LD-pruned 4fold SNPs from above (MAF > 0.05)
 
 rule pcangsd:
+    """
+    Estimate variance-covariance matrix of allele frequencies among samples from 4fold sites
+    """
     input:
         rules.concat_angsd_gl.output
     output:
@@ -131,6 +146,9 @@ rule pcangsd:
         """
 
 rule ngsadmix:
+    """
+    Estimate admixture components for all samples
+    """
     input:
         rules.concat_angsd_gl.output
     output:
@@ -246,6 +264,9 @@ rule pruned_degenerate_angsd_format:
         """
 
 rule angsd_index_prunedSNPs:
+    """
+    Index LD pruned sites for ANGSD
+    """
     input:
         rules.pruned_degenerate_angsd_format.output
     output:
@@ -259,6 +280,9 @@ rule angsd_index_prunedSNPs:
         """
      
 rule angsd_gl_forNGSrelate:
+    """
+    Estimate genotype likelihoods in binary format
+    """
     input:
         bams = rules.create_bam_list_highQualSamples.output,
         ref = REFERENCE_GENOME,
@@ -304,6 +328,9 @@ rule angsd_gl_forNGSrelate:
         """
 
 rule convert_freq_forNGSrelate:
+    """
+    Get allele frequencies for NGSrelate
+    """
     input:
         rules.angsd_gl_forNGSrelate.output.mafs
     output:
@@ -315,6 +342,9 @@ rule convert_freq_forNGSrelate:
         """
 
 rule ngsrelate:
+    """
+    Estimate pairwise relatedness among samples from 4fold sites
+    """
     input:
         bams = rules.create_bam_list_highQualSamples.output,
         gls = rules.angsd_gl_forNGSrelate.output.gls,
@@ -342,6 +372,9 @@ rule ngsrelate:
 ##############
 
 rule pop_structure_done:
+    """
+    Create empty file signaling completion of population structure
+    """
     input:
         expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
         expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),

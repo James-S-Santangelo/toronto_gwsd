@@ -1,4 +1,7 @@
 rule samtools_index_reference:
+    """
+    Indexes reference genome with Samtools
+    """
     input:
         REFERENCE_GENOME
     output:
@@ -11,6 +14,9 @@ rule samtools_index_reference:
         """
 
 rule bwa_index_ref:
+    """
+    Indexes reference genome with BWA for read alignment
+    """
     input:
         REFERENCE_GENOME
     output:
@@ -51,6 +57,9 @@ rule degenotate:
         """
 
 rule create_bed_from_degenotate:
+    """
+    Create BED file for 0fold and 4fold sites
+    """
     input:
         rules.degenotate.output
     output:
@@ -62,6 +71,9 @@ rule create_bed_from_degenotate:
         """
 
 rule ref_done:
+    """
+    Create empty flag file signaling completion of reference genome setup
+    """
     input:
         rules.samtools_index_reference.output,
         rules.bwa_index_ref.output

@@ -1,6 +1,9 @@
 # Snakemake rules to filter freebayes VCFs
 
 rule bcftools_filter_vcfs:
+    """
+    Filter VCF
+    """
     input:
         vcf = rules.bcftools_split_variants.output
     output:
@@ -29,6 +32,9 @@ rule bcftools_filter_vcfs:
         """
 
 rule remove_duplicate_sites:
+    """
+    Remove any stray duplicate sites that made it past filter
+    """
     input:
         vcf = rules.bcftools_filter_vcfs.output.vcf,
         tbi = rules.bcftools_filter_vcfs.output.tbi
@@ -48,6 +54,9 @@ rule remove_duplicate_sites:
         """
 
 rule concat_variant_invariant_sites:
+    """
+    Concatenate variant and invariant sites
+    """
     input:
         vcfs = lambda w: expand(rules.remove_duplicate_sites.output.vcf, chrom=w.chrom, site_type=['snps', 'invariant'], miss=w.miss),
         tbis= lambda w: expand(rules.remove_duplicate_sites.output.tbi, chrom=w.chrom, site_type=['snps', 'invariant'], miss=w.miss)
