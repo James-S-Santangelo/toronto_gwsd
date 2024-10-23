@@ -151,8 +151,6 @@ rule all:
         '{0}/population_structure.done'.format(POP_STRUC_DIR),
         # Sweeps
         '{0}/sweeps.done'.format(SWEEPS_DIR),
-        # Args
-        #'{0}/args.done'.format(ARG_DIR),
         # Figures
         #'{0}/figures.done'.format(FIGURES_DIR),
 
@@ -169,5 +167,4 @@ include: 'rules/recombination_map.smk'
 include: 'rules/phasing.smk'
 include: 'rules/population_structure.smk'
 include: 'rules/sweeps.smk'
-#include: 'rules/args.smk'
 #include: 'rules/figures.smk'
