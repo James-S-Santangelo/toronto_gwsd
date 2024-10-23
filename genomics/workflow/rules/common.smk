@@ -27,17 +27,6 @@ def get_raw_reads(wildcards):
     R2 = reads[1]
     return { 'read1' : R1, 'read2' : R2  }
 
-def get_fastas_to_concat(wildcards):
-    if wildcards.gene == 'rbcl':
-        return expand(rules.chloroplast_gene_consensus.output, sample=SAMPLES, gene='rbcl')
-    elif wildcards.gene == 'matk':
-        return expand(rules.chloroplast_gene_consensus.output, sample=SAMPLES, gene='matk')
-
-def aggregate_ncbi_input(wildcards):
-    checkpoint_output = checkpoints.download_nt_database.get(**wildcards).output[0]
-    DB = glob_wildcards(os.path.join(checkpoint_output, 'nt.{db}.tar.gz')).db
-    return expand('{0}/ncbi_nt_database/nt.{{db}}.{{ext}}'.format(PROGRAM_RESOURCE_DIR), db=DB, ext=['nhd', 'nhi', 'nhr', 'nin', 'nnd', 'nni', 'nog', 'nsq'])
-
 def get_subset_bams_degeneracy_input(wildcards):
     """
     Returns the correct GLUE or Toronto BAM file
@@ -100,18 +89,6 @@ def get_whatshap_phase_input(wildcards):
     vcf = rules.bcftools_split_samples.output
     bam = expand(rules.samtools_markdup.output.bam, sample = wildcards.sample)
     return { 'ref' : ref, 'vcf' : vcf, 'bam' : bam }
-
-def get_dadi_sfs_input_files(wildcards):
-    hab1 = wildcards.hab_comb.split('_')[0]
-    hab2 = wildcards.hab_comb.split('_')[1]
-    saf_files = expand(rules.angsd_saf_likelihood_byHabitat.output.saf_idx, habitat=HABITATS, site='4fold')  
-    sfs_files = expand(rules.angsd_estimate_sfs_byHabitat.output, habitat=HABITATS, site='4fold') 
-    saf_urban = [x for x in saf_files if '{0}'.format(hab1) in os.path.basename(x)]
-    saf_rural = [x for x in saf_files if '{0}'.format(hab2) in os.path.basename(x)]
-    sfs_urban = [x for x in sfs_files if '{0}'.format(hab1) in os.path.basename(x)]
-    sfs_rural = [x for x in sfs_files if '{0}'.format(hab2) in os.path.basename(x)]
-    ref = REFERENCE_GENOME
-    return { 'saf_urban' : saf_urban , 'saf_rural' : saf_rural, 'sfs_urban' : sfs_urban, 'sfs_rural' : sfs_rural, 'ref' : ref }
 
 def selscan_xpnsl_input(wildcards):
     if wildcards.hab_comb == 'Urban_Rural':

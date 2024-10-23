@@ -25,21 +25,6 @@ rule bwa_index_ref:
         bwa-mem2 index {input} 2> {log}
         """
 
-rule makeblastdb_fromRef:
-    input:
-        REFERENCE_GENOME
-    output:
-        multiext(f'{REFERENCE_GENOME}', '.ndb', '.nhr', '.nin', '.nog', '.nos', '.not', '.nsq', '.ntf', '.nto') 
-    conda: '../envs/ref.yaml'
-    log: LOG_DIR + '/makeblastdb_fromReb/makeblastdb_fromRef.log'
-    shell:
-        """
-        makeblastdb -in {input} \
-            -dbtype nucl \
-            -parse_seqids \
-            -logfile test.log
-        """
-
 rule degenotate:
     """
     Generate text file with degeneracy of every nucleotide in CDSs
