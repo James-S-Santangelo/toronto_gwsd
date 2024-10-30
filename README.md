@@ -1,6 +1,8 @@
-## Genome-Wide Selection and Demography in Toronto white clover populations
-(Toronto_GWSD) ### Manuscript: Signatures of selective sweeps in urban and
-rural white clover populations
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14014248.svg)](https://doi.org/10.5281/zenodo.14014248)
+
+## Genome-Wide Selection and Demography in Toronto white clover populations (Toronto_GWSD) 
+
+### Manuscript: Signatures of selective sweeps in urban and rural white clover populations
 
 ### Abstract
 
