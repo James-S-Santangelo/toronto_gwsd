@@ -4,7 +4,7 @@
 
 This repository contains code necessary to reproduce the genomic analyses in
 the Toronto_GWSD manuscript. Raw reads from this project have been deposited in
-GenBank (BioProject #XXX). This pipeline runs from the raw reads and includes
+GenBank (BioProject PRJNA1179961). This pipeline runs from the raw reads and includes
 read trimming, mapping, and QC of reads and alignments, as well as variant
 calling, population structure analyses, and analyses of selective sweeps using
 SFS and haplotype-based approaches. The pipeline uses `Conda`, `Snakemake`, and
