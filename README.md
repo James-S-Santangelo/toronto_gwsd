@@ -37,7 +37,7 @@ results. The repo can be clones using the following command:
 Here is a brief description of each subdirectory. Details and documentation can
 be found in each subdirectory:
 
-- [figures-tables](./figures-tables): Contains figures and tables generated as
+- [figures_tables](./figures_tables): Contains figures and tables generated as
   part of the Snakemake pipeline below
 - [snakemake](./snakemake): Contains the pipeline used to generate the genomic
   results Uses Conda + Snakemake for reproducibility and pipeline management. 
