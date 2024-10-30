@@ -1,5 +1,4 @@
 .DS_Store
-tmp/
 resources/misc/
 .snakemake
 data/
@@ -9,8 +8,9 @@ results*
 __pycache__/
 .ipynb_checkpoints
 .Rproj.user
-md5/
 .Rhistory
-*persite_manhat.pdf
 plant-prep/
 notebooks/
+figures_tables/combined
+*.svg
+*.qgz
