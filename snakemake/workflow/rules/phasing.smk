@@ -9,7 +9,7 @@ rule bcftools_concat_filtered_vcfs:
     Concatenate filtered chromosomal SNP VCFs
     """
     input:
-        lambda wildcards: expand(rules.remove_duplicate_sites.output, 
+        lambda wildcards: expand(rules.remove_duplicate_sites.output.vcf, 
             chrom=CHROMOSOMES, 
             site_type=['snps'], 
             miss=['0'])
@@ -83,7 +83,8 @@ rule bcftools_remove_format_tags:
     Remove stray format tags from VCF
     """
     input:
-        rules.whatshap_phase.output.vcf
+        vcf = rules.whatshap_phase.output.vcf,
+        idx = rules.whatshap_phase.output.idx
     output:
         vcf = temp('{0}/vcf/by_sample_phased/{{sample}}_whatshapPhased_remTag.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/by_sample_phased/{{sample}}_whatshapPhased_remTag.vcf.gz.tbi'.format(FREEBAYES_DIR))
@@ -96,7 +97,7 @@ rule bcftools_remove_format_tags:
         """
         ( bcftools annotate \
             -x FORMAT/AD,FORMAT/AO,FORMAT/QA,FORMAT/GL \
-            -O z {input} > {output.vcf} && tabix {output.vcf} ) 2> {log}
+            -O z {input.vcf} > {output.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
 rule bcftools_merge_phased:
@@ -104,7 +105,8 @@ rule bcftools_merge_phased:
     Merge VCFs that have been phased with WhatsHap
     """
     input:
-        lambda wildcards: expand(rules.bcftools_remove_format_tags.output.vcf, sample=FINAL_SAMPLES)
+        vcfs = lambda wildcards: expand(rules.bcftools_remove_format_tags.output.vcf, sample=FINAL_SAMPLES),
+        idx = lambda wildcards: expand(rules.bcftools_remove_format_tags.output.idx, sample=FINAL_SAMPLES)
     output:
         vcf = temp('{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/allChroms_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
@@ -120,7 +122,7 @@ rule bcftools_merge_phased:
             --info-rules - \
             -O z \
             --threads {threads} \
-            {input} > {output.vcf} && tabix {output.vcf} ) 2> {log}
+            {input.vcfs} > {output.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
 rule split_phased_vcf_byChrom:
@@ -128,7 +130,8 @@ rule split_phased_vcf_byChrom:
     Split VCF by chromosome
     """
     input:
-        rules.bcftools_merge_phased.output.vcf
+        vcf = rules.bcftools_merge_phased.output.vcf,
+        idx = rules.bcftools_merge_phased.output.idx
     output:
         vcf = temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz'.format(FREEBAYES_DIR)),
         idx = temp('{0}/vcf/{{chrom}}/{{chrom}}_allFinalSamples_whatshapPhased.vcf.gz.tbi'.format(FREEBAYES_DIR))
@@ -145,7 +148,7 @@ rule split_phased_vcf_byChrom:
             -O z \
             -o {output.vcf} \
             --threads {threads} \
-            {input} && tabix {output.vcf} ) 2> {log}
+            {input.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
 ############################
@@ -185,7 +188,8 @@ rule bcftools_concat_phased_vcfs:
     Concatenate SHAPEIT phased chromosomal VCFs
     """
     input:
-        expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES)
+        vcf = expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES),
+        idx = expand(rules.shapeit_phase.output.idx, chrom=CHROMOSOMES)
     output:
         vcf = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz'.format(FREEBAYES_DIR),
         idx = '{0}/vcf/allChroms_allFinalSamples_whatsHapPhased_shapeitPhased.vcf.gz.tbi'.format(FREEBAYES_DIR)
@@ -198,7 +202,7 @@ rule bcftools_concat_phased_vcfs:
             --output-type z \
             --threads {threads} \
             --output {output.vcf} \
-            {input} && tabix {output.vcf} ) 2> {log}
+            {input.vcf} && tabix {output.vcf} ) 2> {log}
         """
 
 rule phasing_done:

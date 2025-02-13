@@ -37,6 +37,14 @@ Chr	start	end	direction	gene_id	gene_symbol	product
 9	56600000	56650000	Rural	ACLI19_g44936	NA	hypothetical protein
 9	56600000	56650000	Rural	ACLI19_g44937	NA	hypothetical protein
 9	56600000	56650000	Rural	ACLI19_g44935	NA	hypothetical protein
+10	58150000	58200000	Rural	ACLI19_g49711	ABCG26	ABC transporter G member 26
+10	58150000	58200000	Rural	ACLI19_g49713	CBL3	Calcineurin B-like protein 3
+10	58150000	58200000	Rural	ACLI19_g49714	HSC80	Heat shock cognate protein 80
+10	58150000	58200000	Rural	ACLI19_g49716	NA	hypothetical protein
+10	58150000	58200000	Rural	ACLI19_g49718	NA	protein TIME FOR COFFEE [Medicago truncatula]
+10	58150000	58200000	Rural	ACLI19_g49712	NA	E3 ubiquitin-protein ligase at4g11680-like protein [Trifolium pratense]
+10	58150000	58200000	Rural	ACLI19_g49715	NA	transmembrane protein 208 homolog [Trifolium pratense]
+10	58150000	58200000	Rural	ACLI19_g49717	NA	chitinase
 7	7350000	7600000	Rural	ACLI19_g30729	NA	hypothetical protein
 7	7350000	7600000	Rural	ACLI19_g30731	NA	alpha-farnesene synthase
 7	7350000	7600000	Rural	ACLI19_g30732	ACA11	Putative calcium-transporting ATPase 11%2C plasma membrane-type, plasma membrane-type
@@ -62,14 +70,14 @@ Chr	start	end	direction	gene_id	gene_symbol	product
 7	7350000	7600000	Rural	ACLI19_g30737	UBP24	Ubiquitin carboxyl-terminal hydrolase 24
 7	7350000	7600000	Rural	ACLI19_g30749	COG7	Golgi transport complex subunit 7
 7	7350000	7600000	Rural	ACLI19_g30753	TOP1A	DNA topoisomerase 1 alpha%2C variant 2, variant 2
-10	58150000	58200000	Rural	ACLI19_g49711	ABCG26	ABC transporter G member 26
-10	58150000	58200000	Rural	ACLI19_g49713	CBL3	Calcineurin B-like protein 3
-10	58150000	58200000	Rural	ACLI19_g49714	HSC80	Heat shock cognate protein 80
-10	58150000	58200000	Rural	ACLI19_g49716	NA	hypothetical protein
-10	58150000	58200000	Rural	ACLI19_g49718	NA	protein TIME FOR COFFEE [Medicago truncatula]
-10	58150000	58200000	Rural	ACLI19_g49712	NA	E3 ubiquitin-protein ligase at4g11680-like protein [Trifolium pratense]
-10	58150000	58200000	Rural	ACLI19_g49715	NA	transmembrane protein 208 homolog [Trifolium pratense]
-10	58150000	58200000	Rural	ACLI19_g49717	NA	chitinase
+14	49450000	49500000	Rural	ACLI19_g67147	NA	hypothetical protein
+14	49450000	49500000	Rural	ACLI19_g67148	NA	beta-1%2C4-xylosyltransferase IRX9 [Trifolium pratense]
+14	49450000	49500000	Rural	ACLI19_g67150	RH57	DEAD-box ATP-dependent RNA helicase 57
+14	49450000	49500000	Rural	ACLI19_g67152	NA	hypothetical protein
+14	49450000	49500000	Rural	ACLI19_g67149	NA	pentatricopeptide repeat-containing protein mitochondrial-like [Trifolium pratense]
+14	49450000	49500000	Rural	ACLI19_g67151	NA	hypothetical protein
+9	16400000	16450000	Rural	ACLI19_g41958	NA	hypothetical protein
+9	16400000	16450000	Rural	ACLI19_g41959	IWS1	Transcription factor iws1
 10	58250000	58350000	Rural	ACLI19_g49724	NA	hypothetical protein
 10	58250000	58350000	Rural	ACLI19_g49725	NA	hypothetical protein
 10	58250000	58350000	Rural	ACLI19_g49727	NA	hypothetical protein
@@ -83,39 +91,40 @@ Chr	start	end	direction	gene_id	gene_symbol	product
 10	58250000	58350000	Rural	ACLI19_g49728	UKL4	Uridine kinase-like protein 4
 10	58250000	58350000	Rural	ACLI19_g49736	SMC3	Structural maintenance of chromosomes protein 3%2C variant 3, variant 3
 10	58250000	58350000	Rural	ACLI19_g49735	RFS1	flavodoxin-like fold protein
-14	49450000	49500000	Rural	ACLI19_g67147	NA	hypothetical protein
-14	49450000	49500000	Rural	ACLI19_g67148	NA	beta-1%2C4-xylosyltransferase IRX9 [Trifolium pratense]
-14	49450000	49500000	Rural	ACLI19_g67150	RH57	DEAD-box ATP-dependent RNA helicase 57
-14	49450000	49500000	Rural	ACLI19_g67152	NA	hypothetical protein
-14	49450000	49500000	Rural	ACLI19_g67149	NA	pentatricopeptide repeat-containing protein mitochondrial-like [Trifolium pratense]
-14	49450000	49500000	Rural	ACLI19_g67151	NA	hypothetical protein
-9	16400000	16450000	Rural	ACLI19_g41958	NA	hypothetical protein
-9	16400000	16450000	Rural	ACLI19_g41959	IWS1	Transcription factor iws1
-7	7050000	7250000	Rural	ACLI19_g30687	NA	cytochrome-b5 reductase
-7	7050000	7250000	Rural	ACLI19_g30688	NA	riboflavin synthase
-7	7050000	7250000	Rural	ACLI19_g30689	NA	riboflavin synthase
-7	7050000	7250000	Rural	ACLI19_g30690	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30691	NA	aminoacyl tRNA synthase complex-interacting multifunctional protein 1 [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30692	NA	pentatricopeptide repeat-containing protein At2g06000-like [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30693	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30694	NA	riboflavin synthase
-7	7050000	7250000	Rural	ACLI19_g30695	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30696	RPL1	ribosomal protein L1
-7	7050000	7250000	Rural	ACLI19_g30697	RER4	Protein RETICULATA-RELATED 4%2C chloroplastic, chloroplastic
-7	7050000	7250000	Rural	ACLI19_g30698	NA	pentatricopeptide repeat-containing protein At1g34160 [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30699	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30701	SCPL40	Serine carboxypeptidase-like 40
-7	7050000	7250000	Rural	ACLI19_g30702	NA	protein BPS1%2C chloroplastic-like [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30703	NA	agamous-like MADS-box protein AGL15 [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30704	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30705	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30706	NA	LOW QUALITY PROTEIN: glyoxylase I 4 [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30707	SEC31B	Protein transport protein Sec31B
-7	7050000	7250000	Rural	ACLI19_g30708	NA	non-specific serine/threonine protein kinase
-7	7050000	7250000	Rural	ACLI19_g30709	NA	hypothetical protein
-7	7050000	7250000	Rural	ACLI19_g30710	HAC1	transcription factor that binds to CRE motif
-7	7050000	7250000	Rural	ACLI19_g30711	NA	interaptin-like [Trifolium pratense]
-7	7050000	7250000	Rural	ACLI19_g30700	ATG7	Autophagy protein 7
+9	4350000	4700000	Urban	ACLI19_g40944	AP2M	AP-2 complex subunit mu
+9	4350000	4700000	Urban	ACLI19_g40946	ALMT12	Aluminum-activated malate transporter 12
+9	4350000	4700000	Urban	ACLI19_g40947	NA	NAC domain-containing protein [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40948	ABCI7	Protein abci7%2C chloroplastic, chloroplastic
+9	4350000	4700000	Urban	ACLI19_g40949	NA	glycine cleavage system H protein%2C mitochondrial [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40950	NA	ent-kaurenoic acid monooxygenase
+9	4350000	4700000	Urban	ACLI19_g40951	NA	protein NRT1/ PTR FAMILY 7.3 [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40952	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40953	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40954	NA	pyruvate kinase
+9	4350000	4700000	Urban	ACLI19_g40955	NA	pyruvate kinase
+9	4350000	4700000	Urban	ACLI19_g40956	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40957	PER20	Peroxidase 20
+9	4350000	4700000	Urban	ACLI19_g40958	NA	type I inositol polyphosphate 5-phosphatase 2 [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40959	TOM2A	Tobamovirus multiplication protein 2A
+9	4350000	4700000	Urban	ACLI19_g40960	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40961	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40962	APRR2	Two-component response regulator-like
+9	4350000	4700000	Urban	ACLI19_g40964	NA	vacuolar protein sorting-associated protein 55 homolog [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40965	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40966	NA	phosphoacetylglucosamine mutase
+9	4350000	4700000	Urban	ACLI19_g40967	NA	[histone H3]-lysine(4) N-trimethyltransferase
+9	4350000	4700000	Urban	ACLI19_g40968	NA	GATA transcription factor 26 [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40969	NA	pentatricopeptide repeat-containing protein At1g32415%2C mitochondrial [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40970	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40971	RABH1B	Ras-related protein RABH1b
+9	4350000	4700000	Urban	ACLI19_g40974	LON2	Lon protease 2%2C peroxisomal, peroxisomal
+9	4350000	4700000	Urban	ACLI19_g40976	NA	FCS-Like Zinc finger 1 [Trifolium pratense]
+9	4350000	4700000	Urban	ACLI19_g40977	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40945	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40963	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40972	UPF1	ATP-dependent helicase NAM7
+9	4350000	4700000	Urban	ACLI19_g40975	NA	hypothetical protein
+9	4350000	4700000	Urban	ACLI19_g40973	NA	hypothetical protein
 9	4800000	4900000	Urban	ACLI19_g40986	PALM1	transcriptional regulator
 9	4800000	4900000	Urban	ACLI19_g40988	NA	nucleoporin autopeptidase [Trifolium pratense]
 9	4800000	4900000	Urban	ACLI19_g40989	NA	hypothetical protein
@@ -174,25 +183,12 @@ Chr	start	end	direction	gene_id	gene_symbol	product
 7	53600000	53900000	Urban	ACLI19_g33876	NA	hypothetical protein
 7	53600000	53900000	Urban	ACLI19_g33879	NA	protein ECERIFERUM 26-like [Trifolium pratense]
 7	53600000	53900000	Urban	ACLI19_g33883	NA	probable magnesium transporter NIPA2 [Trifolium pratense]
-9	4450000	4700000	Urban	ACLI19_g40959	TOM2A	Tobamovirus multiplication protein 2A
-9	4450000	4700000	Urban	ACLI19_g40960	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40961	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40962	APRR2	Two-component response regulator-like
-9	4450000	4700000	Urban	ACLI19_g40964	NA	vacuolar protein sorting-associated protein 55 homolog [Trifolium pratense]
-9	4450000	4700000	Urban	ACLI19_g40965	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40966	NA	phosphoacetylglucosamine mutase
-9	4450000	4700000	Urban	ACLI19_g40967	NA	[histone H3]-lysine(4) N-trimethyltransferase
-9	4450000	4700000	Urban	ACLI19_g40968	NA	GATA transcription factor 26 [Trifolium pratense]
-9	4450000	4700000	Urban	ACLI19_g40969	NA	pentatricopeptide repeat-containing protein At1g32415%2C mitochondrial [Trifolium pratense]
-9	4450000	4700000	Urban	ACLI19_g40970	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40971	RABH1B	Ras-related protein RABH1b
-9	4450000	4700000	Urban	ACLI19_g40974	LON2	Lon protease 2%2C peroxisomal, peroxisomal
-9	4450000	4700000	Urban	ACLI19_g40976	NA	FCS-Like Zinc finger 1 [Trifolium pratense]
-9	4450000	4700000	Urban	ACLI19_g40977	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40963	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40972	UPF1	ATP-dependent helicase NAM7
-9	4450000	4700000	Urban	ACLI19_g40975	NA	hypothetical protein
-9	4450000	4700000	Urban	ACLI19_g40973	NA	hypothetical protein
+5	56900000	57000000	Urban	ACLI19_g23960	TUB5	Tubulin beta-5 chain
+5	56900000	57000000	Urban	ACLI19_g23962	NA	thaumatin-like protein 1b [Trifolium pratense]
+5	56900000	57000000	Urban	ACLI19_g23963	NA	hypothetical protein
+5	56900000	57000000	Urban	ACLI19_g23964	NA	hypothetical protein
+5	56900000	57000000	Urban	ACLI19_g23961	NA	protein PSK SIMULATOR 2-like [Trifolium pratense]
+5	56900000	57000000	Urban	ACLI19_g23965	NA	dnaJ homolog subfamily C member 2-like [Trifolium pratense]
 16	350000	450000	Urban	ACLI19_g73304	NA	alpha/beta fold hydrolase [Trifolium pratense]
 16	350000	450000	Urban	ACLI19_g73305	NA	hypothetical protein
 16	350000	450000	Urban	ACLI19_g73306	DJA6	Chaperone protein dnaJ A6
@@ -207,19 +203,10 @@ Chr	start	end	direction	gene_id	gene_symbol	product
 16	350000	450000	Urban	ACLI19_g73312	NA	hydroquinone glucosyltransferase
 16	350000	450000	Urban	ACLI19_g73314	NA	hypothetical protein
 16	350000	450000	Urban	ACLI19_g73316	NA	hypothetical protein
-9	4250000	4300000	Urban	ACLI19_g40929	DXO1	NAD-capped RNA hydrolase dxo1
-9	4250000	4300000	Urban	ACLI19_g40931	NA	F-box/LRR-repeat protein At4g14103-like [Trifolium pratense]
-9	4250000	4300000	Urban	ACLI19_g40932	RPL37A	60S ribosomal protein L37A
-9	4250000	4300000	Urban	ACLI19_g40934	BAM3	Beta-amylase 3%2C chloroplastic, chloroplastic
-9	4250000	4300000	Urban	ACLI19_g40935	NA	RING-type E3 ubiquitin transferase
-9	4250000	4300000	Urban	ACLI19_g40936	NA	hypothetical protein
-9	4250000	4300000	Urban	ACLI19_g40930	CKB1	casein kinase 2 regulatory subunit
-9	4250000	4300000	Urban	ACLI19_g40933	PBL19	Probable serine/threonine-protein kinase pbl19
-9	4250000	4300000	Urban	ACLI19_g40937	BAM3	Beta-amylase 3%2C chloroplastic, chloroplastic
-7	52350000	52400000	Urban	ACLI19_g33745	TCP24	Transcription factor TCP2-like
-7	52350000	52400000	Urban	ACLI19_g33746	INT2	Fibroblast growth factor 3
-7	52350000	52400000	Urban	ACLI19_g33744	NA	ornithine aminotransferase
-11	10100000	10150000	Urban	ACLI19_g50813	NA	high mobility group B protein 7-like [Trifolium pratense]
-11	10100000	10150000	Urban	ACLI19_g50814	NA	hypothetical protein
-11	10100000	10150000	Urban	ACLI19_g50815	NA	hypothetical protein
-11	10100000	10150000	Urban	ACLI19_g50812	NA	diphosphoinositol-pentakisphosphate 1-kinase
+5	46150000	46200000	Urban	ACLI19_g22843	NA	defensin-like protein 1 [Medicago truncatula]
+5	46150000	46200000	Urban	ACLI19_g22844	NA	auxin-induced protein 6B-like [Trifolium pratense]
+5	46150000	46200000	Urban	ACLI19_g22845	NA	saccharopepsin
+5	46150000	46200000	Urban	ACLI19_g22846	NA	hypothetical protein
+5	46150000	46200000	Urban	ACLI19_g22847	NA	probable magnesium transporter NIPA6 isoform X1 [Trifolium pratense]
+5	32400000	32450000	Urban	ACLI19_g22023	NA	[pyruvate dehydrogenase (acetyl-transferring)]-phosphatase
+5	32400000	32450000	Urban	ACLI19_g22024	NA	hypothetical protein

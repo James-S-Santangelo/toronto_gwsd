@@ -14,14 +14,18 @@ rule bcftools_filter_vcfs:
     resources:
         mem_mb = lambda wildcards, attempt: attempt * 4000,
         time = '03:00:00'
+    params:
+        max_dp = 2600
     shell:
         """
         if [ {wildcards.site_type} = 'invariant' ]; then
-            bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} -Oz -o {output.vcf} 2> {log} &&
+            bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} |
+                bcftools filter -i 'INFO/DP <= {params.max_dp}' -Oz -o {output.vcf} 2> {log} &&
             sleep 5
             tabix {output.vcf} 2>> {log}
         elif [ {wildcards.site_type} = 'snps' ]; then
             ( bcftools filter -i 'F_MISSING <= {wildcards.miss}' {input.vcf} |
+                bcftools filter -i 'INFO/DP <= {params.max_dp}' |
                 bcftools filter -i 'QUAL >= 30' |
                 bcftools filter -i 'AB >= 0.25 & AB <= 0.75 | AB <= 0.01' |
                 bcftools filter -i 'SAF > 0 & SAR > 0' |

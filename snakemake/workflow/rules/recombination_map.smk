@@ -6,12 +6,12 @@ rule sites_toInterpolate_byChrom:
     Extract sites from VCF to be used for genetic map interpolation
     """
     input:
-        lambda w: expand(rules.remove_duplicate_sites.output, chrom=w.chrom, site_type='snps', miss='0')
+        lambda w: expand(rules.remove_duplicate_sites.output.vcf, chrom=w.chrom, site_type='snps', miss='0')
     output:
         '{0}/genMap_interpolation/{{chrom}}_forGenMapInterpolation.sites'.format(PROGRAM_RESOURCE_DIR)
     shell:
         """
-        grep -v '^#' {input} | cut -f1,2 > {output}
+        zgrep -v '^#' {input} | cut -f1,2 > {output}
         """
 
 rule interpolate_genetic_map:

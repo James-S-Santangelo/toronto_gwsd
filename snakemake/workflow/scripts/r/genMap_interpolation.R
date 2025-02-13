@@ -66,7 +66,3 @@ scamFits_allChroms_off %>%
     dplyr::select(pos, chrom, cM) %>%
     mutate(cM = as.numeric(cM)) %>%
     write_delim(., snakemake@output[['genMap_interp']], delim = '\t')
-
-
-
-

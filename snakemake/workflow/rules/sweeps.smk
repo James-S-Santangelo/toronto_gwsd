@@ -357,7 +357,7 @@ rule pixy:
         pi = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_pi.txt",
         dxy = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy_dxy.txt"
     log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy.log"
-    conda: "../envs/pixy.yaml"
+    conda: "../envs/sweeps.yaml"
     params:
         tmp_vcf = f"{{chrom}}{{miss}}{{win_size}}_tmp.vcf.gz",
         tmp_sites = f"{{chrom}}{{miss}}{{win_size}}.sites",
@@ -828,11 +828,25 @@ rule compare_observed_permuted_xpnsl:
     notebook:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
 
+rule install_genotype_plot:
+    """
+    Install genotype_plot into conda env
+    """
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/genotype_plot_install.done"
+    conda: "../envs/sweeps.yaml"
+    shell:
+        """
+        R -e 'remotes::install_github("JimWhiting91/genotype_plot")' &&
+        touch {output}
+        """
+
 rule outlier_analysis:
     """
     Perform outlier analysis and generate figures (e.g., Manhattan plot)
     """
     input:
+        gt_plot = rules.install_genotype_plot.output,
         win_sfs_fst = rules.write_windowed_sfs_stats.output.sfs_df,
         win_xpnsl_ur = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Rural']),
         win_xpnsl_sr = expand(rules.write_windowed_xpnsl.output, hab_comb=['Suburban_Rural']),
@@ -853,6 +867,7 @@ rule outlier_analysis:
         popmap = rules.create_pixy_popfile.output,
         gff = GFF_FILE 
     output:
+        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat_ur = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_sr = f"{FIGURES_DIR}/selection/manhattan/suburban_rural_xpnsl_windowed_manhat.pdf",
