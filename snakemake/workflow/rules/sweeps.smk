@@ -867,7 +867,6 @@ rule outlier_analysis:
         popmap = rules.create_pixy_popfile.output,
         gff = GFF_FILE 
     output:
-        "test.txt",
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat_ur = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_sr = f"{FIGURES_DIR}/selection/manhattan/suburban_rural_xpnsl_windowed_manhat.pdf",
