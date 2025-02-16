@@ -1,0 +1,24 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3
+  - jupyter=1.0.0
+  - bedtools=2.30
+  - r-base=4.1.3
+  - r-tidyverse=1.3.1
+  - r-patchwork=1.1.1
+  - r-irkernel=1.3.1
+  - r-data.table=1.14.8
+  - r-vegan=2.6_4
+  - r-wesanderson=0.3.6
+  - r-bedtoolsr=2.30
+  - r-data.table=1.14.8
+  - r-ape=5.7
+  - r-vcfr
+  - r-remotes
+  - r-factoextra
+  - r-aplot
+  - r-ggplotify
+  - r-ggfun
+  - bioconductor-topgo

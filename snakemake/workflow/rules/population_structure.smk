@@ -367,6 +367,50 @@ rule ngsrelate:
             -n $N 2> {log}
         """
 
+rule install_ggheatmap:
+    """
+    Install ggheatmap into Conda environment
+    """
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/ggheatmap_install.done"
+    conda: "../envs/r.yaml"
+    shell:
+        """
+        R -e 'install.packages("ggheatmap", repos = "http://cran.us.r-project.org")'
+        R -e 'library(ggheatmap)' &&
+        touch {output}
+        """
+
+rule population_structure_figures:
+    """
+    Generate population structure figures
+    """
+    input:
+        ggheat_install = rules.install_ggheatmap.output,
+        order = expand(rules.extract_sample_angsd.output, site="4fold"),
+        cov = expand(rules.pcangsd.output, site="4fold", maf="0.05"),
+        evanno = rules.clumpak_best_k_by_evanno.output,
+        admix_log = expand(rules.ngsadmix.output.lf, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
+        admix_qopt = expand(rules.ngsadmix.output.qopt, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
+        pi_byHab = expand(rules.angsd_diversity_neutrality_stats_byHabitat.output, site="4fold", habitat=HABITATS),
+        fst_byHab = expand(rules.angsd_habitat_fst_readable.output, site=['4fold'], hab_comb=HABITAT_COMBOS),
+        bl = expand(rules.create_bam_list_highQualSamples.output, site="4fold"),
+        pi_byPop = expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
+        fst_byPop = expand(rules.angsd_population_fst_readable.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
+    output:
+        "test.txt",
+        pca = f"{FIGURES_DIR}/pop_struct/pca_byHabitat.pdf",
+        admix_optimal = f"{FIGURES_DIR}/pop_struct/admix_optimal.pdf",
+        admix_optimal_minus = f"{FIGURES_DIR}/pop_struct/admix_optimal_minus.pdf",
+        admix_optimal_plus = f"{FIGURES_DIR}/pop_struct/admix_optimal_plus.pdf",
+        fst_byPop = f"{FIGURES_DIR}/pop_struct/fst_pairwise_population.pdf",
+        ibd_plot = f"{FIGURES_DIR}/pop_struct/isolation_by_distance.pdf",
+        pi_byHab_df = f"{FIGURES_DIR}/pop_struct/pi_byHab.txt",
+        fst_byHab_df = f"{FIGURES_DIR}/pop_struct/fst_byHab.txt"
+    conda:'../envs/r.yaml'
+    notebook:
+        "../notebooks/population_structure.r.ipynb"
+
 ##############
 #### POST ####
 ##############
@@ -379,7 +423,8 @@ rule pop_structure_done:
         expand(rules.pcangsd.output, site=['4fold'], maf=['0.05']),
         expand(rules.ngsadmix.output, k=NGSADMIX_K, site=['4fold'], maf=['0.05'], seed=NGSADMIX_SEEDS),
         expand(rules.clumpak_best_k_by_evanno.output),
-        expand(rules.ngsrelate.output, chrom=CHROMOSOMES, site='4fold', maf='0.05')
+        expand(rules.ngsrelate.output, chrom=CHROMOSOMES, site='4fold', maf='0.05'),
+        rules.population_structure_figures.output
     output:
         '{0}/population_structure.done'.format(POP_STRUC_DIR)
     shell:

@@ -824,7 +824,7 @@ rule compare_observed_permuted_xpnsl:
     output:
         urb_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/urban_percentiles.txt",
         rur_perc = f"{FIGURES_DIR}/selection/xpnsl_perm/rural_percentiles.txt",
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     notebook:
         "../notebooks/compare_observed_permuted_xpnsl.r.ipynb"
 
@@ -920,7 +920,7 @@ rule outlier_analysis:
         Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf",
         random_unsel_regions_af = f"{FIGURES_DIR}/selection/region_plots/random_unsel_regions_af.pdf",
         random_unsel_regions_pca = f"{FIGURES_DIR}/selection/region_plots/random_unsel_regions_pca.pdf"
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
 
@@ -933,7 +933,7 @@ rule go_enrichment_analysis:
         top_ten_genes = rules.outlier_analysis.output.top_hits_genes
     output:
         all_go_res = f'{FIGURES_DIR}/tables/all_go_results.txt'
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     notebook:
         "../notebooks/go_enrichment_analysis.r.ipynb"
 
