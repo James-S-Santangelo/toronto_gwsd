@@ -359,31 +359,17 @@ rule pixy:
     log: f"{LOG_DIR}/pixy/{{chrom}}_miss{{miss}}_win{{win_size}}_pixy.log"
     conda: "../envs/sweeps.yaml"
     params:
-        tmp_vcf = f"{{chrom}}{{miss}}{{win_size}}_tmp.vcf.gz",
-        tmp_sites = f"{{chrom}}{{miss}}{{win_size}}.sites",
         out = f"{PIXY_DIR}/{{chrom}}",
         pref = f"{{chrom}}_miss{{miss}}_win{{win_size}}_pixy"
     shell:
         """
-        if [ {wildcards.win_size} = '1' ]; then
-            pixy --stats fst pi dxy \
-                --population {input.popu} \
-                --vcf {input.vcf} \
-                --window_size {wildcards.win_size} \
-                --output_folder {params.out} \
-                --output_prefix {params.pref} \
-                --fst_type hudson &> {log}
-            rm {params.tmp_vcf}*
-            rm {params.tmp_sites}
-        else
-            pixy --stats fst pi dxy \
-                --population {input.popu} \
-                --vcf {input.vcf} \
-                --window_size {wildcards.win_size} \
-                --output_folder {params.out} \
-                --output_prefix {params.pref} \
-                --fst_type hudson &> {log}
-        fi
+        pixy --stats fst pi dxy \
+            --population {input.popu} \
+            --vcf {input.vcf} \
+            --window_size {wildcards.win_size} \
+            --output_folder {params.out} \
+            --output_prefix {params.pref} \
+            --fst_type hudson &> {log}
         """
 
 ################
@@ -423,6 +409,70 @@ rule norm_xpnsl:
         lambda w: expand(rules.selscan_xpnsl.output, chrom=CHROMOSOMES, hab_comb=w.hab_comb)
     output:
         expand(f'{SWEEPS_DIR}/xpnsl/{{chrom}}/{{chrom}}_{{hab_comb}}.xpnsl.out.norm', chrom=CHROMOSOMES, allow_missing=True)
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    shell:
+        """
+        norm --xpnsl --qbins 10 --files {input} 
+        """
+
+rule remove_outlier_pops_fromVCF:
+    """
+    Remove population structure outlier population from VCFs for re-running XP-nSL.
+    Urban: Samples from population 40
+    Rural: Samples from population 7
+    """
+    input:
+        vcf = lambda w: expand(rules.bcftools_splitVCF_byHabitat.output.vcf, chrom=w.chrom, habitat=w.habitat)
+    output:
+        vcf = f"{FREEBAYES_DIR}/vcf/{{chrom}}/{{chrom}}_{{habitat}}_outlierPopsRemoved.vcf.gz",
+        idx = f"{FREEBAYES_DIR}/vcf/{{chrom}}/{{chrom}}_{{habitat}}_outlierPopsRemoved.vcf.gz.tbi"
+    log: f"{LOG_DIR}/remove_outlier_pops_fromVCF/{{chrom}}_{{habitat}}"
+    conda: "../envs/sweeps.yaml"
+    params:
+        to_rem = lambda w: "^s_40_1,s_40_3,s_40_6,s_40_7,s_40_8,s_40_10,s_40_12,s_40_17,s_40_19" if w.habitat == "Urban"
+                    else "^s_7_4,s_7_6,s_7_7,s_7_11,s_7_13,s_7_16,s_7_19,s_7_20"
+    shell:
+        """
+        ( bcftools view -O z -o {output.vcf} \
+            --samples {params.to_rem} {input.vcf} &&
+        sleep 5
+        tabix {output.vcf} ) 2> {log}
+        """
+    
+rule selscan_xpnsl_outlierRem:
+    """
+    Estimate XP-nSL with outlier populations removed
+    """
+    input:
+        vcf = lambda w: expand(rules.remove_outlier_pops_fromVCF.output.vcf, chrom=w.chrom, habitat="Urban"),
+        vcf_ref = lambda w: expand(rules.remove_outlier_pops_fromVCF.output.vcf, chrom=w.chrom, habitat="Rural")
+    output:
+        temp('{0}/xpnsl/{{chrom}}/{{chrom}}_Urban_Rural_outlierRem.xpnsl.out'.format(SWEEPS_DIR))
+    container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
+    log: LOG_DIR + '/selscan_xpnsl/{chrom}_Urban_Rural_xpnsl_outlierRem.log'
+    resources: 
+        mem_mb = lambda wildcards, attempt: attempt * 4000,
+        time = '01:00:00'
+    threads: 2
+    params:
+        out = '{0}/xpnsl/{{chrom}}/{{chrom}}_Urban_Rural_outlierRem'.format(SWEEPS_DIR) 
+    shell:
+        """
+        selscan --xpnsl \
+            --vcf {input.vcf} \
+            --vcf-ref {input.vcf_ref} \
+            --threads {threads} \
+            --out {params.out} 2> {log}
+        """
+
+rule norm_xpnsl_outlierRem:
+    """
+    Normalize XP-nSL with outlier populations removed
+    """
+    input:
+        lambda w: expand(rules.selscan_xpnsl_outlierRem.output, chrom=CHROMOSOMES)
+    output:
+        expand(f'{SWEEPS_DIR}/xpnsl/{{chrom}}/{{chrom}}_Urban_Rural_outlierRem.xpnsl.out.norm', chrom=CHROMOSOMES)
     container: 'library://james-s-santangelo/selscan/selscan:1.3.0'
     shell:
         """
@@ -741,7 +791,7 @@ rule write_windowed_sfs_stats:
         fst = expand(rules.windowed_fst.output, chrom=CHROMOSOMES, hab_comb='Urban_Rural'),
     output:
         sfs_df = f'{SWEEPS_DIR}/analyses/windowed_sfs_stats.txt',
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     script:
         "../scripts/r/write_windowed_sfs_stats.R"
 
@@ -755,7 +805,7 @@ rule write_windowed_singPop_hapstats:
         hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_{{stat}}.txt'
     params:
         winsize = 50000
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     script:
         "../scripts/r/write_windowed_singPop_hapstats.R"
 
@@ -769,9 +819,23 @@ rule write_windowed_xpnsl:
         hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_{{hab_comb}}_xpnsl.txt'
     params:
         winsize = 50000
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     script:
         "../scripts/r/write_windowed_xpnsl.R"
+
+rule write_windowed_xpnsl_outlierRem:
+    """
+    Create file with windowed XP-nSL stats with outlier populations remove
+    """
+    input:
+        norm = expand(rules.norm_xpnsl_outlierRem.output, chrom=CHROMOSOMES)
+    output:
+        hapstats_df = f'{SWEEPS_DIR}/analyses/windowed_Urban_Rural_xpnsl_outlierRem.txt'
+    params:
+        winsize = 50000
+    conda: '../envs/r.yaml'
+    script:
+        "../scripts/r/write_windowed_xpnsl_outlierRem.R"
 
 rule write_windowed_xpnsl_permuted:
     """
@@ -783,7 +847,7 @@ rule write_windowed_xpnsl_permuted:
         xpnsl_df = f'{SWEEPS_DIR}/analyses/permuted_xpnsl/{{hab_comb}}_{{n}}_windowed_xpnsl_permuted.txt'
     params:
         winsize = 50000,
-    conda: '../envs/sweeps.yaml'
+    conda: '../envs/r.yaml'
     script:
         "../scripts/r/write_windowed_xpnsl_permuted.R"
 
@@ -834,10 +898,11 @@ rule install_genotype_plot:
     """
     output:
         f"{PROGRAM_RESOURCE_DIR}/genotype_plot_install.done"
-    conda: "../envs/sweeps.yaml"
+    conda: "../envs/r.yaml"
     shell:
         """
         R -e 'remotes::install_github("JimWhiting91/genotype_plot")' &&
+        R -e 'library(GenotypePlot)' &&
         touch {output}
         """
 
@@ -849,6 +914,7 @@ rule outlier_analysis:
         gt_plot = rules.install_genotype_plot.output,
         win_sfs_fst = rules.write_windowed_sfs_stats.output.sfs_df,
         win_xpnsl_ur = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Rural']),
+        win_xpnsl_ur_outRem = expand(rules.write_windowed_xpnsl_outlierRem.output),
         win_xpnsl_sr = expand(rules.write_windowed_xpnsl.output, hab_comb=['Suburban_Rural']),
         win_xpnsl_us = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Suburban']),
         win_xpnsl_perm = expand(rules.write_windowed_xpnsl_permuted.output, hab_comb="Urban_Rural", n=[x for x in range(1,1001)]),
@@ -869,6 +935,7 @@ rule outlier_analysis:
     output:
         xpnsl_nSites_hist = f'{FIGURES_DIR}/selection/xpnsl_nSites_histogram.pdf',
         xpnsl_manhat_ur = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat.pdf",
+        xpnsl_manhat_ur_outRem = f"{FIGURES_DIR}/selection/manhattan/urban_rural_xpnsl_windowed_manhat_outRem.pdf",
         xpnsl_manhat_sr = f"{FIGURES_DIR}/selection/manhattan/suburban_rural_xpnsl_windowed_manhat.pdf",
         xpnsl_manhat_us = f"{FIGURES_DIR}/selection/manhattan/urban_suburban_xpnsl_windowed_manhat.pdf",
         cor_plot = f"{FIGURES_DIR}/selection/xpnsl_perm/observed_permuted_xpnsl_correlation.pdf",
@@ -947,7 +1014,8 @@ rule sweeps_done:
     Create empty file signaling completion of selective sweeps analysis
     """
     input:
-        rules.go_enrichment_analysis.output
+        # rules.go_enrichment_analysis.output,
+        rules.norm_xpnsl_outlierRem.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:
