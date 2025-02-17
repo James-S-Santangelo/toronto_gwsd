@@ -398,7 +398,6 @@ rule population_structure_figures:
         pi_byPop = expand(rules.angsd_diversity_neutrality_stats_byPopulation.output, popu=POPS_MULTI_IND, site='4fold'),
         fst_byPop = expand(rules.angsd_population_fst_readable.output, pop_comb=POP_COMB_MULTI_IND, site='4fold')
     output:
-        "test.txt",
         pca = f"{FIGURES_DIR}/pop_struct/pca_byHabitat.pdf",
         admix_optimal = f"{FIGURES_DIR}/pop_struct/admix_optimal.pdf",
         admix_optimal_minus = f"{FIGURES_DIR}/pop_struct/admix_optimal_minus.pdf",
