@@ -1014,7 +1014,7 @@ rule sweeps_done:
     Create empty file signaling completion of selective sweeps analysis
     """
     input:
-        # rules.go_enrichment_analysis.output,
+        rules.go_enrichment_analysis.output,
         rules.norm_xpnsl_outlierRem.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
