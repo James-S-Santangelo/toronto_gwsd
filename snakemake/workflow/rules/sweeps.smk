@@ -1049,7 +1049,7 @@ rule cline_analysis:
         cline_plot = f"{FIGURES_DIR}/selection/max_fst_sites_clines.pdf",
         selSites_glm_df = f"{FIGURES_DIR}/tables/selected_regions_max_fst_glm.txt",
         freq_byHab_plot = f"{FIGURES_DIR}/selection/selected_regions_max_fst_byHabitat.pdf",
-        freq_diff_plot = f"{FIGURES_DIR}/selection/selected_regions_max_fst_frequency_difference.txt",
+        freq_diff_plot = f"{FIGURES_DIR}/selection/selected_regions_max_fst_frequency_difference.pdf",
     conda: "../envs/r.yaml"
     notebook:
         "../notebooks/cline_analysis.r.ipynb"
