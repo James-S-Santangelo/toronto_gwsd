@@ -346,7 +346,7 @@ rule create_pixy_popfile:
 
 rule pixy:
     """
-    Run Pixy to estimate windowed Fst from VCFs
+    Run Pixy to estimate windowed stats from VCFs
     """
     input:
         vcf = rules.concat_variant_invariant_sites.output.vcf,
@@ -369,6 +369,35 @@ rule pixy:
             --window_size {wildcards.win_size} \
             --output_folder {params.out} \
             --output_prefix {params.pref} \
+            --fst_type hudson &> {log}
+        """
+
+rule pixy_perSite:
+    """
+    Run Pixy to estimate per-site Fst from VCFs
+    """
+    input:
+        vcf = rules.shapeit_phase.output.vcf,
+        tbi = rules.shapeit_phase.output.idx,
+        popu = rules.create_pixy_popfile.output
+    output:
+        fst = f"{PIXY_DIR}/{{chrom}}/{{chrom}}_perSite_pixy_fst.txt",
+    log: f"{LOG_DIR}/pixy/{{chrom}}_perSite_pixy.log"
+    conda: "../envs/sweeps.yaml"
+    params:
+        out = f"{PIXY_DIR}/{{chrom}}",
+        pref = f"{{chrom}}_perSite_pixy"
+    threads: 4
+    shell:
+        """
+        pixy --stats fst \
+            --population {input.popu} \
+            --vcf {input.vcf} \
+            --window_size 1 \
+            --bypass_invariant_check yes \
+            --output_folder {params.out} \
+            --output_prefix {params.pref} \
+            --n_cores {threads} \
             --fst_type hudson &> {log}
         """
 
@@ -529,6 +558,9 @@ rule permuted_samples_byHabitat:
             raise
        
 rule bcftools_splitVCF_byHabitat_permuted:
+    """
+    Split Permuted VCFs by habitat
+    """
     input:
         vcf = rules.shapeit_phase.output.vcf,
         samples = bcftools_splitVCF_permuted_input 
@@ -991,6 +1023,38 @@ rule outlier_analysis:
     notebook:
         "../notebooks/outlier_analysis.r.ipynb"
 
+rule generate_dosage_matrix:
+    """
+    Convert VCFs to dosage matrices for easier calculation of allele frequencies
+    """
+    input:
+        vcf = rules.shapeit_phase.output.vcf,
+        tbi = rules.shapeit_phase.output.idx
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/dosage_matrices/{{chrom}}_dosages.txt"
+    container: "docker://ghcr.io/thewanglab/algatr"
+    script:
+        "../scripts/r/generate_dosage_matrix.R"
+
+rule cline_analysis:
+    """
+    Examine whether SNPs inselected regions show clina variation
+    """
+    input:
+        top_hits = rules.outlier_analysis.output.top_hits_tbl,
+        fst = expand(rules.pixy_perSite.output, chrom=CHROMOSOMES),
+        dos = expand(rules.generate_dosage_matrix.output, chrom=CHROMOSOMES)
+    output:
+        max_fst_df = f"{FIGURES_DIR}/tables/selected_regions_max_fst_sites.txt",
+        cline_plot = f"{FIGURES_DIR}/selection/max_fst_sites_clines.pdf",
+        selSites_glm_df = f"{FIGURES_DIR}/tables/selected_regions_max_fst_glm.txt",
+        freq_byHab_plot = f"{FIGURES_DIR}/selection/selected_regions_max_fst_byHabitat.pdf",
+        freq_diff_plot = f"{FIGURES_DIR}/selection/selected_regions_max_fst_frequency_difference.txt",
+    conda: "../envs/r.yaml"
+    notebook:
+        "../notebooks/cline_analysis.r.ipynb"
+        
+
 rule go_enrichment_analysis:
     """
     Perform GO enrichment analysis
@@ -1015,7 +1079,8 @@ rule sweeps_done:
     """
     input:
         rules.go_enrichment_analysis.output,
-        rules.norm_xpnsl_outlierRem.output
+        rules.outlier_analysis.output,
+        rules.cline_analysis.output
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:

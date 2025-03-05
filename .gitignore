@@ -5,5 +5,5 @@
 .Rhistory
 *.svg
 *.qgz
-notebooks/
+/notebooks/
 snakemake/resources/reference/
