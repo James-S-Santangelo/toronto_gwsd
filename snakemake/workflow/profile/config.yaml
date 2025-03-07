@@ -1,0 +1,6 @@
+rerun-incomplete: True
+printshellcmds: True
+keep-going: True
+notemp: True
+conda-cleanup-pkgs: cache
+singularity-args: "--bind /home --bind /research --bind /node1nfs"

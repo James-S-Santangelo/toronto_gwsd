@@ -809,6 +809,35 @@ rule analyze_salti_spectra:
         rm {wildcards.habitat}_allChroms.map
         """
 
+#####################
+#### PAIRWISE LD ####
+#####################
+
+rule plink_pairwise_ld:
+    """
+    Estimate pairwise LD (as R2) between variants within 50 Kb distance
+    """
+    input:
+        vcf = rules.bcftools_splitVCF_byHabitat.output.vcf
+    output:
+        f"{PLINK_DIR}/pairwise_ld/{{chrom}}_{{habitat}}.ld.gz"
+    log: f"{LOG_DIR}/plink/{{chrom}}_{{habitat}}_plink_ld.log"
+    conda: "../envs/sweeps.yaml"
+    params:
+        out = f"{PLINK_DIR}/pairwise_ld/{{chrom}}_{{habitat}}"
+    shell:
+        """
+        plink --vcf {input.vcf} \
+            --allow-extra-chr \
+            --set-missing-var-ids @:# \
+            --double-id \
+            -r2 gz \
+            --ld-window 100000 \
+            --ld-window-kb 100 \
+            --ld-window-r2 0 \
+            -out {params.out} 2> {log}
+        """
+
 ##################
 #### ANALYSES ####
 ##################
@@ -854,6 +883,20 @@ rule write_windowed_xpnsl:
     conda: '../envs/r.yaml'
     script:
         "../scripts/r/write_windowed_xpnsl.R"
+
+rule write_windowed_ld:
+    """
+    Create file with windowed pairwise LD
+    """
+    input:
+        ld = rules.plink_pairwise_ld.output 
+    output:
+        win_ld = f'{PLINK_DIR}/windowed/{{chrom}}_{{habitat}}_windowed_ld.txt'
+    params:
+        winsize = 50000
+    conda: '../envs/r.yaml'
+    script:
+        "../scripts/r/write_windowed_ld.R"
 
 rule write_windowed_xpnsl_outlierRem:
     """
@@ -1080,7 +1123,8 @@ rule sweeps_done:
     input:
         rules.go_enrichment_analysis.output,
         rules.outlier_analysis.output,
-        rules.cline_analysis.output
+        rules.cline_analysis.output,
+        expand(rules.write_windowed_ld.output, chrom=CHROMOSOMES, habitat=["Rural", "Urban"])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:

@@ -36,6 +36,7 @@ GENMAP_RESULTS_DIR = '{0}/gen_map'.format(config['results_prefix'])
 SWEEPS_DIR = '{0}/sweeps'.format(config['results_prefix'])
 ARG_DIR = '{0}/args'.format(config['results_prefix'])
 PIXY_DIR = '{0}/pixy'.format(config['results_prefix'])
+PLINK_DIR = '{0}/plink'.format(config['results_prefix'])
 FIGURES_DIR = config['figures']
 
 # Parameters for initial PCA and relatedness analysis post-QC

@@ -6,3 +6,4 @@ dependencies:
   - jupyter=1.0.0
   - bcftools=1.16
   - pixy=1.2.8.beta1
+  - plink=1.90b6.21
