@@ -94,6 +94,37 @@ rule bamtools_stats:
         bamtools stats -in {input.bam} > {output} 2> {log}
         """
 
+rule bedtools_makewindows:
+    """
+    Create BED files with windows across genome
+    """
+    input:
+        rules.genome_lengths_file.output
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/ref/windows.bed"
+    conda: "../envs/qc.yaml"
+    shell:
+        """
+        bedtools makewindows -g {input} -w 1000 -s 200 > {output}
+        """
+
+rule genomewide_mapq:
+    """
+    Generate mean MAPQ scores in windows across the genome
+    """
+    input:
+        bam = expand(rules.samtools_markdup.output.bam, sample="s_53_11"),
+        win = rules.bedtools_makewindows.output
+    output:
+        f"{QC_DIR}/mapq/mapq.txt"
+    conda: "../envs/qc.yaml"
+    shell:
+        """
+        bedtools map -a {input.win} \
+            -b <(bedtools bamtobed -i {input.bam}) \
+            -c 5 -o mean > {output}
+        """
+
 rule multiqc:
     """
     Generate single HTML report with all QC info for all samples using multiQC.

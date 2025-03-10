@@ -6,3 +6,4 @@ dependencies:
   - qualimap=2.2.2
   - bamtools=2.5.2
   - multiqc=1.14
+  - bedtools=2.31

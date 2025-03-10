@@ -13,6 +13,19 @@ rule samtools_index_reference:
         samtools faidx {input} 2> {log}
         """
 
+rule genome_lengths_file:
+    """
+    Generate file with lengths of nuclear chromosomes
+    """
+    input:
+        fai = rules.samtools_index_reference.output
+    output:
+        f"{PROGRAM_RESOURCE_DIR}/ref/genome_chr_lengths.txt"
+    shell:
+        """
+        cut -f1,2 {input.fai} > {output}
+        """
+
 rule bwa_index_ref:
     """
     Indexes reference genome with BWA for read alignment
