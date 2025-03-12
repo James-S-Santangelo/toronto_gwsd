@@ -832,8 +832,8 @@ rule plink_pairwise_ld:
             --set-missing-var-ids @:# \
             --double-id \
             -r2 gz \
-            --ld-window 100000 \
-            --ld-window-kb 100 \
+            --ld-window 100000\
+            --ld-window-kb 50 \
             --ld-window-r2 0 \
             -out {params.out} 2> {log}
         """
@@ -889,9 +889,11 @@ rule write_windowed_ld:
     Create file with windowed pairwise LD
     """
     input:
+        # ld = "/scratch/projects/trifolium/gwsd/results/plink/pairwise_ld/Chr04_Pall_Rural_test.ld.gz"  
         ld = rules.plink_pairwise_ld.output 
     output:
         win_ld = f'{PLINK_DIR}/windowed/{{chrom}}_{{habitat}}_windowed_ld.txt'
+        # win_ld = f'{PLINK_DIR}/windowed/Chr04_Pall_Rural_test.txt'
     params:
         winsize = 50000
     conda: '../envs/r.yaml'
@@ -987,6 +989,7 @@ rule outlier_analysis:
     """
     input:
         gt_plot = rules.install_genotype_plot.output,
+        chr_lengths = rules.genome_lengths_file.output, 
         win_sfs_fst = rules.write_windowed_sfs_stats.output.sfs_df,
         win_xpnsl_ur = expand(rules.write_windowed_xpnsl.output, hab_comb=['Urban_Rural']),
         win_xpnsl_ur_outRem = expand(rules.write_windowed_xpnsl_outlierRem.output),
@@ -1002,6 +1005,8 @@ rule outlier_analysis:
         norm_nsl = expand(rules.norm_nsl.output, habitat=['Urban', 'Rural']),
         gt_win_fst = expand(rules.pixy.output.fst, win_size="50000", miss="0", chrom=CHROMOSOMES),
         gt_win_pi = expand(rules.pixy.output.pi, win_size="50000", miss="0", chrom=CHROMOSOMES),
+        win_ld = expand(rules.write_windowed_ld.output, habitat=["Urban", "Rural"], chrom=CHROMOSOMES),
+        gen_map = rules.interpolate_genetic_map.output.genMap_interp,
         lassip = expand(rules.analyze_salti_spectra.output, habitat=["Urban", "Rural"]),
         spec = expand(rules.generate_salti_spectra.output, chrom=CHROMOSOMES, habitat=["Urban", "Rural"]),
         vcfs = expand(rules.shapeit_phase.output.vcf, chrom=CHROMOSOMES),
@@ -1030,7 +1035,14 @@ rule outlier_analysis:
         urb_ihh12_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_iHH12_windowed_manhat.pdf",
         ihh12_df = f"{FIGURES_DIR}/tables/ihh12_outliers.txt",
         gt_fst_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_gt_fst_windowed_manhat.pdf",
+        tajima_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_delta_tajima_manhat.pdf",
         gt_fst_df = f"{FIGURES_DIR}/tables/gt_fst_outliers.txt",
+        ld_manhat = f"{FIGURES_DIR}/selection/manhattan/urban_rural_ld_manhat.pdf",
+        recomb_manhat = f"{FIGURES_DIR}/selection/manhattan/recombination_rate_manhat.pdf",
+        xpnsl_vs_recomb_plot = f"{FIGURES_DIR}/selection/xpnsl_vs_recomb_plot.pdf",
+        fst_vs_recomb_plot = f"{FIGURES_DIR}/selection/fst_vs_recomb_plot.pdf",
+        num_xpnsl_by_num_genes = f"{FIGURES_DIR}/selection/num_xpnsl_by_num_genesnum_xpnsl_by_num_genes.pdf",
+        num_xpnsl_by_size = f"{FIGURES_DIR}/selection/num_xpnsl_by_num_genesnum_xpnsl_by_size.pdf",
         top_hits_genes = f'{FIGURES_DIR}/tables/topHits_selected_regions_genes.txt', 
         top_hits_tbl = f'{FIGURES_DIR}/tables/topHits_selected_regions_urban_rural_table.txt',
         salti_df = f"{FIGURES_DIR}/tables/salti_outliers.txt",
@@ -1042,22 +1054,18 @@ rule outlier_analysis:
         logA_ur_density = f"{FIGURES_DIR}/selection/logA_ur_density.pdf",
         Chr04_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_xpnsl.pdf",
         Chr04_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_haps.pdf",
-        Chr04_Occ_urb_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_haps.png",
         Chr04_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_af.pdf",
         Chr04_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_urb_ur_pca.pdf",
         Chr05_Occ_urb_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_xpnsl.pdf",
         Chr05_Occ_urb_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_haps.pdf",
-        Chr05_Occ_urb_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_haps.png",
         Chr05_Occ_urb_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_af.pdf",
         Chr05_Occ_urb_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr05_Occ_urb_ur_pca.pdf",
         Chr04_Occ_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_xpnsl.pdf",
         Chr04_Occ_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_haps.pdf",
-        Chr04_Occ_rur_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_haps.png",
         Chr04_Occ_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_af.pdf",
         Chr04_Occ_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr04_Occ_rur_ur_pca.pdf",
         Chr08_Pall_rur_xpnsl = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_xpnsl.pdf",
         Chr08_Pall_rur_ur_haps = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.pdf",
-        Chr08_Pall_rur_ur_haps_png = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_haps.png",
         Chr08_Pall_rur_ur_af = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_af.pdf",
         Chr08_Pall_rur_ur_pca = f"{FIGURES_DIR}/selection/region_plots/Chr08_Pall_rur_ur_pca.pdf",
         random_unsel_regions_af = f"{FIGURES_DIR}/selection/region_plots/random_unsel_regions_af.pdf",
@@ -1124,7 +1132,6 @@ rule sweeps_done:
         rules.go_enrichment_analysis.output,
         rules.outlier_analysis.output,
         rules.cline_analysis.output,
-        expand(rules.write_windowed_ld.output, chrom=CHROMOSOMES, habitat=["Rural", "Urban"])
     output:
         '{0}/sweeps.done'.format(SWEEPS_DIR)
     shell:

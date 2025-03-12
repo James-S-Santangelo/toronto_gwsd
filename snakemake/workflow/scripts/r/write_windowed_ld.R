@@ -5,7 +5,7 @@ calculate_windowed_ld <- function(df, window_size, step, thresh){
     chrom <- df %>% pull(CHR_A) %>% unique()
     pos_vector <- df %>% pull(BP_A) %>% unique()
     winStarts <- seq(from = 0, to = max(pos_vector) + window_size, by = step)
-    mat <- matrix(0, nrow = length(winStarts), ncol = 9)
+    mat <- matrix(0, nrow = length(winStarts), ncol = 10)
     for(i in 1:length(winStarts)){
         start <- winStarts[i]
         end <- start + step
@@ -15,12 +15,13 @@ calculate_windowed_ld <- function(df, window_size, step, thresh){
         mean <- suppressWarnings(mean(df_filt$R2))
         max <- suppressWarnings(max(df_filt$R2))
         min <- suppressWarnings(min(df_filt$R2))
-        n <- length(pos_vector)
-        stats <- c(chrom, winID, start, end, winCenter, mean, max, min, n)
+        n_mark <- length(df_filt %>% pull(BP_A) %>% unique())
+        n_comp <- nrow(df_filt)
+        stats <- c(chrom, winID, start, end, winCenter, mean, max, min, n_mark, n_comp)
         mat[i, ] <- stats
     }
     stats_df <- as.data.frame(mat)
-    names(stats_df) <- c("Chr", "winID", "start", "end", "winCenter", "mean", "max", "min", "n")
+    names(stats_df) <- c("Chr", "winID", "start", "end", "winCenter", "mean", "max", "min", "n_markers", "n_comparisons")
     return(stats_df)
 }
 
