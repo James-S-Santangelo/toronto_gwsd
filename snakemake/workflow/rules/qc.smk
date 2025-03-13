@@ -125,6 +125,17 @@ rule genomewide_mapq:
             -c 5 -o mean > {output}
         """
 
+rule mapq_analysis:
+    input:
+        gff = GFF_FILE,
+        mapq = rules.genomewide_mapq.output
+    output:
+        mapq_manhat = f"{FIGURES_DIR}/qc/mapq_manhat.pdf",
+        gene_mapq_hist = f"{FIGURES_DIR}/qc/gene_mapq_histogram.pdf",
+    conda: "../envs/r.yaml"
+    notebook:
+        "../notebooks/mapq_analysis.r.ipynb"
+
 rule multiqc:
     """
     Generate single HTML report with all QC info for all samples using multiQC.
@@ -152,3 +163,14 @@ rule multiqc:
             --config ../config/multiqc_config.yaml \
             {0} 2> {{log}}
         """.format(QC_DIR)
+
+rule qc_done:
+    input:
+        rules.multiqc.output,
+        rules.mapq_analysis.output
+    output:
+        f"{QC_DIR}/qc.done"
+    shell:
+        """
+        touch {output}
+        """
