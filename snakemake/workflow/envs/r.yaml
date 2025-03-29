@@ -1,6 +1,7 @@
 channels:
   - conda-forge
   - bioconda
+  - james_santangelo
 dependencies:
   - python=3
   - jupyter=1.0.0
@@ -15,10 +16,5 @@ dependencies:
   - r-bedtoolsr=2.30
   - r-data.table=1.14.8
   - r-ape=5.7
-  - r-vcfr
-  - r-remotes
-  - r-factoextra
-  - r-aplot
-  - r-ggplotify
-  - r-ggfun
+  - r-ggheatmap=2.2
   - bioconductor-topgo

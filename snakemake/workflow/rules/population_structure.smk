@@ -243,26 +243,11 @@ rule create_bam_list_highQualSamples:
             logging.exception("An error occurred!")
             raise
 
-rule install_ggheatmap:
-    """
-    Install ggheatmap into Conda environment
-    """
-    output:
-        f"{PROGRAM_RESOURCE_DIR}/ggheatmap_install.done"
-    conda: "../envs/r.yaml"
-    shell:
-        """
-        R -e 'install.packages("ggheatmap", repos = "http://cran.us.r-project.org")'
-        R -e 'library(ggheatmap)' &&
-        touch {output}
-        """
-
 rule population_structure_figures:
     """
     Generate population structure figures
     """
     input:
-        ggheat_install = rules.install_ggheatmap.output,
         order = expand(rules.extract_sample_angsd.output, site="4fold"),
         cov = expand(rules.pcangsd.output, site="4fold", maf="0.05"),
         evanno = rules.clumpak_best_k_by_evanno.output,
