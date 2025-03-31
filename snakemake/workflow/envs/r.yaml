@@ -16,7 +16,9 @@ dependencies:
   - r-bedtoolsr=2.30
   - r-data.table=1.14.8
   - r-ape=5.7
-  - r-ggheatmap=2.2
   - r-vcfr
   - r-remotes
+  - r-aplot
+  - r-patchwork
+  - r-ggheatmap=2.2
   - bioconductor-topgo

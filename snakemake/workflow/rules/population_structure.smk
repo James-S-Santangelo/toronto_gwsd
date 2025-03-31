@@ -266,7 +266,8 @@ rule population_structure_figures:
         fst_byPop = f"{FIGURES_DIR}/pop_struct/fst_pairwise_population.pdf",
         ibd_plot = f"{FIGURES_DIR}/pop_struct/isolation_by_distance.pdf",
         pi_byHab_df = f"{FIGURES_DIR}/pop_struct/pi_byHab.txt",
-        fst_byHab_df = f"{FIGURES_DIR}/pop_struct/fst_byHab.txt"
+        fst_byHab_df = f"{FIGURES_DIR}/pop_struct/fst_byHab.txt",
+        fst_byPop_df = f"{FIGURES_DIR}/pop_struct/fst_byPop.txt"
     conda:'../envs/r.yaml'
     notebook:
         "../notebooks/population_structure.r.ipynb"
