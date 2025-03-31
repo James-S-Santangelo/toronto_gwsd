@@ -17,4 +17,6 @@ dependencies:
   - r-data.table=1.14.8
   - r-ape=5.7
   - r-ggheatmap=2.2
+  - r-vcfr
+  - r-remotes
   - bioconductor-topgo
